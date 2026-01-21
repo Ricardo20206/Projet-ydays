@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mes vidéos</title>
+</head>
+<body>
+
+<h1>🎬 Lire les vidéos de mon ordinateur</h1>
+
+<form method="POST" enctype="multipart/form-data">
+    <input type="file" name="videos" accept="video/*" multiple>
+    <button type="submit">Ajouter les vidéos</button>
+</form>
+
+<hr>
+
+{% for video in videos %}
+    <h3>{{ video }}</h3>
+    <video width="640" controls>
+        <source src="{{ url_for('video', filename=video) }}" type="video/mp4">
+    </video>
+{% endfor %}
+
+</body>
+</html>
