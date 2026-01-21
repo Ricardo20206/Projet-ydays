@@ -9,20 +9,29 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route("/process-video", methods=["POST"])
 def process_video():
-    video = request.files.get("file")
-    if not video:
-        return {"error": "Aucune vidéo reçue"}, 400
+    file = request.files.get("file")
+    if not file:
+        return {"error": "Aucun fichier reçu"}, 400
 
-    filename = secure_filename(video.filename)
+    filename = secure_filename(file.filename)
     path = os.path.join(UPLOAD_FOLDER, filename)
-    video.save(path)
+    file.save(path)
 
-    # 👉 Ici normalement : traitement vidéo (IA, compression, etc.)
-    # Pour la démo : on renvoie la même vidéo
+    # 👉 Ici normalement : traitement vidéo/image (IA, compression, etc.)
+    # Pour la démo : on renvoie le même fichier
+    
+    # Détecter le type de fichier
+    ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
+    if ext in ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']:
+        mimetype = f"image/{ext}" if ext != 'jpg' else "image/jpeg"
+    elif ext in ['mp4', 'avi', 'mov', 'mkv', 'webm']:
+        mimetype = "video/mp4"
+    else:
+        mimetype = "application/octet-stream"
 
     return send_file(
         path,
-        mimetype="video/mp4",
+        mimetype=mimetype,
         as_attachment=True,
         download_name="processed_" + filename
     )

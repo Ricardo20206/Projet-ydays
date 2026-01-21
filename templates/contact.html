@@ -1,11 +1,6 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Upload vidéo</title>
-</head>
-<body>
+{% extends "base.html" %}
 
+{% block content %}
 <h1>Envoyer une vidéo à une API</h1>
 
 <form method="POST" enctype="multipart/form-data">
@@ -23,6 +18,4 @@
 <br><br>
 <a href="{{ url_for('download', filename=video) }}">Télécharger la vidéo</a>
 {% endif %}
-
-</body>
-</html>
+{% endblock %}

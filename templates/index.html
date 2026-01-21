@@ -1,59 +1,119 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Lecteur vidéo</title>
+{% extends "base.html" %}
 
-    <style>
-        body {
-            background: #111;
-            color: white;
-            font-family: Arial;
-            padding: 40px;
-        }
+{% block content %}
+<style>
+    .video-container {
+        background: #111;
+        color: white;
+        font-family: Arial;
+        padding: 40px;
+    }
 
-        video {
-            width: 320px;
-            display: block;
-            margin-bottom: 10px;
-        }
+    video, img {
+        width: 2400px;
+        max-width: 90%;
+        max-height: 600px;
+        display: block;
+        margin: 0 auto 10px auto;
+        object-fit: contain;
+    }
 
-        button {
-            padding: 10px 16px;
-            cursor: pointer;
-            background: crimson;
-            border: none;
-            color: white;
-            border-radius: 5px;
-        }
+    button {
+        padding: 10px 16px;
+        cursor: pointer;
+        background: crimson;
+        border: none;
+        color: white;
+        border-radius: 5px;
+    }
 
-        input[type="file"] {
-            margin-bottom: 20px;
-        }
-    </style>
-</head>
-<body>
+    input[type="file"] {
+        margin-bottom: 20px;
+    }
+</style>
 
-<h2>📹 Charger une vidéo</h2>
+<div class="video-container">
+    <h2>📹 Charger une vidéo ou une image</h2>
 
-<form action="/upload" method="POST" enctype="multipart/form-data">
-    <input type="file" name="video" accept="video/*" required>
-    <br>
-    <button type="submit">Lire la vidéo</button>
-</form>
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" accept="video/*,image/*" required>
+        <br>
+        <button type="submit">Afficher le média</button>
+    </form>
 
-{% if video %}
-    <hr>
+    {% if video %}
+        <hr>
 
-    <video controls autoplay>
-        <source src="{{ url_for('serve_video', filename=video) }}">
-    </video>
+        <video controls autoplay>
+            <source src="{{ url_for('serve_video', filename=video) }}">
+        </video>
 
-    <button onclick="deleteVideo('{{ video }}')">🗑 Supprimer la vidéo</button>
-{% endif %}
+        <div style="margin-top: 20px; text-align: center;">
+            <button onclick="deleteFile('{{ video }}')">🗑 Supprimer la vidéo</button>
+        </div>
+
+        <hr style="margin: 30px 0;">
+
+        <h3>📤 Envoyer la vidéo à l'API de traitement</h3>
+        <form id="sendToApiForm">
+            <input type="hidden" name="video_filename" value="{{ video }}">
+            <button type="submit" style="background: #4CAF50; margin-top: 10px;">
+                🚀 Envoyer à l'API
+            </button>
+        </form>
+        <div id="apiStatus" style="margin-top: 15px;"></div>
+        
+        {% if processed_video %}
+        <div style="margin-top: 20px; padding: 15px; background: #2a2a2a; border-radius: 5px;">
+            <h4>✅ Vidéo traitée disponible :</h4>
+            <video controls style="width: 2400px; max-width: 90%; max-height: 600px; display: block; margin: 10px auto;">
+                <source src="{{ url_for('serve_video', filename=processed_video) }}">
+            </video>
+            <br>
+            <div style="text-align: center; margin-top: 10px;">
+                <a href="{{ url_for('serve_video', filename=processed_video) }}" download style="color: #4CAF50; text-decoration: none; display: inline-block;">
+                    📥 Télécharger la vidéo traitée
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    {% elif image %}
+        <hr>
+
+        <img src="{{ url_for('serve_image', filename=image) }}" alt="Image uploadée">
+
+        <div style="margin-top: 20px; text-align: center;">
+            <button onclick="deleteFile('{{ image }}')">🗑 Supprimer l'image</button>
+        </div>
+
+        <hr style="margin: 30px 0;">
+
+        <h3>📤 Envoyer l'image à l'API de traitement</h3>
+        <form id="sendToApiForm">
+            <input type="hidden" name="image_filename" value="{{ image }}">
+            <button type="submit" style="background: #4CAF50; margin-top: 10px;">
+                🚀 Envoyer à l'API
+            </button>
+        </form>
+        <div id="apiStatus" style="margin-top: 15px;"></div>
+        
+        {% if processed_image %}
+        <div style="margin-top: 20px; padding: 15px; background: #2a2a2a; border-radius: 5px;">
+            <h4>✅ Image traitée disponible :</h4>
+            <img src="{{ url_for('serve_image', filename=processed_image) }}" alt="Image traitée" style="width: 2400px; max-width: 90%; max-height: 600px; display: block; margin: 10px auto; object-fit: contain;">
+            <br>
+            <div style="text-align: center; margin-top: 10px;">
+                <a href="{{ url_for('serve_image', filename=processed_image) }}" download style="color: #4CAF50; text-decoration: none; display: inline-block;">
+                    📥 Télécharger l'image traitée
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+</div>
 
 <script>
-function deleteVideo(filename) {
+function deleteFile(filename) {
     fetch("/delete/" + filename, {
         method: "POST"
     })
@@ -61,7 +121,58 @@ function deleteVideo(filename) {
         location.reload(); // page redevient vide
     });
 }
-</script>
 
-</body>
-</html>
+// Gestion du formulaire d'envoi à l'API
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('sendToApiForm');
+    const statusDiv = document.getElementById('apiStatus');
+    
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Vérifier si c'est une vidéo ou une image
+            const videoInput = form.querySelector('input[name="video_filename"]');
+            const imageInput = form.querySelector('input[name="image_filename"]');
+            const filename = videoInput ? videoInput.value : (imageInput ? imageInput.value : null);
+            const isVideo = !!videoInput;
+            
+            if (!filename) {
+                statusDiv.innerHTML = '<p style="color: #f44336;">❌ Erreur : Fichier non trouvé</p>';
+                return;
+            }
+            
+            // Afficher le statut de chargement
+            statusDiv.innerHTML = '<p style="color: #ffa500;">⏳ Envoi en cours...</p>';
+            
+            try {
+                // Envoyer à l'API via la route proxy
+                const response = await fetch(`/send-to-api/${filename}`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const mediaType = isVideo ? 'vidéo' : 'image';
+                    statusDiv.innerHTML = `<p style="color: #4CAF50;">✅ ${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)} envoyée et traitée avec succès !</p>`;
+                    // Recharger la page pour afficher le média traité
+                    setTimeout(() => {
+                        if (isVideo) {
+                            window.location.href = `/?video=${filename}&processed=${data.processed_video}`;
+                        } else {
+                            window.location.href = `/?image=${filename}&processed_image=${data.processed_image}`;
+                        }
+                    }, 1500);
+                } else {
+                    statusDiv.innerHTML = `<p style="color: #f44336;">❌ Erreur : ${data.error || 'Erreur lors du traitement'}</p>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<p style="color: #f44336;">❌ Erreur de connexion. Assurez-vous que l'API externe est démarrée (port 5001).</p>`;
+                console.error('Erreur:', error);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
