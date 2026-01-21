@@ -131,14 +131,14 @@ projet ydays/
 - ✅ **Zoom interactif** sur les images et vidéos (boutons +/-, molette souris, double-clic)
 - ✅ Suppression de fichiers
 - ✅ Drag & drop pour l'upload
-- ✅ Envoi à l'API externe pour traitement via bouton "GOLD"
+- ✅ Envoi à l'API externe pour traitement via bouton "ENVOYER"
 - ✅ Téléchargement des médias traités
 
 ### Interface utilisateur
 - ✅ Design moderne avec fond doré et motifs
 - ✅ Header avec logo "G" et navigation
 - ✅ **Barre de recherche globale** disponible sur toutes les pages
-- ✅ **Bouton "GOLD"** visible dans toutes les barres de recherche pour envoyer les médias à l'API
+- ✅ **Bouton "ENVOYER"** visible dans toutes les barres de recherche pour envoyer les médias à l'API
 - ✅ **Page d'accueil** avec titre "BIENVENUE SUR CHÂTEAU GOLD" en or et gras
 - ✅ **Liens de navigation** en jaune et gras sur la page d'accueil
 - ✅ Interface responsive (desktop et mobile)
@@ -205,7 +205,7 @@ Projet développé dans le cadre de YDays.
 
 ### Version 2.1
 - ✨ **Fonctionnalité de zoom** pour images et vidéos (boutons +/-, molette souris, double-clic)
-- ✨ **Bouton "GOLD"** visible sur toutes les barres de recherche
+- ✨ **Bouton "ENVOYER"** visible sur toutes les barres de recherche
 - ✨ **Barre de recherche globale** disponible sur toutes les pages
 - ✨ **Page d'accueil** simplifiée avec titre "BIENVENUE SUR CHÂTEAU GOLD"
 - ✨ **Liens de navigation** en jaune et gras sur la page d'accueil
