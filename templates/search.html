@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% set hide_search = True %}
+
 {% block content %}
 <script>
     window.currentMedia = {
@@ -16,7 +18,21 @@
             <path d="m21 21-4.35-4.35"></path>
         </svg>
         <input type="text" placeholder="Comment puis-je vous aider ?" id="searchInput" value="{{ query }}">
+        <button type="button" id="sendToApiBtnSearch" class="send-btn" style="padding: 8px 16px; font-size: 14px; display: none;">
+            <span class="btn-gold-text">GOLD</span>
+        </button>
+        <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="23"></line>
+            <line x1="8" y1="23" x2="16" y2="23"></line>
+        </svg>
+        <svg class="sound-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
     </div>
+    <div id="apiStatusSearch" style="text-align: center; margin-top: 10px;"></div>
     
     {% if query %}
     <div class="info-section">
@@ -41,6 +57,87 @@
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
     const searchResults = document.getElementById('searchResults');
+    const sendToApiBtnSearch = document.getElementById('sendToApiBtnSearch');
+    const apiStatusSearch = document.getElementById('apiStatusSearch');
+    
+    // Afficher le bouton GOLD si un média est présent
+    if (sendToApiBtnSearch && window.currentMedia) {
+        if (window.currentMedia.video || window.currentMedia.image) {
+            sendToApiBtnSearch.style.display = 'block';
+        }
+    }
+    
+    // Gestion du bouton "Envoyer à l'API" sur la page de recherche
+    if (sendToApiBtnSearch) {
+        sendToApiBtnSearch.addEventListener('click', async function() {
+            const currentMedia = window.currentMedia;
+            let filename = null;
+            let isVideo = false;
+            
+            if (currentMedia && currentMedia.video) {
+                filename = currentMedia.video;
+                isVideo = true;
+            } else if (currentMedia && currentMedia.image) {
+                filename = currentMedia.image;
+                isVideo = false;
+            }
+            
+            if (!filename) {
+                alert('Aucun média à envoyer. Veuillez d\'abord charger une vidéo ou une image.');
+                return;
+            }
+            
+            if (apiStatusSearch) {
+                apiStatusSearch.innerHTML = '<div class="status-message status-loading">⏳ Envoi en cours...</div>';
+            }
+            sendToApiBtnSearch.disabled = true;
+            sendToApiBtnSearch.style.opacity = '0.6';
+            
+            try {
+                const response = await fetch(`/send-to-api/${filename}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    if (apiStatusSearch) {
+                        const mediaType = isVideo ? 'vidéo' : 'image';
+                        apiStatusSearch.innerHTML = `<div class="status-message status-success">✅ ${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)} envoyée et traitée avec succès !</div>`;
+                    }
+                    
+                    setTimeout(() => {
+                        const currentPath = window.location.pathname;
+                        if (isVideo) {
+                            if (currentPath === '/video') {
+                                window.location.href = `/video?video=${filename}&processed=${data.processed_video}`;
+                            } else {
+                                window.location.href = `/?video=${filename}&processed=${data.processed_video}`;
+                            }
+                        } else {
+                            if (currentPath === '/image') {
+                                window.location.href = `/image?image=${filename}&processed_image=${data.processed_image}`;
+                            } else {
+                                window.location.href = `/?image=${filename}&processed_image=${data.processed_image}`;
+                            }
+                        }
+                    }, 1500);
+                } else {
+                    if (apiStatusSearch) {
+                        apiStatusSearch.innerHTML = `<div class="status-message status-error">❌ Erreur : ${data.error || 'Erreur lors du traitement'}</div>`;
+                    }
+                    sendToApiBtnSearch.disabled = false;
+                    sendToApiBtnSearch.style.opacity = '1';
+                }
+            } catch (error) {
+                if (apiStatusSearch) {
+                    apiStatusSearch.innerHTML = '<div class="status-message status-error">❌ Erreur de connexion. Assurez-vous que l\'API externe est démarrée (port 5001).</div>';
+                }
+                sendToApiBtnSearch.disabled = false;
+                sendToApiBtnSearch.style.opacity = '1';
+                console.error('Erreur:', error);
+            }
+        });
+    }
     
     // Si une requête est présente dans l'URL, afficher les résultats
     {% if query %}

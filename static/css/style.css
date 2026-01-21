@@ -83,6 +83,17 @@ header {
     background: rgba(255, 215, 0, 0.1);
 }
 
+/* Style pour les liens de navigation sur la page d'accueil */
+body.home-page .nav-links a {
+    color: #FFD700;
+    font-weight: bold;
+}
+
+body.home-page .nav-links a:hover {
+    color: #FFD700;
+    background: rgba(255, 215, 0, 0.2);
+}
+
 /* Main content */
 main {
     flex: 1;
@@ -94,6 +105,17 @@ main {
     max-width: 1400px;
     margin: 0 auto;
     width: 100%;
+}
+
+/* Titre de bienvenue */
+.welcome-title {
+    color: #FFD700;
+    font-weight: bold;
+    text-align: center;
+    font-size: 3.5em;
+    margin: 40px 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: 2px;
 }
 
 /* Bulle de texte */
@@ -127,10 +149,10 @@ main {
 .media-container {
     background: #2a2a2a;
     border-radius: 20px;
-    padding: 30px;
-    margin: 30px 0;
+    padding: 10px;
+    margin: 30px auto;
     width: 100%;
-    max-width: 1200px;
+    max-width: 1600px;
     min-height: 400px;
     display: flex;
     align-items: center;
@@ -138,14 +160,92 @@ main {
     border: 2px solid #4a90e2;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
     position: relative;
+    overflow: hidden;
 }
 
 .media-container video,
 .media-container img {
-    max-width: 100%;
-    max-height: 500px;
+    max-width: 70%;
+    max-height: 400px;
+    width: auto;
+    height: auto;
     border-radius: 10px;
     object-fit: contain;
+    transition: transform 0.3s ease;
+    cursor: zoom-in;
+    margin: auto;
+    display: block;
+}
+
+.media-container.zoomed {
+    overflow: auto;
+    cursor: move;
+}
+
+.media-container.zoomed video,
+.media-container.zoomed img {
+    cursor: move;
+}
+
+/* Contrôles de zoom */
+.zoom-controls {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+    background: rgba(42, 42, 42, 0.9);
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.zoom-btn {
+    width: 35px;
+    height: 35px;
+    border: none;
+    background: #4a90e2;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+.zoom-btn:hover {
+    background: #357abd;
+    transform: scale(1.1);
+}
+
+.zoom-btn:active {
+    transform: scale(0.95);
+}
+
+.zoom-reset-btn {
+    background: #888;
+    font-size: 14px;
+}
+
+.zoom-reset-btn:hover {
+    background: #666;
+}
+
+.zoom-level {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: rgba(42, 42, 42, 0.9);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 10;
 }
 
 .media-placeholder {
@@ -308,8 +408,14 @@ footer {
     
     .media-container {
         border-color: #ff8c00;
-        padding: 20px;
+        padding: 10px;
         min-height: 300px;
+    }
+    
+    .welcome-title {
+        font-size: 2.5em;
+        margin: 30px 0;
+        letter-spacing: 1px;
     }
     
     .speech-bubble {

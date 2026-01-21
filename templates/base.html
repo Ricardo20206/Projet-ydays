@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
-<body>
+<body {% if title == 'Accueil' %}class="home-page"{% endif %}>
 
     {% include 'header.html' %}
 
@@ -24,7 +24,7 @@
                 <path d="m21 21-4.35-4.35"></path>
             </svg>
             <input type="text" placeholder="Comment puis-je vous aider ?" id="globalSearchInput">
-            <button type="button" id="sendToApiBtn" class="send-btn" style="padding: 8px 16px; font-size: 14px; display: none;">
+            <button type="button" id="sendToApiBtn" class="send-btn" style="padding: 8px 16px; font-size: 14px; display: block;">
                 <span class="btn-gold-text">GOLD</span>
             </button>
             <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -53,5 +53,6 @@
     {% include 'footer.html' %}
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/zoom.js') }}"></script>
 </body>
 </html>
