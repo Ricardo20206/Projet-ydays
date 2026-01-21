@@ -82,7 +82,8 @@ projet ydays/
 │   ├── css/
 │   │   └── style.css     # Styles CSS avec design moderne
 │   ├── js/
-│   │   └── script.js     # JavaScript pour interactions
+│   │   ├── script.js     # JavaScript pour interactions
+│   │   └── zoom.js       # Fonctionnalité de zoom pour médias
 │   └── img/
 └── templates/            # Templates HTML
     ├── base.html         # Template de base avec header/footer
@@ -127,18 +128,21 @@ projet ydays/
 - ✅ Upload de vidéos (MP4, AVI, MOV, MKV, WEBM)
 - ✅ Upload d'images (JPG, JPEG, PNG, GIF, BMP, WEBP, SVG)
 - ✅ Visualisation des médias avec lecteur intégré
+- ✅ **Zoom interactif** sur les images et vidéos (boutons +/-, molette souris, double-clic)
 - ✅ Suppression de fichiers
 - ✅ Drag & drop pour l'upload
-- ✅ Envoi à l'API externe pour traitement
+- ✅ Envoi à l'API externe pour traitement via bouton "GOLD"
 - ✅ Téléchargement des médias traités
 
 ### Interface utilisateur
 - ✅ Design moderne avec fond doré et motifs
 - ✅ Header avec logo "G" et navigation
-- ✅ Barre de recherche globale avec envoi à l'API
+- ✅ **Barre de recherche globale** disponible sur toutes les pages
+- ✅ **Bouton "GOLD"** visible dans toutes les barres de recherche pour envoyer les médias à l'API
+- ✅ **Page d'accueil** avec titre "BIENVENUE SUR CHÂTEAU GOLD" en or et gras
+- ✅ **Liens de navigation** en jaune et gras sur la page d'accueil
 - ✅ Interface responsive (desktop et mobile)
 - ✅ Zone média avec bordure bleue (orange sur mobile)
-- ✅ Bulle de texte "Que vos idées prennent vie"
 - ✅ Messages de statut (succès, erreur, chargement)
 
 ### Fonctionnalités avancées
@@ -198,6 +202,15 @@ Ce projet est fourni tel quel, sans garantie.
 Projet développé dans le cadre de YDays.
 
 ## 🔄 Changelog
+
+### Version 2.1
+- ✨ **Fonctionnalité de zoom** pour images et vidéos (boutons +/-, molette souris, double-clic)
+- ✨ **Bouton "GOLD"** visible sur toutes les barres de recherche
+- ✨ **Barre de recherche globale** disponible sur toutes les pages
+- ✨ **Page d'accueil** simplifiée avec titre "BIENVENUE SUR CHÂTEAU GOLD"
+- ✨ **Liens de navigation** en jaune et gras sur la page d'accueil
+- ✨ Taille d'affichage des médias optimisée
+- ✨ Centrage amélioré des médias
 
 ### Version 2.0
 - ✨ Nouveau design avec interface moderne
