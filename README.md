@@ -55,6 +55,17 @@ python app.py
 
 L'application sera accessible à l'adresse : `http://localhost:5000`
 
+### Utilisation du microphone
+
+La reconnaissance vocale permet de dicter vos recherches directement dans la barre de recherche :
+
+1. **Activer le micro** : Cliquez sur l'icône microphone dans la barre de recherche
+2. **Parler** : Le texte transcrit apparaît automatiquement dans le champ de recherche
+3. **Arrêter** : Cliquez à nouveau sur le micro pour arrêter l'écoute
+4. **Envoyer** : Utilisez le bouton "ENVOYER" ou appuyez sur Entrée pour envoyer votre requête
+
+**Note** : La reconnaissance vocale nécessite un navigateur moderne (Chrome, Edge, Safari) et l'autorisation d'accès au microphone.
+
 ### API externe de traitement (requise pour certaines fonctionnalités)
 
 Pour utiliser l'API externe de traitement de médias et de requêtes :
@@ -139,13 +150,16 @@ projet ydays/
 - ✅ Header avec logo "G" et navigation
 - ✅ **Barre de recherche globale** disponible sur toutes les pages
 - ✅ **Bouton "ENVOYER"** visible dans toutes les barres de recherche pour envoyer les médias à l'API
+- ✅ **Microphone** : reconnaissance vocale avec transcription en temps réel dans la barre de recherche
 - ✅ **Page d'accueil** avec titre "BIENVENUE SUR CHÂTEAU GOLD" en or et gras
 - ✅ **Liens de navigation** en jaune et gras sur la page d'accueil
 - ✅ Interface responsive (desktop et mobile)
 - ✅ Zone média avec bordure bleue (orange sur mobile)
 - ✅ Messages de statut (succès, erreur, chargement)
+- ✅ Indicateurs visuels pour le microphone actif (animation dorée)
 
 ### Fonctionnalités avancées
+- ✅ **Reconnaissance vocale** : transcription en temps réel de la voix dans la barre de recherche
 - ✅ Envoi de requêtes texte à l'API externe
 - ✅ Traitement automatique des médias
 - ✅ Gestion des erreurs et messages utilisateur
@@ -202,6 +216,13 @@ Ce projet est fourni tel quel, sans garantie.
 Projet développé dans le cadre de YDays.
 
 ## 🔄 Changelog
+
+### Version 2.2
+- ✨ **Reconnaissance vocale** : transcription en temps réel de la voix dans la barre de recherche
+- ✨ **Microphone interactif** : activation/désactivation par clic, indicateurs visuels (animation dorée)
+- ✨ Support de la Web Speech API pour la dictée vocale
+- ✨ Transcription continue avec résultats intermédiaires et finaux
+- ✨ Gestion des erreurs et permissions microphone
 
 ### Version 2.1
 - ✨ **Fonctionnalité de zoom** pour images et vidéos (boutons +/-, molette souris, double-clic)

@@ -191,6 +191,106 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Gestion de la reconnaissance vocale pour la page de recherche
+    const micIconSearch = document.querySelector('.mic-icon');
+    let recognitionSearch = null;
+    let isListeningSearch = false;
+    
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (SpeechRecognition && micIconSearch) {
+        recognitionSearch = new SpeechRecognition();
+        recognitionSearch.lang = 'fr-FR';
+        recognitionSearch.continuous = true;
+        recognitionSearch.interimResults = true;
+        
+        recognitionSearch.onresult = function(event) {
+            let interimTranscript = '';
+            let finalTranscript = '';
+            
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    finalTranscript += transcript + ' ';
+                } else {
+                    interimTranscript += transcript;
+                }
+            }
+            
+            if (searchInput) {
+                const currentText = searchInput.value.trim();
+                searchInput.value = currentText + (currentText ? ' ' : '') + finalTranscript + interimTranscript;
+                searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        };
+        
+        recognitionSearch.onerror = function(event) {
+            console.error('Erreur de reconnaissance vocale:', event.error);
+            if (event.error !== 'no-speech') {
+                if (apiStatusSearch) {
+                    apiStatusSearch.innerHTML = `<div class="status-message status-error">❌ Erreur microphone : ${event.error}</div>`;
+                }
+                stopListeningSearch();
+            }
+        };
+        
+        recognitionSearch.onend = function() {
+            isListeningSearch = false;
+            updateMicIconSearch();
+        };
+        
+        function startListeningSearch() {
+            if (!isListeningSearch && recognitionSearch) {
+                try {
+                    recognitionSearch.start();
+                    isListeningSearch = true;
+                    updateMicIconSearch();
+                    if (apiStatusSearch) {
+                        apiStatusSearch.innerHTML = '<div class="status-message status-loading">🎤 Écoute en cours... Parlez maintenant</div>';
+                    }
+                } catch (error) {
+                    console.error('Erreur lors du démarrage de la reconnaissance:', error);
+                    if (apiStatusSearch) {
+                        apiStatusSearch.innerHTML = '<div class="status-message status-error">❌ Impossible de démarrer le microphone. Vérifiez les permissions.</div>';
+                    }
+                }
+            }
+        }
+        
+        function stopListeningSearch() {
+            if (isListeningSearch && recognitionSearch) {
+                recognitionSearch.stop();
+                isListeningSearch = false;
+                updateMicIconSearch();
+                if (apiStatusSearch) {
+                    apiStatusSearch.innerHTML = '';
+                }
+            }
+        }
+        
+        function updateMicIconSearch() {
+            if (micIconSearch) {
+                if (isListeningSearch) {
+                    micIconSearch.style.color = '#FFD700';
+                    micIconSearch.style.opacity = '1';
+                    micIconSearch.style.animation = 'pulse 1.5s infinite';
+                } else {
+                    micIconSearch.style.color = '';
+                    micIconSearch.style.opacity = '0.7';
+                    micIconSearch.style.animation = '';
+                }
+            }
+        }
+        
+        micIconSearch.addEventListener('click', function() {
+            if (isListeningSearch) {
+                stopListeningSearch();
+            } else {
+                startListeningSearch();
+            }
+        });
+    }
 });
 </script>
 {% endblock %}

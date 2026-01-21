@@ -139,16 +139,139 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Gestion des icônes microphone et son
-    const micIcon = document.querySelector('.mic-icon');
-    const soundIcon = document.querySelector('.sound-icon');
+    // Gestion de la reconnaissance vocale
+    const micIcons = document.querySelectorAll('.mic-icon');
+    let recognition = null;
+    let isListening = false;
     
-    if (micIcon) {
-        micIcon.addEventListener('click', function() {
-            alert('Fonctionnalité microphone en cours de développement');
+    // Vérifier si le navigateur supporte la reconnaissance vocale
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'fr-FR';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        
+        recognition.onresult = function(event) {
+            let interimTranscript = '';
+            let finalTranscript = '';
+            
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    finalTranscript += transcript + ' ';
+                } else {
+                    interimTranscript += transcript;
+                }
+            }
+            
+            // Trouver le champ de recherche actif (global ou page de recherche)
+            const activeInput = document.getElementById('globalSearchInput') || document.getElementById('searchInput');
+            if (activeInput) {
+                // Conserver le texte existant et ajouter la transcription
+                const currentText = activeInput.value.trim();
+                activeInput.value = currentText + (currentText ? ' ' : '') + finalTranscript + interimTranscript;
+                
+                // Déclencher l'événement input pour mettre à jour l'interface
+                activeInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        };
+        
+        recognition.onerror = function(event) {
+            console.error('Erreur de reconnaissance vocale:', event.error);
+            if (event.error === 'no-speech') {
+                // Pas d'erreur, juste pas de parole détectée
+                return;
+            }
+            if (apiStatusGlobal) {
+                apiStatusGlobal.innerHTML = `<div class="status-message status-error">❌ Erreur microphone : ${event.error}</div>`;
+            }
+            stopListening();
+        };
+        
+        recognition.onend = function() {
+            isListening = false;
+            updateMicIcons();
+        };
+        
+        function startListening() {
+            if (!isListening && recognition) {
+                try {
+                    recognition.start();
+                    isListening = true;
+                    updateMicIcons();
+                    if (apiStatusGlobal) {
+                        apiStatusGlobal.innerHTML = '<div class="status-message status-loading">🎤 Écoute en cours... Parlez maintenant</div>';
+                    }
+                } catch (error) {
+                    console.error('Erreur lors du démarrage de la reconnaissance:', error);
+                    if (apiStatusGlobal) {
+                        apiStatusGlobal.innerHTML = '<div class="status-message status-error">❌ Impossible de démarrer le microphone. Vérifiez les permissions.</div>';
+                    }
+                }
+            }
+        }
+        
+        function stopListening() {
+            if (isListening && recognition) {
+                recognition.stop();
+                isListening = false;
+                updateMicIcons();
+                if (apiStatusGlobal) {
+                    apiStatusGlobal.innerHTML = '';
+                }
+            }
+        }
+        
+        function updateMicIcons() {
+            micIcons.forEach(icon => {
+                if (isListening) {
+                    icon.style.color = '#FFD700';
+                    icon.style.opacity = '1';
+                    icon.style.animation = 'pulse 1.5s infinite';
+                } else {
+                    icon.style.color = '';
+                    icon.style.opacity = '0.7';
+                    icon.style.animation = '';
+                }
+            });
+        }
+        
+        // Ajouter l'animation pulse pour le micro actif
+        if (!document.getElementById('micPulseStyle')) {
+            const style = document.createElement('style');
+            style.id = 'micPulseStyle';
+            style.textContent = `
+                @keyframes pulse {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.5; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Gestion du clic sur les icônes microphone
+        micIcons.forEach(micIcon => {
+            micIcon.addEventListener('click', function() {
+                if (isListening) {
+                    stopListening();
+                } else {
+                    startListening();
+                }
+            });
+        });
+    } else {
+        // Le navigateur ne supporte pas la reconnaissance vocale
+        micIcons.forEach(micIcon => {
+            micIcon.addEventListener('click', function() {
+                alert('Votre navigateur ne supporte pas la reconnaissance vocale. Veuillez utiliser Chrome, Edge ou Safari.');
+            });
         });
     }
     
+    // Gestion de l'icône son
+    const soundIcon = document.querySelector('.sound-icon');
     if (soundIcon) {
         soundIcon.addEventListener('click', function() {
             alert('Fonctionnalité audio en cours de développement');
