@@ -1,0 +1,44 @@
+# Fichiers volumineux (>100MB)
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+
+# Fichiers d'images volumineux
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.webp
+*.svg
+
+# Dossiers de médias
+videos/
+images/
+uploads/
+api_uploads/
+responses/
+
+# Environnement Python
+env/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace

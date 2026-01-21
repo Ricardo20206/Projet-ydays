@@ -94,17 +94,62 @@ body.home-page .nav-links a:hover {
     background: rgba(255, 215, 0, 0.2);
 }
 
+/* Page Vidéo - liens en bleu et gras */
+body.video-page .nav-links a {
+    color: #0066CC;
+    font-weight: bold;
+}
+
+body.video-page .nav-links a:hover {
+    color: #0066CC;
+    background: rgba(0, 102, 204, 0.2);
+}
+
+/* Page Image - liens en vert et gras */
+body.image-page .nav-links a {
+    color: #00AA00;
+    font-weight: bold;
+}
+
+body.image-page .nav-links a:hover {
+    color: #00AA00;
+    background: rgba(0, 170, 0, 0.2);
+}
+
+/* Page Information - liens en rouge et gras */
+body.information-page .nav-links a {
+    color: #CC0000;
+    font-weight: bold;
+}
+
+body.information-page .nav-links a:hover {
+    color: #CC0000;
+    background: rgba(204, 0, 0, 0.2);
+}
+
+/* Page Contact - liens en orange et gras */
+body.contact-page .nav-links a {
+    color: #FF6600;
+    font-weight: bold;
+}
+
+body.contact-page .nav-links a:hover {
+    color: #FF6600;
+    background: rgba(255, 102, 0, 0.2);
+}
+
 /* Main content */
 main {
     flex: 1;
-    padding: 40px 20px;
+    padding: 10px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     max-width: 1400px;
     margin: 0 auto;
     width: 100%;
+    overflow-y: auto;
 }
 
 /* Titre de bienvenue */
@@ -149,11 +194,12 @@ main {
 .media-container {
     background: #2a2a2a;
     border-radius: 20px;
-    padding: 10px;
-    margin: 30px auto;
+    padding: 8px;
+    margin: 10px auto;
     width: 100%;
     max-width: 1600px;
-    min-height: 400px;
+    min-height: 200px;
+    max-height: calc(100vh - 350px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -165,8 +211,8 @@ main {
 
 .media-container video,
 .media-container img {
-    max-width: 70%;
-    max-height: 400px;
+    max-width: 75%;
+    max-height: calc(100vh - 380px);
     width: auto;
     height: auto;
     border-radius: 10px;
@@ -258,13 +304,13 @@ main {
 .search-bar {
     background: #f0f0f0;
     border-radius: 30px;
-    padding: 15px 25px;
+    padding: 12px 20px;
     display: flex;
     align-items: center;
     gap: 15px;
     max-width: 900px;
     width: 100%;
-    margin-top: 40px;
+    margin-top: 15px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     border: 1px solid #ddd;
     flex-wrap: wrap;
@@ -363,7 +409,7 @@ button.send-btn:hover {
 
 /* Formulaires */
 .upload-form {
-    margin: 20px 0;
+    margin: 10px 0;
 }
 
 .upload-form input[type="file"] {
@@ -454,13 +500,20 @@ footer {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
+    padding: 10px 20px;
+}
+
+.page-content h1 {
+    margin-bottom: 15px !important;
+    margin-top: 10px !important;
+    font-size: 1.8em;
 }
 
 .info-section {
     background: white;
     border-radius: 15px;
-    padding: 30px;
-    margin: 20px 0;
+    padding: 15px;
+    margin: 10px 0;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 

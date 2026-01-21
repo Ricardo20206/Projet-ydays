@@ -8,7 +8,7 @@
     };
 </script>
 <div class="page-content">
-    <h1 style="color: #2a2a2a; margin-bottom: 30px;">📹 Gestion des Vidéos</h1>
+    <h1 style="color: #2a2a2a; margin-bottom: 15px;">📹 Gestion des Vidéos</h1>
     
     <form class="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
         <input type="file" name="file" accept="video/*" required>
@@ -22,12 +22,12 @@
         </video>
     </div>
     
-    <div style="margin-top: 20px; text-align: center;">
+    <div style="margin-top: 10px; text-align: center;">
         <button class="delete-btn" onclick="deleteFile('{{ video }}')">🗑 Supprimer la vidéo</button>
     </div>
     
     {% if processed_video %}
-    <div class="info-section" style="margin-top: 30px;">
+    <div class="info-section" style="margin-top: 15px;">
         <h4>✅ Vidéo traitée disponible :</h4>
         <div class="media-container">
             <video controls>
