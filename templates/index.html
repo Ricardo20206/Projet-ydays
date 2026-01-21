@@ -2,25 +2,66 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Mes vidéos</title>
+    <title>Lecteur vidéo</title>
+
+    <style>
+        body {
+            background: #111;
+            color: white;
+            font-family: Arial;
+            padding: 40px;
+        }
+
+        video {
+            width: 320px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px 16px;
+            cursor: pointer;
+            background: crimson;
+            border: none;
+            color: white;
+            border-radius: 5px;
+        }
+
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
 
-<h1>🎬 Lire les vidéos de mon ordinateur</h1>
+<h2>📹 Charger une vidéo</h2>
 
-<form method="POST" enctype="multipart/form-data">
-    <input type="file" name="videos" accept="video/*" multiple>
-    <button type="submit">Ajouter les vidéos</button>
+<form action="/upload" method="POST" enctype="multipart/form-data">
+    <input type="file" name="video" accept="video/*" required>
+    <br>
+    <button type="submit">Lire la vidéo</button>
 </form>
 
-<hr>
+{% if video %}
+    <hr>
 
-{% for video in videos %}
-    <h3>{{ video }}</h3>
-    <video width="640" controls>
-        <source src="{{ url_for('video', filename=video) }}" type="video/mp4">
+    <video controls autoplay>
+        <source src="{{ url_for('serve_video', filename=video) }}">
     </video>
-{% endfor %}
+
+    <button onclick="deleteVideo('{{ video }}')">🗑 Supprimer la vidéo</button>
+{% endif %}
+
+<script>
+function deleteVideo(filename) {
+    fetch("/delete/" + filename, {
+        method: "POST"
+    })
+    .then(() => {
+        location.reload(); // page redevient vide
+    });
+}
+</script>
 
 </body>
 </html>

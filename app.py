@@ -1,28 +1,44 @@
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify
 import os
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+VIDEO_FOLDER = "videos"
+os.makedirs(VIDEO_FOLDER, exist_ok=True)
 
-@app.route("/", methods=["GET", "POST"])
+ALLOWED_EXTENSIONS = {"mp4", "avi", "mov", "mkv", "webm"}
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route("/")
 def index():
-    if request.method == "POST":
-        files = request.files.getlist("videos")
+    # 🔴 Page toujours vide
+    return render_template("index.html")
 
-        for file in files:
-            if file.filename:
-                file.save(os.path.join(UPLOAD_FOLDER, file.filename))
-
+@app.route("/upload", methods=["POST"])
+def upload_video():
+    file = request.files.get("video")
+    if not file or not allowed_file(file.filename):
         return redirect(url_for("index"))
 
-    videos = os.listdir(UPLOAD_FOLDER)
-    return render_template("index.html", videos=videos)
+    filename = secure_filename(file.filename)
+    path = os.path.join(VIDEO_FOLDER, filename)
+    file.save(path)
 
-@app.route("/video/<filename>")
-def video(filename):
-    return send_from_directory(UPLOAD_FOLDER, filename, mimetype="video/mp4")
+    return render_template("index.html", video=filename)
+
+@app.route("/videos/<filename>")
+def serve_video(filename):
+    return send_from_directory(VIDEO_FOLDER, filename)
+
+@app.route("/delete/<filename>", methods=["POST"])
+def delete_video(filename):
+    path = os.path.join(VIDEO_FOLDER, filename)
+    if os.path.exists(path):
+        os.remove(path)
+    return jsonify({"status": "deleted"})
 
 if __name__ == "__main__":
     app.run(debug=True)
