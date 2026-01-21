@@ -1,12 +1,114 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Bienvenue sur mon site Flask !</h1>
+<div class="page-content">
+    <div class="speech-bubble">
+        Que vos idées prennent vie
+    </div>
+    
+    <div class="media-container" id="mediaContainer">
+        {% if video %}
+            <video controls autoplay>
+                <source src="{{ url_for('serve_video', filename=video) }}">
+            </video>
+        {% elif image %}
+            <img src="{{ url_for('serve_image', filename=image) }}" alt="Image uploadée">
+        {% else %}
+            <div class="media-placeholder">
+                <p>📁 Sélectionnez un fichier pour commencer</p>
+                <p style="font-size: 14px; margin-top: 10px; color: #aaa;">
+                    Glissez-déposez une vidéo ou une image ici
+                </p>
+            </div>
+        {% endif %}
+    </div>
+    
+    {% if video or image %}
+    <div style="margin-top: 20px; text-align: center;">
+        <button class="delete-btn" onclick="deleteFile('{{ video or image }}')">🗑 Supprimer</button>
+        {% if video %}
+        <a href="/video?video={{ video }}" style="margin-left: 10px;">
+            <button class="send-btn">📹 Gérer la vidéo</button>
+        </a>
+        {% elif image %}
+        <a href="/image?image={{ image }}" style="margin-left: 10px;">
+            <button class="send-btn">🖼️ Gérer l'image</button>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <form class="upload-form" action="/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
+        <input type="file" name="file" accept="video/*,image/*" id="fileInput" required>
+        <button type="submit">📤 Charger le média</button>
+    </form>
+    
+</div>
 
-    <p>Ceci est une vraie page HTML rendue avec Flask.</p>
-    <p>Voici une page avec header et un footer séparés.</p>
+<script>
+// Gestion de l'upload et affichage
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    const fileInput = document.getElementById('fileInput');
+    if (!fileInput.files.length) {
+        e.preventDefault();
+        alert('Veuillez sélectionner un fichier');
+        return;
+    }
+});
 
-    <button id="btnTest">Clique ici</button>
+function deleteFile(filename) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce fichier ?')) {
+        fetch("/delete/" + filename, {
+            method: "POST"
+        })
+        .then(() => {
+            location.reload();
+        });
+    }
+}
 
-    <div id="resultat"></div>
+
+// Drag and drop
+const mediaContainer = document.getElementById('mediaContainer');
+const fileInput = document.getElementById('fileInput');
+
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    mediaContainer.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+['dragenter', 'dragover'].forEach(eventName => {
+    mediaContainer.addEventListener(eventName, highlight, false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    mediaContainer.addEventListener(eventName, unhighlight, false);
+});
+
+function highlight(e) {
+    mediaContainer.style.borderColor = '#FFD700';
+    mediaContainer.style.background = '#333';
+}
+
+function unhighlight(e) {
+    mediaContainer.style.borderColor = '#4a90e2';
+    mediaContainer.style.background = '#2a2a2a';
+}
+
+mediaContainer.addEventListener('drop', handleDrop, false);
+
+function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    if (files.length) {
+        fileInput.files = files;
+        // Auto-submit
+        document.getElementById('uploadForm').submit();
+    }
+}
+</script>
 {% endblock %}

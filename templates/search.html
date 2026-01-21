@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script>
+    window.currentMedia = {
+        video: null,
+        image: null
+    };
+</script>
+<div class="page-content">
+    <h1 style="color: #2a2a2a; margin-bottom: 30px;">🔍 Recherche</h1>
+    
+    <div class="search-bar" style="max-width: 100%; margin-bottom: 30px;">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        <input type="text" placeholder="Comment puis-je vous aider ?" id="searchInput" value="{{ query }}">
+    </div>
+    
+    {% if query %}
+    <div class="info-section">
+        <h2>Résultats de recherche pour : "{{ query }}"</h2>
+        <div id="searchResults">
+            <p>⏳ Traitement de votre requête par l'API...</p>
+        </div>
+    </div>
+    {% else %}
+    <div class="info-section">
+        <h2>Rechercher vos médias</h2>
+        <p>Utilisez la barre de recherche ci-dessus pour trouver vos vidéos et images.</p>
+        <p>Tapez votre requête et appuyez sur Entrée pour lancer la recherche.</p>
+        <p style="margin-top: 15px; color: #666; font-size: 14px;">
+            <strong>Note :</strong> Votre requête sera automatiquement transmise à l'API externe pour traitement.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    
+    // Si une requête est présente dans l'URL, afficher les résultats
+    {% if query %}
+    fetch('/send-query-to-api', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ query: "{{ query }}" })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (searchResults) {
+            if (data.status === 'success') {
+                searchResults.innerHTML = `
+                    <div class="status-message status-success" style="margin-bottom: 20px;">
+                        ✅ ${data.response || 'Requête traitée avec succès'}
+                    </div>
+                    <p><strong>Requête :</strong> "${data.query}"</p>
+                    <p><strong>Timestamp :</strong> ${data.timestamp || 'N/A'}</p>
+                    <p style="margin-top: 20px;">Fonctionnalité de recherche avancée en cours de développement...</p>
+                `;
+            } else {
+                searchResults.innerHTML = `
+                    <div class="status-message status-error">
+                        ❌ Erreur : ${data.error || 'Erreur lors du traitement'}
+                    </div>
+                `;
+            }
+        }
+    })
+    .catch(error => {
+        if (searchResults) {
+            searchResults.innerHTML = `
+                <div class="status-message status-error">
+                    ❌ Erreur de connexion à l'API externe
+                </div>
+            `;
+        }
+        console.error('Erreur:', error);
+    });
+    {% endif %}
+    
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const query = this.value.trim();
+                if (query) {
+                    window.location.href = `/search?q=${encodeURIComponent(query)}`;
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

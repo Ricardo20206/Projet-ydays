@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script>
+    window.currentMedia = {
+        video: {{ video|default('null')|tojson }},
+        image: null
+    };
+</script>
+<div class="page-content">
+    <h1 style="color: #2a2a2a; margin-bottom: 30px;">📹 Gestion des Vidéos</h1>
+    
+    <form class="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" accept="video/*" required>
+        <button type="submit">📤 Charger une vidéo</button>
+    </form>
+    
+    {% if video %}
+    <div class="media-container">
+        <video controls autoplay>
+            <source src="{{ url_for('serve_video', filename=video) }}">
+        </video>
+    </div>
+    
+    <div style="margin-top: 20px; text-align: center;">
+        <button class="delete-btn" onclick="deleteFile('{{ video }}')">🗑 Supprimer la vidéo</button>
+    </div>
+    
+    {% if processed_video %}
+    <div class="info-section" style="margin-top: 30px;">
+        <h4>✅ Vidéo traitée disponible :</h4>
+        <div class="media-container">
+            <video controls>
+                <source src="{{ url_for('serve_video', filename=processed_video) }}">
+            </video>
+        </div>
+        <div style="text-align: center; margin-top: 15px;">
+            <a href="{{ url_for('serve_video', filename=processed_video) }}" download style="color: #4a90e2; text-decoration: none; font-weight: 500;">
+                📥 Télécharger la vidéo traitée
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+
+<script>
+function deleteFile(filename) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette vidéo ?')) {
+        fetch("/delete/" + filename, {
+            method: "POST"
+        })
+        .then(() => {
+            location.reload();
+        });
+    }
+}
+</script>
+{% endblock %}

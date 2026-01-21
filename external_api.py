@@ -36,5 +36,24 @@ def process_video():
         download_name="processed_" + filename
     )
 
+@app.route("/process-query", methods=["POST"])
+def process_query():
+    """Route pour traiter les requêtes texte de la barre de recherche"""
+    data = request.get_json()
+    query = data.get("query", "")
+    
+    if not query:
+        return {"error": "Aucune requête reçue"}, 400
+    
+    # 👉 Ici normalement : traitement de la requête (IA, recherche, etc.)
+    # Pour la démo : on renvoie une réponse simple
+    
+    return {
+        "status": "success",
+        "query": query,
+        "response": f"Requête reçue : '{query}'. Traitement en cours...",
+        "timestamp": __import__('datetime').datetime.now().isoformat()
+    }
+
 if __name__ == "__main__":
     app.run(port=5001, debug=True)

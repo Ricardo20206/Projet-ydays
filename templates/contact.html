@@ -1,21 +1,53 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Envoyer une vidéo à une API</h1>
-
-<form method="POST" enctype="multipart/form-data">
-    <input type="file" name="video" accept="video/*" required><br><br>
-    <button type="submit">Envoyer</button>
-</form>
-
-{% if video %}
-<hr>
-<h2>Vidéo reçue depuis l'API</h2>
-<video width="400" controls>
-    <source src="{{ url_for('download', filename=video) }}" type="video/mp4">
-</video>
-
-<br><br>
-<a href="{{ url_for('download', filename=video) }}">Télécharger la vidéo</a>
-{% endif %}
+<script>
+    window.currentMedia = {
+        video: null,
+        image: null
+    };
+</script>
+<div class="page-content">
+    <h1 style="color: #2a2a2a; margin-bottom: 30px;">📧 Contact</h1>
+    
+    <div class="info-section">
+        <h2>Nous contacter</h2>
+        <p>Pour toute question, suggestion ou problème technique, n'hésitez pas à nous contacter.</p>
+        
+        <form action="/contact" method="POST" style="margin-top: 30px;">
+            <div style="margin-bottom: 20px;">
+                <label for="name" style="display: block; margin-bottom: 5px; color: #2a2a2a; font-weight: 500;">Nom :</label>
+                <input type="text" id="name" name="name" required 
+                       style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="email" style="display: block; margin-bottom: 5px; color: #2a2a2a; font-weight: 500;">Email :</label>
+                <input type="email" id="email" name="email" required 
+                       style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="message" style="display: block; margin-bottom: 5px; color: #2a2a2a; font-weight: 500;">Message :</label>
+                <textarea id="message" name="message" rows="6" required 
+                          style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; resize: vertical;"></textarea>
+            </div>
+            
+            <button type="submit" class="send-btn">📤 Envoyer le message</button>
+        </form>
+        
+        {% if message_sent %}
+        <div class="status-message status-success" style="margin-top: 20px;">
+            ✅ Votre message a été envoyé avec succès !
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="info-section" style="margin-top: 30px;">
+        <h2>Informations de contact</h2>
+        <p><strong>Email :</strong> contact@projet-ydays.com</p>
+        <p><strong>Projet :</strong> YDays</p>
+        <p><strong>Version :</strong> 1.0</p>
+    </div>
+</div>
 {% endblock %}

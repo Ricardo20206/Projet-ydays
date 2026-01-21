@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script>
+    window.currentMedia = {
+        video: null,
+        image: null
+    };
+</script>
+<div class="page-content">
+    <h1 style="color: #2a2a2a; margin-bottom: 30px;">ℹ️ Informations</h1>
+    
+    <div class="info-section">
+        <h2>À propos de l'application</h2>
+        <p>
+            Cette application Flask vous permet de gérer et traiter vos médias (vidéos et images) 
+            de manière simple et efficace. Vous pouvez uploader, visualiser, et envoyer vos fichiers 
+            à une API de traitement pour obtenir des résultats optimisés.
+        </p>
+    </div>
+    
+    <div class="info-section">
+        <h2>Fonctionnalités</h2>
+        <p><strong>📹 Gestion des vidéos :</strong> Upload, visualisation et traitement de vidéos</p>
+        <p><strong>🖼️ Gestion des images :</strong> Upload, visualisation et traitement d'images</p>
+        <p><strong>🔍 Recherche :</strong> Barre de recherche pour trouver rapidement vos médias</p>
+        <p><strong>⚙️ Traitement API :</strong> Envoi de vos médias à une API externe pour traitement</p>
+    </div>
+    
+    <div class="info-section">
+        <h2>Formats supportés</h2>
+        <p><strong>Vidéos :</strong> MP4, AVI, MOV, MKV, WEBM</p>
+        <p><strong>Images :</strong> JPG, JPEG, PNG, GIF, BMP, WEBP, SVG</p>
+    </div>
+    
+    <div class="info-section">
+        <h2>Comment utiliser</h2>
+        <p>1. Sélectionnez une page dans le menu (Vidéo ou Image)</p>
+        <p>2. Cliquez sur "Charger" et sélectionnez votre fichier</p>
+        <p>3. Visualisez votre média dans la zone d'affichage</p>
+        <p>4. Optionnellement, envoyez-le à l'API de traitement</p>
+        <p>5. Téléchargez le résultat traité</p>
+    </div>
+    
+    <div class="info-section">
+        <h2>Technologies utilisées</h2>
+        <p>• Flask - Framework web Python</p>
+        <p>• HTML5 / CSS3 - Interface utilisateur</p>
+        <p>• JavaScript - Interactivité</p>
+        <p>• API REST - Traitement externe</p>
+    </div>
+</div>
+{% endblock %}
