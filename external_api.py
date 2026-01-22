@@ -13,11 +13,15 @@ def process_video():
     if not file:
         return {"error": "Aucun fichier reçu"}, 400
 
+    # Récupérer le texte de la requête s'il existe
+    query = request.form.get("query", "")
+    
     filename = secure_filename(file.filename)
     path = os.path.join(UPLOAD_FOLDER, filename)
     file.save(path)
 
     # 👉 Ici normalement : traitement vidéo/image (IA, compression, etc.)
+    # Le texte de la requête (query) est disponible pour le traitement
     # Pour la démo : on renvoie le même fichier
     
     # Détecter le type de fichier
@@ -28,6 +32,10 @@ def process_video():
         mimetype = "video/mp4"
     else:
         mimetype = "application/octet-stream"
+
+    # Log pour debug (peut être retiré en production)
+    if query:
+        print(f"📝 Requête texte reçue avec le média: {query}")
 
     return send_file(
         path,

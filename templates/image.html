@@ -6,6 +6,241 @@
         video: null,
         image: {{ image|default('null')|tojson }}
     };
+    
+    // Définir toggleToolsMenu AVANT tout le reste pour qu'elle soit accessible
+    window.toggleToolsMenu = function() {
+        console.log('=== toggleToolsMenu appelé ===');
+        try {
+            const menu = document.getElementById('toolsMenu');
+            const overlay = document.getElementById('toolsOverlay');
+            
+            console.log('Menu trouvé:', menu);
+            console.log('Overlay trouvé:', overlay);
+            
+            if (!menu) {
+                console.error('ERREUR: Menu toolsMenu non trouvé dans le DOM');
+                alert('Menu non trouvé. Vérifiez la console pour plus de détails.');
+                return;
+            }
+            
+            // Créer l'overlay s'il n'existe pas
+            let currentOverlay = overlay;
+            if (!currentOverlay) {
+                console.log('Création de l\'overlay...');
+                currentOverlay = document.createElement('div');
+                currentOverlay.id = 'toolsOverlay';
+                currentOverlay.className = 'tools-overlay';
+                currentOverlay.onclick = window.toggleToolsMenu;
+                document.body.appendChild(currentOverlay);
+            }
+            
+            // Désactiver le canvas si il existe
+            if (window.canvas) {
+                window.canvas.style.pointerEvents = 'none';
+                window.canvas.style.zIndex = '50';
+            }
+            
+            const isActive = menu.classList.contains('active');
+            console.log('Menu actuellement actif:', isActive);
+            
+            if (isActive) {
+                // Fermer le menu
+                console.log('Fermeture du menu...');
+                menu.classList.remove('active');
+                menu.style.right = '-400px';
+                if (currentOverlay) {
+                    currentOverlay.classList.remove('active');
+                }
+                // Fermer tous les sous-menus
+                document.querySelectorAll('.shapes-submenu').forEach(submenu => {
+                    submenu.classList.remove('active');
+                });
+                console.log('Menu fermé');
+            } else {
+                // Ouvrir le menu
+                console.log('Ouverture du menu...');
+                menu.classList.add('active');
+                menu.style.display = 'flex';
+                menu.style.visibility = 'visible';
+                menu.style.opacity = '1';
+                menu.style.right = '0';
+                menu.style.zIndex = '2000';
+                menu.style.position = 'fixed';
+                menu.style.top = '0';
+                menu.style.width = '350px';
+                menu.style.height = '100vh';
+                menu.style.background = 'white';
+                
+                if (currentOverlay) {
+                    currentOverlay.classList.add('active');
+                    currentOverlay.style.zIndex = '1999';
+                    currentOverlay.style.display = 'block';
+                }
+                console.log('Menu ouvert - Styles appliqués');
+            }
+        } catch (error) {
+            console.error('ERREUR dans toggleToolsMenu:', error);
+            alert('Erreur lors de l\'ouverture du menu: ' + error.message);
+        }
+    };
+    
+    console.log('toggleToolsMenu défini globalement:', typeof window.toggleToolsMenu);
+    
+    // Définir selectTool AVANT tout le reste pour qu'elle soit accessible
+    window.selectTool = function(tool) {
+        try {
+            console.log('selectTool appelé avec:', tool);
+            
+            // Fermer tous les sous-menus d'abord
+            document.querySelectorAll('.shapes-submenu').forEach(submenu => {
+                submenu.classList.remove('active');
+                submenu.style.right = '-400px';
+            });
+            
+            // Cacher le menu principal temporairement pour laisser place au sous-menu
+            const mainMenu = document.getElementById('toolsMenu');
+            if (mainMenu) {
+                mainMenu.style.right = '-400px';
+            }
+            
+            // Attendre un peu avant d'ouvrir le sous-menu pour l'animation
+            setTimeout(() => {
+                // Ouvrir le sous-menu correspondant
+                if (tool === 'formes') {
+                    const shapesMenu = document.getElementById('shapesSubmenu');
+                    if (shapesMenu) {
+                        shapesMenu.classList.add('active');
+                        shapesMenu.style.right = '0';
+                        shapesMenu.style.display = 'flex';
+                        shapesMenu.style.visibility = 'visible';
+                        shapesMenu.style.opacity = '1';
+                        shapesMenu.style.zIndex = '2001';
+                        console.log('Sous-menu Formes ouvert');
+                    }
+                } else if (tool === 'lignes') {
+                    const linesMenu = document.getElementById('linesSubmenu');
+                    if (linesMenu) {
+                        linesMenu.classList.add('active');
+                        linesMenu.style.right = '0';
+                        linesMenu.style.display = 'flex';
+                        linesMenu.style.visibility = 'visible';
+                        linesMenu.style.opacity = '1';
+                        linesMenu.style.zIndex = '2001';
+                        console.log('Sous-menu Lignes ouvert');
+                    }
+                } else if (tool === 'dessin') {
+                    const drawMenu = document.getElementById('drawSubmenu');
+                    if (drawMenu) {
+                        drawMenu.classList.add('active');
+                        drawMenu.style.right = '0';
+                        drawMenu.style.display = 'flex';
+                        drawMenu.style.visibility = 'visible';
+                        drawMenu.style.opacity = '1';
+                        drawMenu.style.zIndex = '2001';
+                        console.log('Sous-menu Dessin ouvert');
+                    }
+                }
+            }, 100);
+        } catch (error) {
+            console.error('Erreur dans selectTool:', error);
+            alert('Erreur: ' + error.message);
+        }
+    };
+    
+    console.log('selectTool défini globalement:', typeof window.selectTool);
+    
+    // Définir les fonctions de fermeture des sous-menus AVANT tout le reste
+    window.closeShapesSubmenu = function() {
+        console.log('Fermeture du sous-menu Formes');
+        const shapesMenu = document.getElementById('shapesSubmenu');
+        if (shapesMenu) {
+            shapesMenu.classList.remove('active');
+            shapesMenu.style.right = '-400px';
+        }
+        // Réafficher le menu principal
+        const mainMenu = document.getElementById('toolsMenu');
+        if (mainMenu) {
+            mainMenu.style.right = '0';
+            mainMenu.style.display = 'flex';
+            mainMenu.style.visibility = 'visible';
+            mainMenu.style.opacity = '1';
+            mainMenu.style.zIndex = '2000';
+            console.log('Menu principal réaffiché');
+        } else {
+            console.error('Menu principal non trouvé');
+        }
+        if (typeof currentShape !== 'undefined') {
+            currentShape = null;
+        }
+    };
+    
+    window.closeLinesSubmenu = function() {
+        console.log('Fermeture du sous-menu Lignes');
+        const linesMenu = document.getElementById('linesSubmenu');
+        if (linesMenu) {
+            linesMenu.classList.remove('active');
+            linesMenu.style.right = '-400px';
+        }
+        // Réafficher le menu principal
+        const mainMenu = document.getElementById('toolsMenu');
+        if (mainMenu) {
+            mainMenu.style.right = '0';
+            mainMenu.style.display = 'flex';
+            mainMenu.style.visibility = 'visible';
+            mainMenu.style.opacity = '1';
+            mainMenu.style.zIndex = '2000';
+            console.log('Menu principal réaffiché');
+        } else {
+            console.error('Menu principal non trouvé');
+        }
+        if (typeof currentLineType !== 'undefined') {
+            currentLineType = null;
+        }
+    };
+    
+    window.closeTextSubmenu = function() {
+        console.log('Fermeture du sous-menu Texte');
+        const textMenu = document.getElementById('textSubmenu');
+        if (textMenu) {
+            textMenu.classList.remove('active');
+            textMenu.style.right = '-400px';
+        }
+        // Réafficher le menu principal
+        const mainMenu = document.getElementById('toolsMenu');
+        if (mainMenu) {
+            mainMenu.style.right = '0';
+            mainMenu.style.display = 'flex';
+            mainMenu.style.visibility = 'visible';
+            mainMenu.style.opacity = '1';
+            mainMenu.style.zIndex = '2000';
+            console.log('Menu principal réaffiché');
+        } else {
+            console.error('Menu principal non trouvé');
+        }
+    };
+    
+    window.closeDrawSubmenu = function() {
+        console.log('Fermeture du sous-menu Dessin');
+        const drawMenu = document.getElementById('drawSubmenu');
+        if (drawMenu) {
+            drawMenu.classList.remove('active');
+            drawMenu.style.right = '-400px';
+        }
+        // Réafficher le menu principal
+        const mainMenu = document.getElementById('toolsMenu');
+        if (mainMenu) {
+            mainMenu.style.right = '0';
+            mainMenu.style.display = 'flex';
+            mainMenu.style.visibility = 'visible';
+            mainMenu.style.opacity = '1';
+            mainMenu.style.zIndex = '2000';
+            console.log('Menu principal réaffiché');
+        } else {
+            console.error('Menu principal non trouvé');
+        }
+    };
+    
+    console.log('Fonctions de fermeture définies globalement');
 </script>
 <div class="page-content">
     <h1 style="color: #2a2a2a; margin-bottom: 15px;">🖼️ Gestion des Images</h1>
@@ -16,12 +251,181 @@
     </form>
     
     {% if image %}
-    <div class="media-container">
-        <img src="{{ url_for('serve_image', filename=image) }}" alt="Image uploadée">
+    <div class="media-container" id="imageContainer" style="position: relative;">
+        <img id="editableImage" src="{{ url_for('serve_image', filename=image) }}" alt="Image uploadée">
+        <canvas id="editingCanvas"></canvas>
     </div>
     
+    <!-- Bouton pour accéder au menu Outils -->
     <div style="margin-top: 10px; text-align: center;">
-        <button class="delete-btn" onclick="deleteFile('{{ image }}')">🗑 Supprimer l'image</button>
+        <button class="tools-btn" id="toolsBtn" onclick="window.toggleToolsMenu();" style="pointer-events: auto !important; position: relative; z-index: 10001 !important; isolation: isolate;">🔧 Outils</button>
+    </div>
+    
+    <!-- Menu déroulant des outils -->
+    <div class="tools-menu" id="toolsMenu" style="position: fixed !important; top: 0 !important; right: -400px; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2000 !important; display: flex !important; flex-direction: column !important; visibility: visible !important; opacity: 1 !important; box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3); transition: right 0.4s ease-in-out;">
+        <div class="tools-menu-header">
+            <h3>Outils d'édition</h3>
+            <button class="tools-close-btn" onclick="window.toggleToolsMenu();">×</button>
+        </div>
+        <div class="tools-menu-content">
+            <button class="tool-btn" onclick="if(typeof window.selectTool === 'function') { window.selectTool('formes'); } else { alert('selectTool non trouvé'); } return false;">📐 Formes</button>
+            <button class="tool-btn" onclick="if(typeof window.selectTool === 'function') { window.selectTool('lignes'); } else { alert('selectTool non trouvé'); } return false;">📏 Lignes</button>
+            <button class="tool-btn" onclick="if(typeof window.selectTool === 'function') { window.selectTool('dessin'); } else { alert('selectTool non trouvé'); } return false;">🖌️ Dessin</button>
+        </div>
+    </div>
+    
+    <!-- Sous-menu des formes -->
+    <div class="shapes-submenu" id="shapesSubmenu" style="position: fixed !important; top: 0 !important; right: -400px !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; visibility: visible !important; opacity: 1 !important; box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3) !important;">
+        <div class="shapes-submenu-header">
+            <button class="shapes-back-btn" onclick="window.closeShapesSubmenu(); return false;" style="pointer-events: auto !important; z-index: 2002 !important; position: relative;">← Retour</button>
+            <h3>Formes disponibles</h3>
+        </div>
+        <div class="shapes-submenu-content">
+            <button class="shape-btn" onclick="selectShape('square')" title="Carré">
+                <div class="shape-preview square-preview"></div>
+                <span>Carré</span>
+            </button>
+            <button class="shape-btn" onclick="selectShape('rounded-square')" title="Carré arrondi">
+                <div class="shape-preview rounded-square-preview"></div>
+                <span>Carré arrondi</span>
+            </button>
+            <button class="shape-btn" onclick="selectShape('circle')" title="Rond">
+                <div class="shape-preview circle-preview"></div>
+                <span>Rond</span>
+            </button>
+            <button class="shape-btn" onclick="selectShape('triangle')" title="Triangle isocèle">
+                <div class="shape-preview triangle-preview"></div>
+                <span>Triangle isocèle</span>
+            </button>
+            <button class="shape-btn" onclick="selectShape('triangle-inverted')" title="Triangle isocèle inversé">
+                <div class="shape-preview triangle-inverted-preview"></div>
+                <span>Triangle isocèle inversé</span>
+            </button>
+            <button class="shape-btn" onclick="selectShape('diamond')" title="Losange">
+                <div class="shape-preview diamond-preview"></div>
+                <span>Losange</span>
+            </button>
+            <button class="shape-btn" onclick="selectShape('hexagon')" title="Hexagone">
+                <div class="shape-preview hexagon-preview"></div>
+                <span>Hexagone</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Sous-menu des lignes -->
+    <div class="shapes-submenu" id="linesSubmenu" style="position: fixed !important; top: 0 !important; right: -400px !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; visibility: visible !important; opacity: 1 !important;">
+        <div class="shapes-submenu-header">
+            <button class="shapes-back-btn" onclick="window.closeLinesSubmenu(); return false;" style="pointer-events: auto !important; z-index: 2002 !important; position: relative;">← Retour</button>
+            <h3>Types de lignes</h3>
+        </div>
+        <div class="shapes-submenu-content">
+            <button class="shape-btn" onclick="selectLineType('straight-arrow')" title="Flèche">
+                <div class="line-preview straight-arrow-preview">
+                    <svg width="50" height="50" viewBox="0 0 50 50">
+                        <line x1="10" y1="25" x2="40" y2="25" stroke="#6c5ce7" stroke-width="2"/>
+                        <polygon points="40,25 35,20 35,30" fill="#6c5ce7"/>
+                    </svg>
+                </div>
+                <span>Flèche</span>
+            </button>
+            <button class="shape-btn" onclick="selectLineType('curved')" title="Courbe">
+                <div class="line-preview curved-preview">
+                    <svg width="50" height="50" viewBox="0 0 50 50">
+                        <path d="M 10 40 Q 25 10, 40 40" stroke="#6c5ce7" stroke-width="2" fill="none"/>
+                    </svg>
+                </div>
+                <span>Courbe</span>
+            </button>
+            <button class="shape-btn" onclick="selectLineType('zigzag')" title="Ligne torsadée">
+                <div class="line-preview zigzag-preview">
+                    <svg width="50" height="50" viewBox="0 0 50 50">
+                        <path d="M 10 25 L 20 15 L 30 25 L 40 15" stroke="#6c5ce7" stroke-width="2" fill="none"/>
+                    </svg>
+                </div>
+                <span>Ligne torsadée</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Sous-menu du texte -->
+    <div class="shapes-submenu" id="textSubmenu" style="position: fixed !important; top: 0 !important; right: -400px !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; visibility: visible !important; opacity: 1 !important; box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3) !important;">
+        <div class="shapes-submenu-header">
+            <button class="shapes-back-btn" onclick="window.closeTextSubmenu(); return false;" style="pointer-events: auto !important; z-index: 2002 !important; position: relative;">← Retour</button>
+            <h3>Ajouter du texte</h3>
+        </div>
+        <div class="shapes-submenu-content">
+            <div style="width: 100%; padding: 15px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 500;">Texte à ajouter :</label>
+                <input type="text" id="textInput" placeholder="Entrez votre texte ici" 
+                       style="width: 100%; padding: 10px; border: 2px solid #e9ecef; border-radius: 5px; font-size: 14px; margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 500;">Taille de police :</label>
+                <input type="range" id="fontSizeSlider" min="12" max="72" value="24" 
+                       style="width: 100%; margin-bottom: 10px;">
+                <span id="fontSizeValue" style="display: block; text-align: center; margin-bottom: 15px;">24px</span>
+                <button class="tool-btn" onclick="activateTextMode()" style="width: 100%;">
+                    ✓ Activer le mode texte
+                </button>
+                <p style="margin-top: 15px; font-size: 12px; color: #666; text-align: center;">
+                    Cliquez sur l'image pour placer le texte
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sous-menu du dessin -->
+    <div class="shapes-submenu" id="drawSubmenu" style="position: fixed !important; top: 0 !important; right: -400px !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; visibility: visible !important; opacity: 1 !important; box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3) !important;">
+        <div class="shapes-submenu-header">
+            <button class="shapes-back-btn" onclick="try { if(typeof window.closeDrawSubmenu === 'function') { window.closeDrawSubmenu(); } else { console.error('closeDrawSubmenu non trouvé'); alert('Erreur: fonction non trouvée'); } } catch(e) { console.error('Erreur:', e); alert('Erreur: ' + e.message); } return false;" style="pointer-events: auto !important; z-index: 2002 !important; position: relative !important; cursor: pointer !important;">← Retour</button>
+            <h3>Palette de couleurs</h3>
+        </div>
+        <div class="shapes-submenu-content">
+            <div style="width: 100%; padding: 15px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 500;">Couleur :</label>
+                <div class="color-palette" id="colorPalette">
+                    <div class="color-item" data-color="#000000" style="background: #000000;" onclick="selectColor('#000000')"></div>
+                    <div class="color-item" data-color="#FFFFFF" style="background: #FFFFFF; border: 1px solid #ccc;" onclick="selectColor('#FFFFFF')"></div>
+                    <div class="color-item" data-color="#FF0000" style="background: #FF0000;" onclick="selectColor('#FF0000')"></div>
+                    <div class="color-item" data-color="#00FF00" style="background: #00FF00;" onclick="selectColor('#00FF00')"></div>
+                    <div class="color-item" data-color="#0000FF" style="background: #0000FF;" onclick="selectColor('#0000FF')"></div>
+                    <div class="color-item" data-color="#FFFF00" style="background: #FFFF00;" onclick="selectColor('#FFFF00')"></div>
+                    <div class="color-item" data-color="#FF00FF" style="background: #FF00FF;" onclick="selectColor('#FF00FF')"></div>
+                    <div class="color-item" data-color="#00FFFF" style="background: #00FFFF;" onclick="selectColor('#00FFFF')"></div>
+                    <div class="color-item" data-color="#FFD700" style="background: #FFD700;" onclick="selectColor('#FFD700')"></div>
+                    <div class="color-item" data-color="#FFA500" style="background: #FFA500;" onclick="selectColor('#FFA500')"></div>
+                    <div class="color-item" data-color="#800080" style="background: #800080;" onclick="selectColor('#800080')"></div>
+                    <div class="color-item" data-color="#FFC0CB" style="background: #FFC0CB;" onclick="selectColor('#FFC0CB')"></div>
+                    <div class="color-item" data-color="#A52A2A" style="background: #A52A2A;" onclick="selectColor('#A52A2A')"></div>
+                    <div class="color-item" data-color="#808080" style="background: #808080;" onclick="selectColor('#808080')"></div>
+                    <div class="color-item" data-color="#008000" style="background: #008000;" onclick="selectColor('#008000')"></div>
+                    <div class="color-item" data-color="#000080" style="background: #000080;" onclick="selectColor('#000080')"></div>
+                    <div class="color-item" data-color="#800000" style="background: #800000;" onclick="selectColor('#800000')"></div>
+                    <div class="color-item" data-color="#C0C0C0" style="background: #C0C0C0;" onclick="selectColor('#C0C0C0')"></div>
+                    <div class="color-item" data-color="#FF6347" style="background: #FF6347;" onclick="selectColor('#FF6347')"></div>
+                </div>
+                <div style="margin-top: 15px; text-align: center;">
+                    <div id="selectedColorDisplay" style="width: 100%; height: 40px; border: 2px solid #6c5ce7; border-radius: 5px; background: #FFD700; margin-bottom: 10px;"></div>
+                    <label style="display: block; margin-bottom: 10px; font-weight: 500;">Épaisseur :</label>
+                    <input type="range" id="brushSizeSlider" min="1" max="20" value="5" 
+                           style="width: 100%; margin-bottom: 10px;">
+                    <span id="brushSizeValue" style="display: block; text-align: center; margin-bottom: 15px;">5px</span>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="tool-btn" onclick="activateMarkerMode()" style="flex: 1; background: #6c5ce7; width: 100%;">
+                            🖍️ Feutre
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Overlay pour fermer le menu en cliquant à l'extérieur -->
+    <div class="tools-overlay" id="toolsOverlay" onclick="window.toggleToolsMenu();"></div>
+    
+    <!-- Menu contextuel pour supprimer les éléments -->
+    <div class="context-menu" id="contextMenu">
+        <button class="context-menu-item" onclick="deleteSelectedElement()">
+            🗑️ Supprimer
+        </button>
     </div>
     
     {% if processed_image %}
@@ -51,5 +455,1354 @@ function deleteFile(filename) {
         });
     }
 }
+
+// La fonction toggleToolsMenu est déjà définie en haut du script dans window.toggleToolsMenu
+// Pas besoin de la redéfinir ici
+
+let currentTool = null;
+let currentShape = null;
+let currentLineType = null;
+let isDrawing = false;
+let isTextMode = false;
+let isDrawMode = false;
+let isMarkerMode = false;
+let isMoving = false;
+let isResizing = false;
+let selectedElement = null;
+let resizeHandle = null;
+let currentText = '';
+let currentFontSize = 24;
+let currentDrawColor = '#FFD700';
+let currentBrushSize = 5;
+let startX = 0;
+let startY = 0;
+let lastX = 0;
+let lastY = 0;
+let offsetX = 0;
+let offsetY = 0;
+let initialElementState = null;
+let canvas, ctx, img, imageData;
+let addedElements = []; // Stocker tous les éléments ajoutés (formes et textes)
+let eventsSetup = false; // Flag pour éviter les doublons d'événements
+
+function initCanvas() {
+    try {
+        const imageElement = document.getElementById('editableImage');
+        if (!imageElement) {
+            console.log('Image non trouvée');
+            return;
+        }
+        
+        canvas = document.getElementById('editingCanvas');
+        if (!canvas) {
+            console.log('Canvas non trouvé');
+            return;
+        }
+        
+        ctx = canvas.getContext('2d');
+        if (!ctx) {
+            console.log('Contexte canvas non disponible');
+            return;
+        }
+        
+        img = imageElement;
+        
+        // Attendre que l'image soit chargée
+        if (img.complete && img.naturalWidth > 0) {
+            resizeCanvas();
+        } else {
+            img.onload = function() {
+                resizeCanvas();
+            };
+            img.onerror = function() {
+                console.error('Erreur lors du chargement de l\'image');
+            };
+        }
+    } catch (error) {
+        console.error('Erreur lors de l\'initialisation du canvas:', error);
+    }
+}
+
+// Fonction pour activer/désactiver le canvas selon l'outil sélectionné
+function updateCanvasPointerEvents() {
+    if (!canvas) return;
+    
+    // Vérifier si le menu est ouvert - si oui, TOUJOURS désactiver le canvas
+    const menu = document.getElementById('toolsMenu');
+    const isMenuOpen = menu && menu.classList.contains('active');
+    
+    // Vérifier si on est sur le bouton "Outils"
+    const toolsBtn = document.getElementById('toolsBtn');
+    let isOverButton = false;
+    if (toolsBtn && window.mouseX !== undefined && window.mouseY !== undefined) {
+        const element = document.elementFromPoint(window.mouseX, window.mouseY);
+        isOverButton = element && (element === toolsBtn || element.closest('#toolsBtn') || element.closest('.tools-btn'));
+    }
+    
+    // Si le menu est ouvert ou si on est sur le bouton, désactiver le canvas
+    if (isMenuOpen || isOverButton) {
+        canvas.style.pointerEvents = 'none';
+        canvas.style.zIndex = '50';
+        return;
+    }
+    
+    // Activer seulement si un outil est sélectionné
+    const hasActiveTool = currentShape !== null || 
+                         currentLineType !== null || 
+                         isTextMode || 
+                         isDrawMode || 
+                         isMarkerMode ||
+                         selectedElement !== null;
+    
+    if (hasActiveTool) {
+        canvas.style.pointerEvents = 'auto';
+        canvas.style.zIndex = '100'; // Remonter le z-index pour l'interaction
+    } else {
+        canvas.style.pointerEvents = 'none';
+        canvas.style.zIndex = '50'; // En dessous des boutons
+    }
+}
+
+// Tracker la position de la souris pour updateCanvasPointerEvents
+document.addEventListener('mousemove', function(e) {
+    window.mouseX = e.clientX;
+    window.mouseY = e.clientY;
+    // Mettre à jour le canvas en temps réel
+    if (canvas) {
+        updateCanvasPointerEvents();
+    }
+}, true);
+
+function resizeCanvas() {
+    if (!canvas || !img) return;
+    
+    // Attendre un peu pour que la page soit rendue
+    setTimeout(() => {
+        try {
+            // Le canvas couvre tout l'écran MAIS exclut la zone des boutons avec clip-path
+            if (window.innerWidth > 0 && window.innerHeight > 0) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                canvas.style.width = '100vw';
+                canvas.style.height = '100vh';
+                canvas.style.position = 'fixed';
+                canvas.style.top = '0';
+                canvas.style.left = '0';
+                canvas.style.pointerEvents = 'none'; // Désactivé par défaut pour ne pas bloquer les boutons
+                canvas.style.cursor = 'default';
+                canvas.style.zIndex = '50'; // En dessous des boutons
+                
+                // Calculer la zone des boutons pour l'exclure avec clip-path
+                const buttonsContainer = document.getElementById('buttonsContainer');
+                if (buttonsContainer) {
+                    const rect = buttonsContainer.getBoundingClientRect();
+                    // Créer un clip-path qui exclut la zone des boutons
+                    // Format: polygon(0% 0%, 100% 0%, 100% Y1%, X2% Y1%, X2% Y2%, X1% Y2%, X1% Y1%, 0% Y1%)
+                    const top = rect.top;
+                    const bottom = rect.bottom;
+                    const left = Math.max(0, rect.left - 20); // Marge de sécurité
+                    const right = Math.min(window.innerWidth, rect.right + 20);
+                    
+                    // Créer un polygone qui exclut la zone des boutons
+                    const clipPath = `polygon(
+                        0% 0%, 
+                        100% 0%, 
+                        100% ${top}px, 
+                        ${right}px ${top}px, 
+                        ${right}px ${bottom}px, 
+                        ${left}px ${bottom}px, 
+                        ${left}px ${top}px, 
+                        0% ${top}px
+                    )`;
+                    canvas.style.clipPath = clipPath;
+                    canvas.style.webkitClipPath = clipPath; // Pour Safari
+                } else {
+                    // Pas de boutons, pas besoin de clip-path
+                    canvas.style.clipPath = 'none';
+                    canvas.style.webkitClipPath = 'none';
+                }
+                
+                // Mettre à jour selon l'état actuel
+                updateCanvasPointerEvents();
+                
+                // Redessiner les éléments après redimensionnement
+                if (addedElements && addedElements.length > 0) {
+                    redrawCanvas();
+                }
+            }
+        } catch (error) {
+            console.error('Erreur lors du redimensionnement du canvas:', error);
+        }
+    }, 100);
+}
+
+// La fonction selectTool est déjà définie en haut du script dans window.selectTool
+// Pas besoin de la redéfinir ici
+
+function showShapesSubmenu() {
+    const shapesMenu = document.getElementById('shapesSubmenu');
+    if (shapesMenu) {
+        shapesMenu.classList.add('active');
+        // Forcer les styles pour s'assurer que le menu est visible
+        shapesMenu.style.right = '0';
+        shapesMenu.style.display = 'flex';
+        shapesMenu.style.visibility = 'visible';
+        shapesMenu.style.opacity = '1';
+        shapesMenu.style.zIndex = '2001';
+        console.log('Sous-menu Formes ouvert');
+        // S'assurer que le canvas est désactivé
+        if (canvas) {
+            canvas.style.pointerEvents = 'none';
+            canvas.style.zIndex = '50';
+        }
+    } else {
+        console.error('Sous-menu Formes non trouvé');
+    }
+}
+
+// La fonction closeShapesSubmenu est déjà définie en haut du script
+
+function showLinesSubmenu() {
+    const linesMenu = document.getElementById('linesSubmenu');
+    if (linesMenu) {
+        linesMenu.classList.add('active');
+        // Forcer les styles pour s'assurer que le menu est visible
+        linesMenu.style.right = '0';
+        linesMenu.style.display = 'flex';
+        linesMenu.style.visibility = 'visible';
+        linesMenu.style.opacity = '1';
+        linesMenu.style.zIndex = '2001';
+        console.log('Sous-menu Lignes ouvert');
+        // S'assurer que le canvas est désactivé
+        if (canvas) {
+            canvas.style.pointerEvents = 'none';
+            canvas.style.zIndex = '50';
+        }
+    } else {
+        console.error('Sous-menu Lignes non trouvé');
+    }
+}
+
+// La fonction closeLinesSubmenu est déjà définie en haut du script
+
+function selectLineType(lineType) {
+    currentLineType = lineType;
+    currentShape = null;
+    isTextMode = false;
+    isDrawMode = false;
+    closeLinesSubmenu();
+    
+    if (canvas && ctx) {
+        canvas.style.cursor = 'crosshair';
+    }
+    
+    // Activer le canvas pour le dessin
+    updateCanvasPointerEvents();
+}
+
+function showTextSubmenu() {
+    const textMenu = document.getElementById('textSubmenu');
+    if (textMenu) {
+        textMenu.classList.add('active');
+        // Forcer les styles pour s'assurer que le menu est visible
+        textMenu.style.right = '0';
+        textMenu.style.display = 'flex';
+        textMenu.style.visibility = 'visible';
+        textMenu.style.opacity = '1';
+        textMenu.style.zIndex = '2001';
+        console.log('Sous-menu Texte ouvert');
+        // S'assurer que le canvas est désactivé
+        if (canvas) {
+            canvas.style.pointerEvents = 'none';
+            canvas.style.zIndex = '50';
+        }
+    } else {
+        console.error('Sous-menu Texte non trouvé');
+    }
+}
+
+// La fonction closeTextSubmenu est déjà définie en haut du script
+
+function activateTextMode() {
+    currentText = document.getElementById('textInput').value;
+    currentFontSize = parseInt(document.getElementById('fontSizeSlider').value);
+    isTextMode = true;
+    isDrawMode = false;
+    isMarkerMode = false;
+    currentShape = null;
+    currentLineType = null;
+    selectedElement = null;
+    closeTextSubmenu();
+    
+    if (canvas && ctx) {
+        canvas.style.cursor = 'text';
+    }
+    
+    if (!currentText) {
+        alert('Veuillez entrer un texte');
+        isTextMode = false;
+        updateCanvasPointerEvents();
+        return;
+    }
+    
+    // Activer le canvas pour le texte
+    updateCanvasPointerEvents();
+}
+
+function showDrawSubmenu() {
+    const drawMenu = document.getElementById('drawSubmenu');
+    if (drawMenu) {
+        drawMenu.classList.add('active');
+        // Forcer les styles pour s'assurer que le menu est visible
+        drawMenu.style.right = '0';
+        drawMenu.style.display = 'flex';
+        drawMenu.style.visibility = 'visible';
+        drawMenu.style.opacity = '1';
+        drawMenu.style.zIndex = '2001';
+        console.log('Sous-menu Dessin ouvert');
+        // S'assurer que le canvas est désactivé
+        if (canvas) {
+            canvas.style.pointerEvents = 'none';
+            canvas.style.zIndex = '50';
+        }
+    } else {
+        console.error('Sous-menu Dessin non trouvé');
+    }
+}
+
+// La fonction closeDrawSubmenu est déjà définie en haut du script dans window.closeDrawSubmenu
+// Pas besoin de la redéfinir ici
+
+function selectColor(color) {
+    currentDrawColor = color;
+    document.getElementById('selectedColorDisplay').style.background = color;
+    
+    // Mettre à jour la sélection visuelle
+    document.querySelectorAll('.color-item').forEach(item => {
+        item.classList.remove('selected');
+        if (item.getAttribute('data-color') === color) {
+            item.classList.add('selected');
+        }
+    });
+}
+
+function activateDrawMode() {
+    isDrawMode = true;
+    isMarkerMode = false;
+    isTextMode = false;
+    currentShape = null;
+    currentLineType = null;
+    currentBrushSize = parseInt(document.getElementById('brushSizeSlider').value);
+    if (typeof window.closeDrawSubmenu === 'function') {
+        window.closeDrawSubmenu();
+    }
+    
+    if (canvas && ctx) {
+        canvas.style.cursor = 'crosshair';
+    }
+    
+    // Activer le canvas pour le dessin
+    updateCanvasPointerEvents();
+}
+
+function activateMarkerMode() {
+    isMarkerMode = true;
+    isDrawMode = false;
+    isTextMode = false;
+    currentShape = null;
+    currentLineType = null;
+    currentBrushSize = parseInt(document.getElementById('brushSizeSlider').value);
+    if (typeof window.closeDrawSubmenu === 'function') {
+        window.closeDrawSubmenu();
+    }
+    
+    if (canvas && ctx) {
+        canvas.style.cursor = 'crosshair';
+    }
+    
+    // Activer le canvas pour le feutre
+    updateCanvasPointerEvents();
+}
+
+// Gestion des sliders
+document.addEventListener('DOMContentLoaded', function() {
+    const fontSizeSlider = document.getElementById('fontSizeSlider');
+    const fontSizeValue = document.getElementById('fontSizeValue');
+    if (fontSizeSlider && fontSizeValue) {
+        fontSizeSlider.addEventListener('input', function() {
+            fontSizeValue.textContent = this.value + 'px';
+        });
+    }
+    
+    const brushSizeSlider = document.getElementById('brushSizeSlider');
+    const brushSizeValue = document.getElementById('brushSizeValue');
+    if (brushSizeSlider && brushSizeValue) {
+        brushSizeSlider.addEventListener('input', function() {
+            brushSizeValue.textContent = this.value + 'px';
+            if (isDrawMode) {
+                currentBrushSize = parseInt(this.value);
+            }
+        });
+    }
+    
+    // Initialiser la couleur sélectionnée
+    selectColor('#FFD700');
+});
+
+function selectShape(shapeType) {
+    currentShape = null; // Réinitialiser pour éviter les conflits
+    currentLineType = null;
+    isTextMode = false;
+    isDrawMode = false;
+    isMarkerMode = false;
+    closeShapesSubmenu();
+    
+    // Désactiver le canvas temporairement
+    updateCanvasPointerEvents();
+    
+    // Fonction pour ajouter la forme directement sur l'image
+    function addShape() {
+        // Vérifier que le canvas et le contexte sont disponibles
+        if (!canvas || !ctx) {
+            // Réessayer après un court délai
+            setTimeout(addShape, 50);
+            return;
+        }
+        
+        // Vérifier que le canvas a une taille valide
+        if (canvas.width === 0 || canvas.height === 0) {
+            // Réinitialiser le canvas si nécessaire
+            resizeCanvas();
+            setTimeout(addShape, 100);
+            return;
+        }
+        
+        // Placer la forme au centre de l'écran (viewport)
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        const defaultSize = 100; // Taille par défaut de la forme
+        
+        // Ajouter la forme au centre de l'écran (toujours en jaune)
+        drawShape(shapeType, centerX - defaultSize/2, centerY - defaultSize/2, defaultSize, defaultSize);
+        
+        // Sélectionner automatiquement la nouvelle forme pour pouvoir l'ajuster
+        if (addedElements.length > 0) {
+            selectedElement = addedElements[addedElements.length - 1];
+        }
+        
+        // Redessiner immédiatement pour afficher la forme avec ses poignées
+        redrawCanvas();
+        
+        canvas.style.cursor = 'default';
+        
+        // Activer le canvas pour permettre de déplacer/redimensionner la forme
+        updateCanvasPointerEvents();
+    }
+    
+    // Essayer d'ajouter la forme immédiatement
+    addShape();
+}
+
+function drawShape(shapeType, x, y, width, height, elementId = null) {
+    if (!ctx) {
+        console.log('Contexte canvas non disponible pour dessiner la forme');
+        return null;
+    }
+    
+    const id = elementId || 'shape_' + Date.now();
+    
+    // Toutes les formes en jaune (or)
+    ctx.strokeStyle = '#FFD700';
+    ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+    ctx.lineWidth = 3;
+    
+    switch(shapeType) {
+        case 'square':
+            ctx.fillRect(x, y, width, height);
+            ctx.strokeRect(x, y, width, height);
+            break;
+            
+        case 'rounded-square':
+            const radius = Math.min(width, height) * 0.2;
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            break;
+            
+        case 'circle':
+            const centerX = x + width / 2;
+            const centerY = y + height / 2;
+            const radius_circle = Math.min(width, height) / 2;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius_circle, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+            break;
+            
+        case 'triangle':
+            ctx.beginPath();
+            ctx.moveTo(x + width / 2, y);
+            ctx.lineTo(x, y + height);
+            ctx.lineTo(x + width, y + height);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            break;
+            
+        case 'triangle-inverted':
+            ctx.beginPath();
+            ctx.moveTo(x + width / 2, y + height);
+            ctx.lineTo(x, y);
+            ctx.lineTo(x + width, y);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            break;
+            
+        case 'diamond':
+            ctx.beginPath();
+            ctx.moveTo(x + width / 2, y);
+            ctx.lineTo(x + width, y + height / 2);
+            ctx.lineTo(x + width / 2, y + height);
+            ctx.lineTo(x, y + height / 2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            break;
+            
+        case 'hexagon':
+            const centerX_hex = x + width / 2;
+            const centerY_hex = y + height / 2;
+            const radius_hex = Math.min(width, height) / 2;
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i;
+                const px = centerX_hex + radius_hex * Math.cos(angle);
+                const py = centerY_hex + radius_hex * Math.sin(angle);
+                if (i === 0) {
+                    ctx.moveTo(px, py);
+                } else {
+                    ctx.lineTo(px, py);
+                }
+            }
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            break;
+    }
+    
+    // Si c'est un nouvel élément, l'ajouter à la liste
+    if (!elementId) {
+        addedElements.push({
+            type: 'shape',
+            id: id,
+            shapeType: shapeType,
+            x: x,
+            y: y,
+            width: width,
+            height: height
+        });
+    }
+    
+    return { id, x, y, width, height };
+}
+
+function drawLine(lineType, x1, y1, x2, y2) {
+    if (!ctx) return;
+    
+    ctx.strokeStyle = '#FFD700';
+    ctx.fillStyle = '#FFD700';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    switch(lineType) {
+        case 'straight-arrow':
+            // Dessiner la ligne droite
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            
+            // Dessiner la flèche
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            const arrowLength = 15;
+            const arrowWidth = 8;
+            
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(
+                x2 - arrowLength * Math.cos(angle - Math.PI / 6),
+                y2 - arrowLength * Math.sin(angle - Math.PI / 6)
+            );
+            ctx.lineTo(
+                x2 - arrowLength * Math.cos(angle + Math.PI / 6),
+                y2 - arrowLength * Math.sin(angle + Math.PI / 6)
+            );
+            ctx.closePath();
+            ctx.fill();
+            break;
+            
+        case 'curved':
+            // Ligne courbe (courbe de Bézier quadratique)
+            const midX = (x1 + x2) / 2;
+            const midY = (y1 + y2) / 2;
+            const controlX = midX + (y2 - y1) * 0.3;
+            const controlY = midY - (x2 - x1) * 0.3;
+            
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.quadraticCurveTo(controlX, controlY, x2, y2);
+            ctx.stroke();
+            break;
+            
+        case 'zigzag':
+            // Ligne torsadée (zigzag)
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const segments = Math.max(3, Math.floor(distance / 20));
+            const segmentLength = distance / segments;
+            const perpX = -dy / distance;
+            const perpY = dx / distance;
+            const amplitude = 10;
+            
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            
+            for (let i = 1; i <= segments; i++) {
+                const t = i / segments;
+                const x = x1 + dx * t;
+                const y = y1 + dy * t;
+                const offset = (i % 2 === 0 ? 1 : -1) * amplitude;
+                
+                ctx.lineTo(
+                    x + perpX * offset,
+                    y + perpY * offset
+                );
+            }
+            
+            ctx.stroke();
+            break;
+    }
+}
+
+function drawTextOnCanvas(text, x, y, elementId = null) {
+    if (!ctx) return;
+    
+    const id = elementId || 'text_' + Date.now();
+    const fontSize = currentFontSize;
+    
+    ctx.fillStyle = '#FFD700';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2;
+    ctx.font = `bold ${fontSize}px Arial`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    
+    // Mesurer le texte pour la zone de sélection
+    const metrics = ctx.measureText(text);
+    const textWidth = metrics.width;
+    const textHeight = fontSize;
+    
+    // Dessiner le texte avec contour
+    ctx.strokeText(text, x, y);
+    ctx.fillText(text, x, y);
+    
+    // Si c'est un nouvel élément, l'ajouter à la liste
+    if (!elementId) {
+        addedElements.push({
+            type: 'text',
+            id: id,
+            text: text,
+            x: x,
+            y: y,
+            fontSize: fontSize
+        });
+    }
+    
+    return { id, x, y, width: textWidth, height: textHeight };
+}
+
+function redrawCanvas() {
+    try {
+        if (!ctx || !canvas) {
+            return;
+        }
+        
+        if (canvas.width === 0 || canvas.height === 0) {
+            resizeCanvas();
+            return;
+        }
+        
+        // Effacer le canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Redessiner tous les éléments
+        if (addedElements && Array.isArray(addedElements) && addedElements.length > 0) {
+            addedElements.forEach(element => {
+                try {
+                    if (element && element.type === 'text') {
+                        drawTextOnCanvas(element.text, element.x, element.y, element.id);
+                    } else if (element && element.type === 'shape') {
+                        drawShape(element.shapeType, element.x, element.y, element.width, element.height, element.id);
+                    }
+                } catch (error) {
+                    console.error('Erreur lors du dessin d\'un élément:', error);
+                }
+            });
+        }
+        
+        // Si un élément est sélectionné, dessiner les poignées de redimensionnement
+        if (selectedElement && (selectedElement.type === 'shape' || selectedElement.type === 'text')) {
+            try {
+                drawResizeHandles(selectedElement);
+            } catch (error) {
+                console.error('Erreur lors du dessin des poignées:', error);
+            }
+        }
+    } catch (error) {
+        console.error('Erreur lors du redessin du canvas:', error);
+    }
+}
+
+function drawResizeHandles(element) {
+    if (!ctx) return;
+    
+    const handleSize = 8;
+    const handles = [];
+    
+    if (element.type === 'shape') {
+        // 8 poignées pour les formes (coins et milieux)
+        handles.push(
+            {x: element.x, y: element.y}, // Coin supérieur gauche
+            {x: element.x + element.width/2, y: element.y}, // Milieu haut
+            {x: element.x + element.width, y: element.y}, // Coin supérieur droit
+            {x: element.x + element.width, y: element.y + element.height/2}, // Milieu droit
+            {x: element.x + element.width, y: element.y + element.height}, // Coin inférieur droit
+            {x: element.x + element.width/2, y: element.y + element.height}, // Milieu bas
+            {x: element.x, y: element.y + element.height}, // Coin inférieur gauche
+            {x: element.x, y: element.y + element.height/2} // Milieu gauche
+        );
+    } else if (element.type === 'text') {
+        // 4 poignées pour le texte (coins)
+        const metrics = ctx.measureText(element.text);
+        handles.push(
+            {x: element.x, y: element.y},
+            {x: element.x + metrics.width, y: element.y},
+            {x: element.x + metrics.width, y: element.y + element.fontSize},
+            {x: element.x, y: element.y + element.fontSize}
+        );
+    }
+    
+    // Dessiner les poignées
+    handles.forEach(handle => {
+        ctx.fillStyle = '#4a90e2';
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(handle.x, handle.y, handleSize, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+    });
+}
+
+function getResizeHandleAtPosition(x, y, element) {
+    if (!element) return null;
+    
+    const handleSize = 12; // Zone de détection plus large
+    const handles = [];
+    
+    if (element.type === 'shape') {
+        handles.push(
+            {x: element.x, y: element.y, type: 'nw'},
+            {x: element.x + element.width/2, y: element.y, type: 'n'},
+            {x: element.x + element.width, y: element.y, type: 'ne'},
+            {x: element.x + element.width, y: element.y + element.height/2, type: 'e'},
+            {x: element.x + element.width, y: element.y + element.height, type: 'se'},
+            {x: element.x + element.width/2, y: element.y + element.height, type: 's'},
+            {x: element.x, y: element.y + element.height, type: 'sw'},
+            {x: element.x, y: element.y + element.height/2, type: 'w'}
+        );
+    } else if (element.type === 'text') {
+        ctx.font = `bold ${element.fontSize}px Arial`;
+        const metrics = ctx.measureText(element.text);
+        handles.push(
+            {x: element.x, y: element.y, type: 'nw'},
+            {x: element.x + metrics.width, y: element.y, type: 'ne'},
+            {x: element.x + metrics.width, y: element.y + element.fontSize, type: 'se'},
+            {x: element.x, y: element.y + element.fontSize, type: 'sw'}
+        );
+    }
+    
+    for (let handle of handles) {
+        const dx = x - handle.x;
+        const dy = y - handle.y;
+        if (Math.sqrt(dx * dx + dy * dy) <= handleSize) {
+            return handle;
+        }
+    }
+    return null;
+}
+
+function getElementAtPosition(x, y) {
+    // Chercher un élément à la position donnée (en ordre inverse pour prendre le dernier ajouté)
+    for (let i = addedElements.length - 1; i >= 0; i--) {
+        const element = addedElements[i];
+        
+        if (element.type === 'text') {
+            const metrics = ctx.measureText(element.text);
+            if (x >= element.x && x <= element.x + metrics.width &&
+                y >= element.y && y <= element.y + element.fontSize) {
+                return element;
+            }
+        } else if (element.type === 'shape') {
+            if (x >= element.x && x <= element.x + element.width &&
+                y >= element.y && y <= element.y + element.height) {
+                return element;
+            }
+        }
+    }
+    return null;
+}
+
+// Gestion des événements de souris sur le canvas
+function setupCanvasEvents() {
+    if (eventsSetup) return; // Éviter les doublons d'événements
+    
+    try {
+        if (!canvas) {
+            canvas = document.getElementById('editingCanvas');
+        }
+        if (!canvas) {
+            return;
+        }
+        
+        if (!ctx) {
+            ctx = canvas.getContext('2d');
+            if (!ctx) {
+                return;
+            }
+        }
+        
+        eventsSetup = true;
+    
+    canvas.addEventListener('mousedown', function(e) {
+        // VÉRIFIER D'ABORD si le canvas est activé
+        if (!canvas || canvas.style.pointerEvents === 'none') {
+            return; // Canvas désactivé, ignorer
+        }
+        
+        // VÉRIFIER D'ABORD si on clique sur un bouton ou élément interactif
+        const clickedElement = document.elementFromPoint(e.clientX, e.clientY);
+        
+        // Ignorer les clics sur les boutons, menus, et autres éléments interactifs
+        if (clickedElement && (
+            clickedElement.id === 'toolsBtn' ||
+            clickedElement.closest('#toolsBtn') ||
+            clickedElement.closest('.tools-btn') ||
+            clickedElement.closest('.delete-btn') ||
+            clickedElement.closest('.tools-menu') ||
+            clickedElement.closest('.tools-overlay') ||
+            clickedElement.closest('.shapes-submenu') ||
+            clickedElement.closest('button') ||
+            clickedElement.closest('input') ||
+            clickedElement.closest('select') ||
+            clickedElement.tagName === 'BUTTON' ||
+            clickedElement.tagName === 'INPUT' ||
+            clickedElement.tagName === 'SELECT'
+        )) {
+            // Désactiver le canvas pour permettre le clic sur le bouton
+            canvas.style.pointerEvents = 'none';
+            canvas.style.zIndex = '50';
+            return; // Ignorer ce clic
+        }
+        
+        // Utiliser les coordonnées directement de la fenêtre (tout l'écran)
+        const x = e.clientX;
+        const y = e.clientY;
+        
+        // Vérifier d'abord si on clique sur une poignée de redimensionnement
+        if (selectedElement) {
+            resizeHandle = getResizeHandleAtPosition(x, y, selectedElement);
+            if (resizeHandle) {
+                isResizing = true;
+                initialElementState = {
+                    x: selectedElement.x,
+                    y: selectedElement.y,
+                    width: selectedElement.width || (selectedElement.type === 'text' ? ctx.measureText(selectedElement.text).width : 0),
+                    height: selectedElement.height || (selectedElement.type === 'text' ? selectedElement.fontSize : 0)
+                };
+                startX = x;
+                startY = y;
+                return;
+            }
+        }
+        
+        // Vérifier si on clique sur un élément existant pour le déplacer
+        const clickedElement = getElementAtPosition(x, y);
+        
+        if (clickedElement && !isTextMode && !currentShape && !isDrawMode && !isMarkerMode && !currentLineType) {
+            // Mode déplacement ou sélection
+            selectedElement = clickedElement;
+            isMoving = true;
+            offsetX = x - clickedElement.x;
+            offsetY = y - clickedElement.y;
+            canvas.style.cursor = 'move';
+            redrawCanvas(); // Redessiner pour afficher les poignées
+            updateCanvasPointerEvents(); // Activer le canvas pour l'interaction
+        } else if (!isTextMode && !currentShape && !isDrawMode && !isMarkerMode && !currentLineType) {
+            // Désélectionner si on clique ailleurs
+            selectedElement = null;
+            redrawCanvas();
+            updateCanvasPointerEvents(); // Désactiver si aucun élément sélectionné
+        } else if (isTextMode) {
+            // Placer le texte à la position cliquée
+            if (currentText) {
+                drawTextOnCanvas(currentText, x, y);
+                redrawCanvas();
+            }
+        } else if (isDrawMode || isMarkerMode) {
+            // Commencer à dessiner ou colorier
+            isDrawing = true;
+            lastX = x;
+            lastY = y;
+            
+            // Pour le feutre, colorier immédiatement au clic
+            if (isMarkerMode) {
+                ctx.globalCompositeOperation = 'multiply';
+                ctx.fillStyle = currentDrawColor;
+                ctx.globalAlpha = 0.3;
+                ctx.beginPath();
+                ctx.arc(x, y, currentBrushSize, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+                ctx.globalCompositeOperation = 'source-over';
+            }
+        } else if (currentLineType) {
+            isDrawing = true;
+            startX = x;
+            startY = y;
+        }
+    });
+    
+    canvas.addEventListener('mousemove', function(e) {
+        // Vérifier que le canvas est activé
+        if (canvas.style.pointerEvents === 'none') {
+            return;
+        }
+        
+        // Utiliser les coordonnées directement de la fenêtre (tout l'écran)
+        const currentX = e.clientX;
+        const currentY = e.clientY;
+        
+        if (isResizing && selectedElement && resizeHandle && initialElementState) {
+            // Redimensionner l'élément
+            const dx = currentX - startX;
+            const dy = currentY - startY;
+            
+            if (selectedElement.type === 'shape') {
+                switch(resizeHandle.type) {
+                    case 'nw':
+                        selectedElement.x = initialElementState.x + dx;
+                        selectedElement.y = initialElementState.y + dy;
+                        selectedElement.width = initialElementState.width - dx;
+                        selectedElement.height = initialElementState.height - dy;
+                        break;
+                    case 'n':
+                        selectedElement.y = initialElementState.y + dy;
+                        selectedElement.height = initialElementState.height - dy;
+                        break;
+                    case 'ne':
+                        selectedElement.y = initialElementState.y + dy;
+                        selectedElement.width = initialElementState.width + dx;
+                        selectedElement.height = initialElementState.height - dy;
+                        break;
+                    case 'e':
+                        selectedElement.width = initialElementState.width + dx;
+                        break;
+                    case 'se':
+                        selectedElement.width = initialElementState.width + dx;
+                        selectedElement.height = initialElementState.height + dy;
+                        break;
+                    case 's':
+                        selectedElement.height = initialElementState.height + dy;
+                        break;
+                    case 'sw':
+                        selectedElement.x = initialElementState.x + dx;
+                        selectedElement.width = initialElementState.width - dx;
+                        selectedElement.height = initialElementState.height + dy;
+                        break;
+                    case 'w':
+                        selectedElement.x = initialElementState.x + dx;
+                        selectedElement.width = initialElementState.width - dx;
+                        break;
+                }
+                
+                // Limiter la taille minimale
+                if (selectedElement.width < 20) selectedElement.width = 20;
+                if (selectedElement.height < 20) selectedElement.height = 20;
+            } else if (selectedElement.type === 'text') {
+                // Pour le texte, on ajuste seulement la taille de police
+                const scale = 1 + (dx / 100);
+                selectedElement.fontSize = Math.max(12, Math.min(72, initialElementState.height * scale));
+            }
+            
+            redrawCanvas();
+            return;
+        }
+        
+        if (isMoving && selectedElement) {
+            // Déplacer l'élément sélectionné sur tout l'écran
+            let newX = currentX - offsetX;
+            let newY = currentY - offsetY;
+            
+            // Permettre le déplacement sur tout l'écran (pas de limitation)
+            selectedElement.x = newX;
+            selectedElement.y = newY;
+            redrawCanvas();
+            return;
+        }
+        
+        if (!isDrawing) {
+            // Vérifier si on survole une poignée de redimensionnement
+            if (selectedElement) {
+                const handle = getResizeHandleAtPosition(currentX, currentY, selectedElement);
+                if (handle) {
+                    // Changer le curseur selon le type de poignée
+                    const cursors = {
+                        'nw': 'nw-resize', 'n': 'n-resize', 'ne': 'ne-resize',
+                        'e': 'e-resize', 'se': 'se-resize', 's': 's-resize',
+                        'sw': 'sw-resize', 'w': 'w-resize'
+                    };
+                    canvas.style.cursor = cursors[handle.type] || 'default';
+                    return;
+                }
+            }
+            
+            // Vérifier si on survole un élément pour changer le curseur
+            const hoveredElement = getElementAtPosition(currentX, currentY);
+            if (hoveredElement && !isTextMode && !currentShape && !isDrawMode && !isMarkerMode && !currentLineType) {
+                canvas.style.cursor = 'move';
+            } else if (isTextMode) {
+                canvas.style.cursor = 'text';
+            } else if (currentShape || currentLineType || isDrawMode || isMarkerMode) {
+                canvas.style.cursor = 'crosshair';
+            } else {
+                canvas.style.cursor = 'default';
+            }
+            return;
+        }
+        
+        if (isDrawMode) {
+            // Dessiner librement avec crayon
+            ctx.strokeStyle = currentDrawColor;
+            ctx.lineWidth = currentBrushSize;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(currentX, currentY);
+            ctx.stroke();
+            
+            lastX = currentX;
+            lastY = currentY;
+        } else if (isMarkerMode) {
+            // Colorier avec feutre (mode remplissage semi-transparent)
+            ctx.globalCompositeOperation = 'multiply';
+            ctx.fillStyle = currentDrawColor;
+            ctx.globalAlpha = 0.3;
+            
+            ctx.beginPath();
+            ctx.arc(currentX, currentY, currentBrushSize, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.globalAlpha = 1.0;
+            ctx.globalCompositeOperation = 'source-over';
+            
+            lastX = currentX;
+            lastY = currentY;
+        } else if (currentLineType) {
+            // Redessiner le canvas pour les lignes seulement
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawLine(currentLineType, startX, startY, currentX, currentY);
+        }
+    });
+    
+    canvas.addEventListener('mouseup', function(e) {
+        // Vérifier que le canvas est activé
+        if (canvas.style.pointerEvents === 'none') {
+            return;
+        }
+        
+        if (isResizing) {
+            isResizing = false;
+            resizeHandle = null;
+            initialElementState = null;
+        }
+        
+        if (isMoving) {
+            isMoving = false;
+            // Ne pas désélectionner, garder l'élément sélectionné pour pouvoir le redimensionner
+            canvas.style.cursor = 'default';
+        }
+        
+        if (isDrawing) {
+            isDrawing = false;
+        }
+    });
+    
+    canvas.addEventListener('mouseleave', function(e) {
+        if (isResizing) {
+            isResizing = false;
+            resizeHandle = null;
+            initialElementState = null;
+        }
+        
+        if (isMoving) {
+            isMoving = false;
+        }
+        
+        if (isDrawing) {
+            isDrawing = false;
+        }
+    });
+    
+    // Gestion du menu contextuel (clic droit)
+    canvas.addEventListener('contextmenu', function(e) {
+        // Vérifier que le canvas est activé
+        if (canvas.style.pointerEvents === 'none') {
+            return;
+        }
+        
+        // Vérifier si on clique sur un bouton
+        const clickedElement = document.elementFromPoint(e.clientX, e.clientY);
+        if (clickedElement && (
+            clickedElement.closest('.tools-btn') ||
+            clickedElement.closest('.delete-btn') ||
+            clickedElement.closest('.tools-menu') ||
+            clickedElement.closest('button')
+        )) {
+            return; // Ignorer
+        }
+        
+        e.preventDefault(); // Empêcher le menu contextuel par défaut
+        
+        // Utiliser les coordonnées directement de la fenêtre
+        const x = e.clientX;
+        const y = e.clientY;
+        
+        // Vérifier si on clique sur un élément
+        const elementAtPosition = getElementAtPosition(x, y);
+        
+        if (clickedElement && (clickedElement.type === 'shape' || clickedElement.type === 'text')) {
+            selectedElement = clickedElement;
+            redrawCanvas();
+            
+            // Afficher le menu contextuel
+            const contextMenu = document.getElementById('contextMenu');
+            if (contextMenu) {
+                contextMenu.style.display = 'block';
+                contextMenu.style.left = e.clientX + 'px';
+                contextMenu.style.top = e.clientY + 'px';
+            }
+        } else {
+            // Masquer le menu si on clique ailleurs
+            hideContextMenu();
+        }
+    });
+    
+    // Masquer le menu contextuel si on clique ailleurs
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.context-menu')) {
+            hideContextMenu();
+        }
+    });
+}
+
+function hideContextMenu() {
+    const contextMenu = document.getElementById('contextMenu');
+    if (contextMenu) {
+        contextMenu.style.display = 'none';
+    }
+}
+
+function deleteSelectedElement() {
+    if (selectedElement) {
+        // Trouver l'index de l'élément dans le tableau
+        const index = addedElements.findIndex(el => el.id === selectedElement.id);
+        if (index !== -1) {
+            // Supprimer l'élément
+            addedElements.splice(index, 1);
+            selectedElement = null;
+            hideContextMenu();
+            redrawCanvas();
+            updateCanvasPointerEvents(); // Mettre à jour l'état du canvas
+        }
+    }
+}
+
+// Initialiser le canvas quand la page est chargée
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        // S'assurer que le bouton "Outils" est TOUJOURS cliquable
+        const toolsBtn = document.getElementById('toolsBtn');
+        
+        if (toolsBtn) {
+            // FORCER les styles pour garantir que le bouton est au-dessus
+            toolsBtn.style.cssText += 'z-index: 10001 !important; pointer-events: auto !important; position: relative !important;';
+            
+            // Désactiver le canvas par défaut pour ne pas bloquer le bouton
+            if (canvas) {
+                canvas.style.pointerEvents = 'none';
+                canvas.style.zIndex = '50';
+            }
+            
+            // Fonction pour forcer le clic
+            function handleToolsClick(e) {
+                // Empêcher TOUTE propagation
+                if (e.stopPropagation) e.stopPropagation();
+                if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+                if (e.preventDefault) e.preventDefault();
+                
+                // Désactiver le canvas IMMÉDIATEMENT
+                if (canvas) {
+                    canvas.style.pointerEvents = 'none';
+                    canvas.style.zIndex = '50';
+                }
+                
+                // Appeler la fonction directement - vérifier qu'elle existe
+                console.log('handleToolsClick appelé'); // Debug
+                if (typeof toggleToolsMenu === 'function') {
+                    console.log('toggleToolsMenu existe, appel...'); // Debug
+                    toggleToolsMenu();
+                } else {
+                    console.error('toggleToolsMenu n\'est pas une fonction');
+                    // Essayer d'appeler directement
+                    const menu = document.getElementById('toolsMenu');
+                    if (menu) {
+                        menu.classList.toggle('active');
+                        const overlay = document.getElementById('toolsOverlay');
+                        if (overlay) overlay.classList.toggle('active');
+                    }
+                }
+                
+                return false;
+            }
+            
+            // Ajouter plusieurs gestionnaires pour être sûr
+            toolsBtn.addEventListener('click', handleToolsClick, {capture: true, passive: false});
+            toolsBtn.addEventListener('mousedown', handleToolsClick, {capture: true, passive: false});
+            
+            // Vérifier que le menu existe et tester l'ouverture
+            const menuCheck = document.getElementById('toolsMenu');
+            console.log('Menu trouvé au chargement:', menuCheck); // Debug
+            if (!menuCheck) {
+                console.error('Le menu toolsMenu n\'existe pas dans le DOM');
+            } else {
+                // Tester l'ouverture du menu au clic
+                console.log('Menu existe, test de l\'ouverture...');
+                // Ajouter un test visuel
+                menuCheck.style.border = '3px solid red'; // Pour voir si le menu est là
+                setTimeout(() => {
+                    menuCheck.style.border = '';
+                }, 2000);
+            }
+            
+            // Test direct de la fonction
+            console.log('toggleToolsMenu disponible:', typeof toggleToolsMenu);
+            if (typeof toggleToolsMenu === 'function') {
+                console.log('toggleToolsMenu est une fonction, prêt à être utilisé');
+            } else {
+                console.error('toggleToolsMenu n\'est pas une fonction !');
+            }
+            
+            // Fonction pour désactiver le canvas quand on survole le bouton
+            toolsBtn.addEventListener('mouseenter', function() {
+                if (canvas) {
+                    canvas.style.pointerEvents = 'none';
+                    canvas.style.zIndex = '50';
+                }
+            });
+            
+            // Surveiller le canvas et le désactiver si nécessaire
+            setInterval(function() {
+                if (canvas && toolsBtn) {
+                    const rect = toolsBtn.getBoundingClientRect();
+                    const mouseX = window.mouseX || 0;
+                    const mouseY = window.mouseY || 0;
+                    
+                    // Si la souris est sur le bouton, désactiver le canvas
+                    if (mouseX >= rect.left && mouseX <= rect.right && 
+                        mouseY >= rect.top && mouseY <= rect.bottom) {
+                        canvas.style.pointerEvents = 'none';
+                        canvas.style.zIndex = '50';
+                    }
+                }
+            }, 50);
+        } else {
+            // Si le bouton n'existe pas, le canvas peut être activé par défaut
+            if (canvas) {
+                canvas.style.pointerEvents = 'none';
+                canvas.style.zIndex = '50';
+            }
+        }
+        
+        // Tracker la position de la souris pour updateCanvasPointerEvents
+        if (!window.mouseX) {
+            document.addEventListener('mousemove', function(e) {
+                window.mouseX = e.clientX;
+                window.mouseY = e.clientY;
+                // Mettre à jour le canvas en temps réel
+                if (canvas) {
+                    updateCanvasPointerEvents();
+                }
+            }, true);
+        }
+        
+        // Vérifier que l'image existe avant d'initialiser
+        const imageElement = document.getElementById('editableImage');
+        if (!imageElement) {
+            console.log('Pas d\'image à éditer');
+            return;
+        }
+        
+        // Attendre un peu que tout soit chargé
+        setTimeout(function() {
+            try {
+                initCanvas();
+                setupCanvasEvents();
+            } catch (error) {
+                console.error('Erreur lors de l\'initialisation du canvas:', error);
+            }
+        }, 300);
+        
+        window.addEventListener('resize', function() {
+            try {
+                // Mettre à jour la taille du canvas pour couvrir tout l'écran
+                if (canvas && window.innerWidth > 0 && window.innerHeight > 0) {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                    resizeCanvas();
+                }
+            } catch (error) {
+                console.error('Erreur lors du redimensionnement:', error);
+            }
+        });
+    } catch (error) {
+        console.error('Erreur lors de l\'initialisation:', error);
+    }
+});
 </script>
 {% endblock %}

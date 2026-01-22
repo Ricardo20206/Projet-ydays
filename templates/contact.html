@@ -41,6 +41,12 @@
             ✅ Votre message a été envoyé avec succès !
         </div>
         {% endif %}
+        
+        {% if error_message %}
+        <div class="status-message status-error" style="margin-top: 20px;">
+            ❌ {{ error_message }}
+        </div>
+        {% endif %}
     </div>
     
     <div class="info-section" style="margin-top: 30px;">

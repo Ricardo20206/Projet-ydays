@@ -7,7 +7,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
-<body {% if title == 'Accueil' %}class="home-page"{% elif title == 'Vidéo' %}class="video-page"{% elif title == 'Image' %}class="image-page"{% elif title == 'Information' %}class="information-page"{% elif title == 'Contact' %}class="contact-page"{% endif %}>
+<body {% if title == 'Accueil' %}class="home-page"{% elif title == 'Vidéo' %}class="video-page"{% elif title == 'Image' %}class="image-page"{% elif title == 'Information' %}class="information-page"{% elif title == 'Contact' %}class="contact-page"{% endif %}
+      data-video="{{ video|default('')|tojson|e }}"
+      data-image="{{ image|default('')|tojson|e }}">
 
     {% include 'header.html' %}
 
@@ -44,10 +46,16 @@
     
     <script>
         // Variables globales pour le média actuel
-        window.currentMedia = {
-            video: {{ video|default('null')|tojson }},
-            image: {{ image|default('null')|tojson }}
-        };
+        (function() {
+            const body = document.body;
+            const videoData = body.getAttribute('data-video');
+            const imageData = body.getAttribute('data-image');
+            
+            window.currentMedia = {
+                video: videoData && videoData !== '""' ? JSON.parse(videoData) : null,
+                image: imageData && imageData !== '""' ? JSON.parse(imageData) : null
+            };
+        })();
     </script>
 
     {% include 'footer.html' %}

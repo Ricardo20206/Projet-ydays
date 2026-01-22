@@ -23,12 +23,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     
                     try {
+                        // Récupérer le média actuel s'il existe
+                        const currentMedia = window.currentMedia;
+                        let filename = null;
+                        if (currentMedia && currentMedia.video) {
+                            filename = currentMedia.video;
+                        } else if (currentMedia && currentMedia.image) {
+                            filename = currentMedia.image;
+                        }
+                        
                         const response = await fetch('/send-query-to-api', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
                             },
-                            body: JSON.stringify({ query: query })
+                            body: JSON.stringify({ query: query, filename: filename })
                         });
                         
                         const data = await response.json();
@@ -80,6 +89,49 @@ document.addEventListener('DOMContentLoaded', function() {
                 isVideo = false;
             }
             
+            // Récupérer le texte de la barre de recherche
+            const searchQuery = globalSearchInput ? globalSearchInput.value.trim() : '';
+            
+            if (!filename && !searchQuery) {
+                alert('Aucun média ni texte à envoyer. Veuillez charger un média ou saisir une requête.');
+                return;
+            }
+            
+            // Si pas de média mais une requête texte, envoyer juste la requête
+            if (!filename && searchQuery) {
+                if (apiStatusGlobal) {
+                    apiStatusGlobal.innerHTML = '<div class="status-message status-loading">⏳ Envoi de la requête à l\'API...</div>';
+                }
+                try {
+                    const response = await fetch('/send-query-to-api', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ query: searchQuery })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        if (apiStatusGlobal) {
+                            apiStatusGlobal.innerHTML = `<div class="status-message status-success">✅ ${data.response || 'Requête traitée avec succès'}</div>`;
+                        }
+                        setTimeout(() => {
+                            window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`;
+                        }, 1000);
+                    } else {
+                        if (apiStatusGlobal) {
+                            apiStatusGlobal.innerHTML = `<div class="status-message status-error">❌ Erreur : ${data.error || 'Erreur lors du traitement'}</div>`;
+                        }
+                    }
+                } catch (error) {
+                    if (apiStatusGlobal) {
+                        apiStatusGlobal.innerHTML = '<div class="status-message status-error">❌ Erreur de connexion.</div>';
+                    }
+                    console.error('Erreur:', error);
+                }
+                return;
+            }
+            
             if (!filename) {
                 alert('Aucun média à envoyer. Veuillez d\'abord charger une vidéo ou une image.');
                 return;
@@ -94,7 +146,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             try {
                 const response = await fetch(`/send-to-api/${filename}`, {
-                    method: 'POST'
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ query: searchQuery })
                 });
                 const data = await response.json();
                 

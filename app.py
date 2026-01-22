@@ -1,9 +1,20 @@
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify
+from flask_mail import Mail, Message
 import os
 import requests
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+
+# Configuration Flask-Mail
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')  # Email d'envoi
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')  # Mot de passe d'application
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME', 'noreply@projet-ydays.com')
+
+mail = Mail(app)
 
 VIDEO_FOLDER = "videos"
 IMAGE_FOLDER = "images"
@@ -50,13 +61,38 @@ def information():
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
     message_sent = False
+    error_message = None
+    
     if request.method == "POST":
         name = request.form.get("name")
         email = request.form.get("email")
         message = request.form.get("message")
-        # Ici vous pouvez traiter le message (envoyer un email, sauvegarder en BDD, etc.)
-        message_sent = True
-    return render_template("contact.html", title="Contact", message_sent=message_sent)
+        
+        if name and email and message:
+            try:
+                # Créer le message email
+                msg = Message(
+                    subject=f"Message de contact depuis Château Gold - {name}",
+                    recipients=["ricardo.mbesob@ynov.com"],
+                    body=f"""
+Nom: {name}
+Email: {email}
+
+Message:
+{message}
+                    """,
+                    reply_to=email
+                )
+                
+                # Envoyer l'email
+                mail.send(msg)
+                message_sent = True
+            except Exception as e:
+                error_message = f"Erreur lors de l'envoi de l'email: {str(e)}"
+        else:
+            error_message = "Veuillez remplir tous les champs."
+    
+    return render_template("contact.html", title="Contact", message_sent=message_sent, error_message=error_message)
 
 @app.route("/search")
 def search():
@@ -66,20 +102,52 @@ def search():
 
 @app.route("/send-query-to-api", methods=["POST"])
 def send_query_to_api():
-    """Route proxy pour envoyer une requête texte à l'API externe"""
+    """Route proxy pour envoyer une requête texte à l'API externe, avec média optionnel"""
     try:
         data = request.get_json()
         query = data.get("query", "")
+        filename = data.get("filename", None)
         
-        if not query:
-            return jsonify({"error": "Requête vide"}), 400
+        if not query and not filename:
+            return jsonify({"error": "Requête vide et aucun média fourni"}), 400
         
-        # Envoyer la requête à l'API externe
-        response = requests.post(
-            'http://localhost:5001/process-query',
-            json={"query": query},
-            timeout=30
-        )
+        # Si un média est fourni, l'envoyer avec la requête
+        if filename:
+            is_img = is_image(filename)
+            is_vid = is_video(filename)
+            
+            if is_img:
+                file_path = os.path.join(IMAGE_FOLDER, filename)
+                mime_type = f"image/{filename.rsplit('.', 1)[1].lower()}"
+                if mime_type == "image/jpg":
+                    mime_type = "image/jpeg"
+            elif is_vid:
+                file_path = os.path.join(VIDEO_FOLDER, filename)
+                mime_type = "video/mp4"
+            else:
+                return jsonify({"error": "Type de fichier non supporté"}), 400
+            
+            if os.path.exists(file_path):
+                with open(file_path, 'rb') as media_file:
+                    files = {'file': (filename, media_file, mime_type)}
+                    data_to_send = {}
+                    if query:
+                        data_to_send['query'] = query
+                    response = requests.post('http://localhost:5001/process-video', files=files, data=data_to_send, timeout=300)
+            else:
+                # Si le fichier n'existe pas, envoyer juste la requête texte
+                response = requests.post(
+                    'http://localhost:5001/process-query',
+                    json={"query": query},
+                    timeout=30
+                )
+        else:
+            # Envoyer seulement la requête texte
+            response = requests.post(
+                'http://localhost:5001/process-query',
+                json={"query": query},
+                timeout=30
+            )
         
         if response.status_code == 200:
             return jsonify(response.json())
@@ -138,6 +206,9 @@ def delete_file(filename):
 def send_to_api(filename):
     """Route proxy pour envoyer une vidéo ou une image à l'API externe de traitement"""
     try:
+        # Récupérer le texte de la barre de recherche s'il existe
+        query = request.json.get("query", "") if request.is_json else ""
+        
         # Vérifier si c'est une image ou une vidéo
         is_img = is_image(filename)
         is_vid = is_video(filename)
@@ -158,10 +229,13 @@ def send_to_api(filename):
         if not os.path.exists(file_path):
             return jsonify({"error": "Fichier non trouvé"}), 404
         
-        # Envoyer le fichier à l'API externe
+        # Envoyer le fichier et le texte à l'API externe
         with open(file_path, 'rb') as media_file:
             files = {'file': (filename, media_file, mime_type)}
-            response = requests.post('http://localhost:5001/process-video', files=files, timeout=300)
+            data = {}
+            if query:
+                data['query'] = query
+            response = requests.post('http://localhost:5001/process-video', files=files, data=data, timeout=300)
         
         if response.status_code == 200:
             # Sauvegarder le fichier traité
