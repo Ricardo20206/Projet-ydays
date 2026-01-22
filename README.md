@@ -159,6 +159,24 @@ projet ydays/
 - ✅ Messages de statut (succès, erreur, chargement)
 - ✅ Indicateurs visuels pour le microphone actif (animation dorée)
 
+### Page de contact
+- ✅ **Formulaire de contact** avec champs Nom, Email et Message
+- ✅ **Envoi d'email automatique** vers ricardo.mbesob@ynov.com
+- ✅ **Bordures neutres** : champs de formulaire sans bordures colorées au focus
+- ✅ Messages de confirmation et d'erreur
+- ✅ Validation des champs obligatoires
+
+### Édition d'images
+- ✅ **Menu Outils** : menu déroulant accessible depuis la page Image
+- ✅ **Sous-menu Formes** : 7 formes disponibles (carré, carré arrondi, rond, triangle isocèle, triangle isocèle inversé, losange, hexagone)
+- ✅ **Sous-menu Lignes** : 3 types de lignes (flèche, courbe, ligne torsadée)
+- ✅ **Sous-menu Dessin** : palette de 20 couleurs avec outil feutre pour colorier l'image
+- ✅ **Ajout de formes** : clic sur une forme pour l'ajouter directement sur l'image au centre de l'écran
+- ✅ **Déplacement et redimensionnement** : formes et éléments déplaçables et redimensionnables sur toute l'image
+- ✅ **Suppression** : clic droit sur un élément pour le supprimer
+- ✅ **Bouton Retour** : retour au menu principal depuis tous les sous-menus
+- ✅ **Canvas interactif** : édition en temps réel avec Canvas API
+
 ### Fonctionnalités avancées
 - ✅ **Reconnaissance vocale** : transcription en temps réel de la voix dans la barre de recherche
 - ✅ Envoi de requêtes texte à l'API externe
@@ -198,15 +216,19 @@ Les dépendances principales sont listées dans `requirements.txt` :
 - Flask 3.1.2
 - Werkzeug 3.1.3
 - requests 2.31.0
+- Flask-Mail 0.10.0 (pour l'envoi d'emails)
 - Jinja2 3.1.6
 - Et autres dépendances Flask
 
 ## 🚀 Démarrage rapide
 
 1. Installer les dépendances : `pip install -r requirements.txt`
-2. Lancer l'application : `python app.py`
-3. (Optionnel) Lancer l'API externe : `python external_api.py`
-4. Ouvrir `http://localhost:5000` dans votre navigateur
+2. (Optionnel) Configurer l'envoi d'email :
+   - Définir les variables d'environnement `MAIL_USERNAME` et `MAIL_PASSWORD`
+   - Pour Gmail, utiliser un [mot de passe d'application](https://support.google.com/accounts/answer/185833)
+3. Lancer l'application : `python app.py`
+4. (Optionnel) Lancer l'API externe : `python external_api.py`
+5. Ouvrir `http://localhost:5000` dans votre navigateur
 
 ## 📄 Licence
 
@@ -217,6 +239,23 @@ Ce projet est fourni tel quel, sans garantie.
 Projet développé dans le cadre de YDays.
 
 ## 🔄 Changelog
+
+### Version 2.5
+- ✨ **Menu Outils d'édition** : menu déroulant accessible depuis la page Image
+- ✨ **Sous-menu Formes** : 7 formes disponibles (carré, carré arrondi, rond, triangle isocèle, triangle isocèle inversé, losange, hexagone)
+- ✨ **Sous-menu Lignes** : 3 types de lignes (flèche droite avec flèche, courbe, ligne torsadée/zigzag)
+- ✨ **Sous-menu Dessin** : palette de 20 couleurs avec outil feutre pour colorier l'image
+- ✨ **Édition interactive** : ajout, déplacement, redimensionnement et suppression d'éléments sur l'image
+- ✨ **Canvas API** : édition en temps réel avec Canvas HTML5
+- ✨ **Bouton Retour** : navigation entre menu principal et sous-menus
+- ✨ **Interface intuitive** : menus déroulants depuis la droite de l'écran avec animations
+
+### Version 2.4
+- ✨ **Page de contact améliorée** : envoi d'email automatique vers ricardo.mbesob@ynov.com
+- ✨ **Formulaire de contact** avec validation et messages de confirmation
+- ✨ **Bordures neutres** : suppression des bordures noires au focus, bordures grises constantes
+- ✨ Intégration de Flask-Mail pour l'envoi d'emails
+- ✨ Gestion des erreurs d'envoi d'email avec messages utilisateur
 
 ### Version 2.3
 - ✨ **Navigation colorée** : liens de navigation en couleur selon la page active (bleu pour Vidéo, vert pour Image, rouge pour Information, orange pour Contact)
