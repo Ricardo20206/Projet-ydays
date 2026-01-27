@@ -229,12 +229,11 @@ def send_to_api(filename):
         if not os.path.exists(file_path):
             return jsonify({"error": "Fichier non trouvé"}), 404
         
-        # Envoyer le fichier et le texte à l'API externe
+        # Envoyer le fichier et le texte à l'API externe simultanément
         with open(file_path, 'rb') as media_file:
             files = {'file': (filename, media_file, mime_type)}
-            data = {}
-            if query:
-                data['query'] = query
+            # Toujours envoyer le query, même s'il est vide, pour que l'API reçoive les deux paramètres
+            data = {'query': query if query else ''}
             response = requests.post('http://localhost:5001/process-video', files=files, data=data, timeout=300)
         
         if response.status_code == 200:

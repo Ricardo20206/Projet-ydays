@@ -77,22 +77,111 @@ document.addEventListener('DOMContentLoaded', function() {
     // Gestion du bouton "Envoyer à l'API"
     if (sendToApiBtn) {
         sendToApiBtn.addEventListener('click', async function() {
-            const currentMedia = window.currentMedia;
+            // Récupérer le texte de la barre de recherche en premier
+            const searchQuery = globalSearchInput ? globalSearchInput.value.trim() : '';
+            
+            // Vérifier si on est sur la page d'édition d'image
+            const currentPath = window.location.pathname;
+            const isImagePage = currentPath === '/image' || document.body.classList.contains('image-page');
+            
             let filename = null;
             let isVideo = false;
             
-            if (currentMedia && currentMedia.video) {
-                filename = currentMedia.video;
-                isVideo = true;
-            } else if (currentMedia && currentMedia.image) {
-                filename = currentMedia.image;
-                isVideo = false;
+            // Si on est sur la page d'édition d'image, exporter l'image modifiée d'abord
+            if (isImagePage && typeof window.exportImageToBlob === 'function') {
+                console.log('Page d\'édition d\'image détectée, export de l\'image modifiée...');
+                
+                // Vérifier que l'image est bien chargée
+                const imageElement = document.getElementById('editableImage');
+                if (!imageElement) {
+                    console.error('Image editableImage non trouvée');
+                    alert('Erreur: Image non trouvée. Veuillez recharger la page.');
+                    return;
+                }
+                
+                if (!imageElement.complete || imageElement.naturalWidth === 0) {
+                    console.error('Image non chargée');
+                    alert('Veuillez attendre que l\'image soit complètement chargée avant d\'envoyer.');
+                    return;
+                }
+                
+                if (apiStatusGlobal) {
+                    apiStatusGlobal.innerHTML = '<div class="status-message status-loading">⏳ Export de l\'image modifiée...</div>';
+                }
+                sendToApiBtn.disabled = true;
+                sendToApiBtn.style.opacity = '0.6';
+                
+                try {
+                    // Exporter l'image modifiée en blob (inclut toutes les modifications : formes, dessins, texte, etc.)
+                    console.log('Appel de exportImageToBlob...');
+                    const blob = await window.exportImageToBlob();
+                    console.log('Image exportée avec succès, blob créé:', blob);
+                    
+                    // Sauvegarder l'image modifiée sur le serveur pour l'envoyer à l'API
+                    const formData = new FormData();
+                    formData.append('file', blob, 'image_modifiee.png');
+                    
+                    const uploadResponse = await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!uploadResponse.ok) {
+                        throw new Error('Erreur lors de la sauvegarde de l\'image modifiée.');
+                    }
+                    
+                    // Mettre à jour le filename pour utiliser l'image modifiée
+                    filename = 'image_modifiee.png';
+                    isVideo = false;
+                    console.log('Filename mis à jour:', filename);
+                    
+                    // Mettre à jour window.currentMedia pour que l'image modifiée soit reconnue
+                    if (window.currentMedia) {
+                        window.currentMedia.image = 'image_modifiee.png';
+                    } else {
+                        window.currentMedia = { video: null, image: 'image_modifiee.png' };
+                    }
+                    console.log('window.currentMedia mis à jour:', window.currentMedia);
+                    
+                    // Attendre un peu pour que le fichier soit sauvegardé sur le serveur
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    // Mettre à jour le message pour indiquer que l'export est terminé
+                    if (apiStatusGlobal) {
+                        let statusMessage = '<div class="status-message status-loading">⏳ Image modifiée exportée. Envoi à l\'API';
+                        if (searchQuery) {
+                            statusMessage += ` avec le texte "${searchQuery.substring(0, 30)}${searchQuery.length > 30 ? '...' : ''}"`;
+                        }
+                        statusMessage += '...</div>';
+                        apiStatusGlobal.innerHTML = statusMessage;
+                    }
+                    
+                } catch (error) {
+                    if (apiStatusGlobal) {
+                        apiStatusGlobal.innerHTML = `<div class="status-message status-error">❌ Erreur lors de l'export: ${error.message}</div>`;
+                    }
+                    sendToApiBtn.disabled = false;
+                    sendToApiBtn.style.opacity = '1';
+                    console.error('Erreur:', error);
+                    return;
+                }
+            } else {
+                // Si on n'est pas sur la page d'édition d'image, récupérer le média depuis window.currentMedia
+                const currentMedia = window.currentMedia;
+                
+                if (currentMedia && currentMedia.video) {
+                    filename = currentMedia.video;
+                    isVideo = true;
+                } else if (currentMedia && currentMedia.image) {
+                    filename = currentMedia.image;
+                    isVideo = false;
+                }
             }
             
-            // Récupérer le texte de la barre de recherche
-            const searchQuery = globalSearchInput ? globalSearchInput.value.trim() : '';
-            
+            // Vérifier si on a quelque chose à envoyer
+            console.log('Vérification finale - filename:', filename, 'searchQuery:', searchQuery);
             if (!filename && !searchQuery) {
+                console.error('Aucun média ni texte à envoyer');
                 alert('Aucun média ni texte à envoyer. Veuillez charger un média ou saisir une requête.');
                 return;
             }
@@ -133,31 +222,51 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (!filename) {
-                alert('Aucun média à envoyer. Veuillez d\'abord charger une vidéo ou une image.');
+                // Si on est sur la page d'édition d'image, on devrait avoir exporté l'image modifiée
+                const currentPath = window.location.pathname;
+                const isImagePage = currentPath === '/image' || document.body.classList.contains('image-page');
+                if (isImagePage && typeof window.exportImageToBlob === 'function') {
+                    // L'image modifiée devrait avoir été exportée, mais si ce n'est pas le cas, on peut essayer
+                    alert('Aucune image modifiée à envoyer. Veuillez d\'abord modifier l\'image ou charger une image.');
+                } else {
+                    alert('Aucun média à envoyer. Veuillez d\'abord charger une vidéo ou une image.');
+                }
                 return;
             }
             
-            // Afficher le statut de chargement
+            // Afficher le statut de chargement avec indication du texte
             if (apiStatusGlobal) {
-                apiStatusGlobal.innerHTML = '<div class="status-message status-loading">⏳ Envoi en cours...</div>';
+                const mediaType = isVideo ? 'vidéo' : 'image';
+                let statusMessage = `<div class="status-message status-loading">⏳ Envoi de l'${mediaType === 'image' ? 'image' : 'vidéo'} modifiée`;
+                if (searchQuery) {
+                    statusMessage += ` avec le texte "${searchQuery.substring(0, 30)}${searchQuery.length > 30 ? '...' : ''}"`;
+                }
+                statusMessage += '...</div>';
+                apiStatusGlobal.innerHTML = statusMessage;
             }
             sendToApiBtn.disabled = true;
             sendToApiBtn.style.opacity = '0.6';
             
             try {
+                // Envoyer l'image modifiée ET le texte simultanément
                 const response = await fetch(`/send-to-api/${filename}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ query: searchQuery })
+                    body: JSON.stringify({ query: searchQuery || '' })
                 });
                 const data = await response.json();
                 
                 if (response.ok) {
                     if (apiStatusGlobal) {
                         const mediaType = isVideo ? 'vidéo' : 'image';
-                        apiStatusGlobal.innerHTML = `<div class="status-message status-success">✅ ${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)} envoyée et traitée avec succès !</div>`;
+                        let successMessage = `✅ ${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)} modifiée envoyée et traitée avec succès`;
+                        if (searchQuery) {
+                            successMessage += ` avec le texte "${searchQuery.substring(0, 30)}${searchQuery.length > 30 ? '...' : ''}"`;
+                        }
+                        successMessage += ' !';
+                        apiStatusGlobal.innerHTML = `<div class="status-message status-success">${successMessage}</div>`;
                     }
                     
                     // Recharger la page pour afficher le média traité

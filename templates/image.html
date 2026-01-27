@@ -4,8 +4,19 @@
 <script>
     window.currentMedia = {
         video: null,
+        // eslint-disable-next-line
         image: {{ image|default('null')|tojson }}
     };
+    
+    // Initialiser window.addedElements au début pour qu'il soit toujours disponible
+    if (!window.addedElements) {
+        window.addedElements = [];
+    }
+    
+    // Initialiser le flag pour éviter la récursion dans selectShape
+    if (typeof window.isSelectingShape === 'undefined') {
+        window.isSelectingShape = false;
+    }
     
     // Définir toggleToolsMenu AVANT tout le reste pour qu'elle soit accessible
     window.toggleToolsMenu = function() {
@@ -34,49 +45,87 @@
                 document.body.appendChild(currentOverlay);
             }
             
-            // Désactiver le canvas si il existe
-            if (window.canvas) {
-                window.canvas.style.pointerEvents = 'none';
-                window.canvas.style.zIndex = '50';
-            }
+            // Vérifier l'état réel du menu en regardant la position right et le display
+            const computedStyle = window.getComputedStyle(menu);
+            const currentRight = menu.style.right || computedStyle.right;
+            const currentDisplay = menu.style.display || computedStyle.display;
+            const isMenuVisible = (currentRight === '0px' || currentRight === '0') && 
+                                 (currentDisplay === 'flex' || currentDisplay === 'block') &&
+                                 menu.classList.contains('active');
             
-            const isActive = menu.classList.contains('active');
-            console.log('Menu actuellement actif:', isActive);
+            console.log('Position actuelle du menu:', currentRight);
+            console.log('Display actuel:', currentDisplay);
+            console.log('Menu visible:', isMenuVisible);
             
-            if (isActive) {
+            if (isMenuVisible) {
                 // Fermer le menu
                 console.log('Fermeture du menu...');
                 menu.classList.remove('active');
-                menu.style.right = '-400px';
+                menu.style.setProperty('right', '-400px', 'important');
+                menu.style.setProperty('display', 'none', 'important');
+                
                 if (currentOverlay) {
                     currentOverlay.classList.remove('active');
+                    currentOverlay.style.setProperty('display', 'none', 'important');
                 }
+                
                 // Fermer tous les sous-menus
                 document.querySelectorAll('.shapes-submenu').forEach(submenu => {
                     submenu.classList.remove('active');
+                    submenu.style.setProperty('right', '-400px', 'important');
+                    submenu.style.setProperty('display', 'none', 'important');
                 });
+                
+                // Réactiver le canvas
+                if (window.canvas) {
+                    window.canvas.style.pointerEvents = 'auto';
+                    window.canvas.style.zIndex = '100';
+                }
+                
                 console.log('Menu fermé');
             } else {
-                // Ouvrir le menu
+                // Ouvrir le menu - FORCER l'ouverture avec tous les styles nécessaires
                 console.log('Ouverture du menu...');
+                
+                // Fermer d'abord tous les sous-menus pour éviter les conflits
+                document.querySelectorAll('.shapes-submenu').forEach(submenu => {
+                    submenu.classList.remove('active');
+                    submenu.style.setProperty('right', '-400px', 'important');
+                    submenu.style.setProperty('display', 'none', 'important');
+                });
+                
+                // Désactiver le canvas si il existe
+                if (window.canvas) {
+                    window.canvas.style.pointerEvents = 'none';
+                    window.canvas.style.zIndex = '50';
+                }
+                
+                // Appliquer TOUS les styles nécessaires avec !important pour garantir la visibilité
                 menu.classList.add('active');
-                menu.style.display = 'flex';
-                menu.style.visibility = 'visible';
-                menu.style.opacity = '1';
-                menu.style.right = '0';
-                menu.style.zIndex = '2000';
-                menu.style.position = 'fixed';
-                menu.style.top = '0';
-                menu.style.width = '350px';
-                menu.style.height = '100vh';
-                menu.style.background = 'white';
+                menu.style.setProperty('display', 'flex', 'important');
+                menu.style.setProperty('visibility', 'visible', 'important');
+                menu.style.setProperty('opacity', '1', 'important');
+                menu.style.setProperty('right', '0', 'important');
+                menu.style.setProperty('z-index', '2000', 'important');
+                menu.style.setProperty('position', 'fixed', 'important');
+                menu.style.setProperty('top', '0', 'important');
+                menu.style.setProperty('width', '350px', 'important');
+                menu.style.setProperty('height', '100vh', 'important');
+                menu.style.setProperty('background', 'white', 'important');
                 
                 if (currentOverlay) {
                     currentOverlay.classList.add('active');
-                    currentOverlay.style.zIndex = '1999';
-                    currentOverlay.style.display = 'block';
+                    currentOverlay.style.setProperty('z-index', '1999', 'important');
+                    currentOverlay.style.setProperty('display', 'block', 'important');
+                    currentOverlay.style.setProperty('position', 'fixed', 'important');
+                    currentOverlay.style.setProperty('top', '0', 'important');
+                    currentOverlay.style.setProperty('left', '0', 'important');
+                    currentOverlay.style.setProperty('width', '100%', 'important');
+                    currentOverlay.style.setProperty('height', '100%', 'important');
+                    currentOverlay.style.setProperty('background', 'rgba(0, 0, 0, 0.5)', 'important');
                 }
-                console.log('Menu ouvert - Styles appliqués');
+                
+                console.log('Menu ouvert - Styles appliqués avec !important');
             }
         } catch (error) {
             console.error('ERREUR dans toggleToolsMenu:', error);
@@ -148,6 +197,11 @@
     };
     
     console.log('selectTool défini globalement:', typeof window.selectTool);
+    
+    // S'assurer que selectTool est accessible globalement même après le chargement
+    if (typeof window.selectTool !== 'function') {
+        console.error('ERREUR: window.selectTool n\'a pas été correctement définie!');
+    }
     
     // Définir les fonctions de fermeture des sous-menus AVANT tout le reste
     window.closeShapesSubmenu = function() {
@@ -241,6 +295,328 @@
     };
     
     console.log('Fonctions de fermeture définies globalement');
+    
+    // Définir drawShape AVANT selectShape pour qu'elle soit accessible
+    window.drawShape = function(shapeType, x, y, width, height, elementId = null) {
+        console.log('drawShape appelé:', {shapeType, x, y, width, height, elementId});
+        
+        try {
+            // Essayer d'obtenir le contexte de plusieurs façons
+            let currentCtx = window.ctx;
+            let currentCanvas = window.canvas;
+            
+            // Si le contexte n'est pas disponible, essayer de le récupérer
+            if (!currentCtx) {
+                // Essayer de récupérer le canvas
+                if (!currentCanvas) {
+                    currentCanvas = document.getElementById('editingCanvas');
+                    if (currentCanvas) {
+                        window.canvas = currentCanvas;
+                    }
+                }
+                
+                // Si on a le canvas, obtenir le contexte
+                if (currentCanvas) {
+                    currentCtx = currentCanvas.getContext('2d');
+                    if (currentCtx) {
+                        window.ctx = currentCtx;
+                    }
+                }
+            }
+            
+            // Si toujours pas de contexte, erreur
+            if (!currentCtx) {
+                console.error('Contexte canvas non disponible pour dessiner la forme');
+                console.log('window.ctx:', window.ctx);
+                console.log('window.canvas:', window.canvas);
+                return null;
+            }
+            
+            // Vérifier que le canvas a une taille valide
+            if (currentCanvas && (currentCanvas.width === 0 || currentCanvas.height === 0)) {
+                currentCanvas.width = window.innerWidth || 1920;
+                currentCanvas.height = window.innerHeight || 1080;
+                console.log('Canvas redimensionné dans drawShape:', currentCanvas.width, 'x', currentCanvas.height);
+            }
+            
+            console.log('Contexte disponible, dessin de la forme...');
+            
+            const id = elementId || 'shape_' + Date.now();
+            
+            // Sauvegarder l'état du contexte
+            currentCtx.save();
+            
+            // Toutes les formes en jaune (or) - couleur jaune vif
+            currentCtx.strokeStyle = '#FFD700';
+            currentCtx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+            currentCtx.lineWidth = 3;
+            
+            switch(shapeType) {
+            case 'square':
+                currentCtx.fillRect(x, y, width, height);
+                currentCtx.strokeRect(x, y, width, height);
+                break;
+                
+            case 'rounded-square':
+                const radius = Math.min(width, height) * 0.2;
+                currentCtx.beginPath();
+                currentCtx.moveTo(x + radius, y);
+                currentCtx.lineTo(x + width - radius, y);
+                currentCtx.quadraticCurveTo(x + width, y, x + width, y + radius);
+                currentCtx.lineTo(x + width, y + height - radius);
+                currentCtx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                currentCtx.lineTo(x + radius, y + height);
+                currentCtx.quadraticCurveTo(x, y + height, x, y + height - radius);
+                currentCtx.lineTo(x, y + radius);
+                currentCtx.quadraticCurveTo(x, y, x + radius, y);
+                currentCtx.closePath();
+                currentCtx.fill();
+                currentCtx.stroke();
+                break;
+                
+            case 'circle':
+                const centerX = x + width / 2;
+                const centerY = y + height / 2;
+                const radius_circle = Math.min(width, height) / 2;
+                currentCtx.beginPath();
+                currentCtx.arc(centerX, centerY, radius_circle, 0, 2 * Math.PI);
+                currentCtx.fill();
+                currentCtx.stroke();
+                break;
+                
+            case 'triangle':
+                currentCtx.beginPath();
+                currentCtx.moveTo(x + width / 2, y);
+                currentCtx.lineTo(x, y + height);
+                currentCtx.lineTo(x + width, y + height);
+                currentCtx.closePath();
+                currentCtx.fill();
+                currentCtx.stroke();
+                break;
+                
+            case 'triangle-inverted':
+                currentCtx.beginPath();
+                currentCtx.moveTo(x + width / 2, y + height);
+                currentCtx.lineTo(x, y);
+                currentCtx.lineTo(x + width, y);
+                currentCtx.closePath();
+                currentCtx.fill();
+                currentCtx.stroke();
+                break;
+                
+            case 'diamond':
+                currentCtx.beginPath();
+                currentCtx.moveTo(x + width / 2, y);
+                currentCtx.lineTo(x + width, y + height / 2);
+                currentCtx.lineTo(x + width / 2, y + height);
+                currentCtx.lineTo(x, y + height / 2);
+                currentCtx.closePath();
+                currentCtx.fill();
+                currentCtx.stroke();
+                break;
+                
+            case 'hexagon':
+                const centerX_hex = x + width / 2;
+                const centerY_hex = y + height / 2;
+                const radius_hex = Math.min(width, height) / 2;
+                currentCtx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const angle = (Math.PI / 3) * i;
+                    const px = centerX_hex + radius_hex * Math.cos(angle);
+                    const py = centerY_hex + radius_hex * Math.sin(angle);
+                    if (i === 0) {
+                        currentCtx.moveTo(px, py);
+                    } else {
+                        currentCtx.lineTo(px, py);
+                    }
+                }
+                currentCtx.closePath();
+                currentCtx.fill();
+                currentCtx.stroke();
+                break;
+                
+            default:
+                console.warn('Type de forme non reconnu:', shapeType);
+                currentCtx.restore();
+                return null;
+        }
+        
+            // Restaurer l'état du contexte
+            currentCtx.restore();
+            
+            // NE JAMAIS ajouter d'élément dans drawShape - cela doit être fait AVANT l'appel
+            // drawShape est uniquement responsable du dessin, pas de la gestion des éléments
+            if (!elementId) {
+                console.warn('drawShape appelé sans elementId - l\'élément devrait être ajouté avant');
+            }
+            
+            console.log('✅ Forme dessinée avec succès:', {id, x, y, width, height});
+            return { id, x, y, width, height };
+            
+        } catch (error) {
+            console.error('ERREUR dans drawShape:', error);
+            console.error('Détails:', {shapeType, x, y, width, height, elementId});
+            return null;
+        }
+    };
+    
+    console.log('window.drawShape défini globalement:', typeof window.drawShape);
+    
+    // Définir selectShape - VERSION ULTRA-SIMPLIFIÉE SANS RÉCURSION
+    window.selectShape = function(shapeType) {
+        console.log('=== selectShape appelé avec:', shapeType);
+        
+        // VÉRIFICATION STRICTE - si déjà en cours, IGNORER COMPLÈTEMENT
+        if (window.isSelectingShape === true) {
+            console.warn('selectShape déjà en cours, appel ignoré');
+            return;
+        }
+        
+        // Définir le flag IMMÉDIATEMENT
+        window.isSelectingShape = true;
+        
+        // Utiliser requestAnimationFrame pour s'assurer que le DOM est prêt
+        requestAnimationFrame(function() {
+            // Vérifier à nouveau le flag
+            if (!window.isSelectingShape) {
+                console.warn('Flag désactivé, abandon');
+                return;
+            }
+            
+            try {
+                // Fermer le sous-menu
+                const shapesMenu = document.getElementById('shapesSubmenu');
+                if (shapesMenu) {
+                    shapesMenu.style.right = '-400px';
+                    shapesMenu.style.display = 'none';
+                }
+                const mainMenu = document.getElementById('toolsMenu');
+                if (mainMenu) {
+                    mainMenu.style.right = '0';
+                    mainMenu.style.display = 'flex';
+                }
+                
+                // Récupérer le canvas
+                const currentCanvas = document.getElementById('editingCanvas');
+                if (!currentCanvas) {
+                    window.isSelectingShape = false;
+                    alert('Erreur: Le canvas n\'est pas disponible.');
+                    return;
+                }
+                
+                // Récupérer le contexte
+                const currentCtx = currentCanvas.getContext('2d');
+                if (!currentCtx) {
+                    window.isSelectingShape = false;
+                    alert('Erreur: Le contexte du canvas n\'est pas disponible.');
+                    return;
+                }
+                
+                // Synchroniser avec window
+                window.canvas = currentCanvas;
+                window.ctx = currentCtx;
+                
+                // Taille du canvas
+                if (currentCanvas.width === 0 || currentCanvas.height === 0) {
+                    currentCanvas.width = window.innerWidth || 1920;
+                    currentCanvas.height = window.innerHeight || 1080;
+                }
+                
+                // Styles du canvas - modifications minimales
+                currentCanvas.style.display = 'block';
+                currentCanvas.style.visibility = 'visible';
+                currentCanvas.style.opacity = '1';
+                currentCanvas.style.zIndex = '1000';
+                currentCanvas.style.pointerEvents = 'auto';
+                
+                // Obtenir l'image
+                const imageElement = document.getElementById('editableImage');
+                if (!imageElement) {
+                    window.isSelectingShape = false;
+                    alert('Image non trouvée.');
+                    return;
+                }
+                
+                // Vérifier si l'image est chargée
+                if (!imageElement.complete || imageElement.naturalWidth === 0 || imageElement.naturalHeight === 0) {
+                    console.warn('Image non chargée, abandon');
+                    window.isSelectingShape = false;
+                    alert('Veuillez attendre que l\'image soit complètement chargée.');
+                    return;
+                }
+                
+                // Calculer la position - utiliser getBoundingClientRect de manière sécurisée
+                let centerX, centerY;
+                try {
+                    const imageRect = imageElement.getBoundingClientRect();
+                    centerX = imageRect.left + imageRect.width / 2;
+                    centerY = imageRect.top + imageRect.height / 2;
+                } catch (rectError) {
+                    console.error('Erreur getBoundingClientRect:', rectError);
+                    // Utiliser une position par défaut au centre de l'écran
+                    centerX = window.innerWidth / 2;
+                    centerY = window.innerHeight / 2;
+                }
+                
+                const defaultSize = 100;
+                const shapeStartX = centerX - defaultSize / 2;
+                const shapeStartY = centerY - defaultSize / 2;
+                
+                console.log('Création de la forme:', {shapeType, shapeStartX, shapeStartY});
+                
+                // Initialiser addedElements si nécessaire
+                if (!window.addedElements) {
+                    window.addedElements = [];
+                }
+                
+                // Créer l'élément avec un ID unique
+                const newElementId = 'shape_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                const newElement = {
+                    type: 'shape',
+                    id: newElementId,
+                    shapeType: shapeType,
+                    x: shapeStartX,
+                    y: shapeStartY,
+                    width: defaultSize,
+                    height: defaultSize
+                };
+                
+                // Ajouter à la liste AVANT de dessiner
+                window.addedElements.push(newElement);
+                console.log('Élément ajouté:', newElement);
+                
+                // Dessiner la forme DIRECTEMENT sur le canvas
+                const shapeResult = window.drawShape(shapeType, shapeStartX, shapeStartY, defaultSize, defaultSize, newElementId);
+                
+                if (!shapeResult) {
+                    // Retirer l'élément si le dessin a échoué
+                    const index = window.addedElements.findIndex(el => el.id === newElementId);
+                    if (index !== -1) {
+                        window.addedElements.splice(index, 1);
+                    }
+                    window.isSelectingShape = false;
+                    alert('Erreur: La forme n\'a pas pu être dessinée.');
+                    return;
+                }
+                
+                // Sélectionner la forme
+                window.selectedElement = newElement;
+                
+                console.log('✅ Forme créée avec succès');
+                
+                // Réinitialiser le flag IMMÉDIATEMENT après le dessin
+                window.isSelectingShape = false;
+                
+            } catch (error) {
+                console.error('ERREUR dans selectShape:', error);
+                console.error('Stack trace:', error.stack);
+                alert('Erreur: ' + error.message);
+                window.isSelectingShape = false;
+            }
+        });
+    };
+    
+    console.log('selectShape défini globalement:', typeof window.selectShape);
 </script>
 <div class="page-content">
     <h1 style="color: #2a2a2a; margin-bottom: 15px;">🖼️ Gestion des Images</h1>
@@ -256,13 +632,14 @@
         <canvas id="editingCanvas"></canvas>
     </div>
     
-    <!-- Bouton pour accéder au menu Outils -->
-    <div style="margin-top: 10px; text-align: center;">
-        <button class="tools-btn" id="toolsBtn" onclick="window.toggleToolsMenu();" style="pointer-events: auto !important; position: relative; z-index: 10001 !important; isolation: isolate;">🔧 Outils</button>
+    <!-- Boutons pour accéder au menu Outils et sauvegarder l'image -->
+    <div style="margin-top: 10px; text-align: center; position: relative; z-index: 10001 !important; pointer-events: auto !important; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        <button class="tools-btn" id="toolsBtn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.toggleToolsMenu === 'function') { window.toggleToolsMenu(); } else { alert('toggleToolsMenu non trouvé'); } return false;" style="pointer-events: auto !important; position: relative !important; z-index: 10002 !important; isolation: isolate !important; cursor: pointer !important; background: #6c5ce7 !important; color: white !important; padding: 10px 20px !important; border: none !important; border-radius: 5px !important; font-size: 16px !important; font-weight: bold !important;">🔧 Outils</button>
+        <button class="tools-btn" id="saveBtn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.downloadModifiedImage === 'function') { window.downloadModifiedImage(); } else { alert('downloadModifiedImage non trouvé'); } return false;" style="pointer-events: auto !important; position: relative !important; z-index: 10002 !important; isolation: isolate !important; cursor: pointer !important; background: #27ae60 !important; color: white !important; padding: 10px 20px !important; border: none !important; border-radius: 5px !important; font-size: 16px !important; font-weight: bold !important;">💾 Sauvegarder l'image modifiée</button>
     </div>
     
     <!-- Menu déroulant des outils -->
-    <div class="tools-menu" id="toolsMenu" style="position: fixed !important; top: 0 !important; right: -400px; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2000 !important; display: flex !important; flex-direction: column !important; visibility: visible !important; opacity: 1 !important; box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3); transition: right 0.4s ease-in-out;">
+    <div class="tools-menu" id="toolsMenu" style="position: fixed !important; top: 0 !important; right: -400px !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2000 !important; display: none !important; flex-direction: column !important; visibility: hidden !important; opacity: 0 !important; box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3); transition: right 0.4s ease-in-out;">
         <div class="tools-menu-header">
             <h3>Outils d'édition</h3>
             <button class="tools-close-btn" onclick="window.toggleToolsMenu();">×</button>
@@ -281,31 +658,31 @@
             <h3>Formes disponibles</h3>
         </div>
         <div class="shapes-submenu-content">
-            <button class="shape-btn" onclick="selectShape('square')" title="Carré">
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('square'); } else { alert('selectShape non trouvé'); } return false;" title="Carré">
                 <div class="shape-preview square-preview"></div>
                 <span>Carré</span>
             </button>
-            <button class="shape-btn" onclick="selectShape('rounded-square')" title="Carré arrondi">
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('rounded-square'); } else { alert('selectShape non trouvé'); } return false;" title="Carré arrondi">
                 <div class="shape-preview rounded-square-preview"></div>
                 <span>Carré arrondi</span>
             </button>
-            <button class="shape-btn" onclick="selectShape('circle')" title="Rond">
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('circle'); } else { alert('selectShape non trouvé'); } return false;" title="Rond">
                 <div class="shape-preview circle-preview"></div>
                 <span>Rond</span>
             </button>
-            <button class="shape-btn" onclick="selectShape('triangle')" title="Triangle isocèle">
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('triangle'); } else { alert('selectShape non trouvé'); } return false;" title="Triangle isocèle">
                 <div class="shape-preview triangle-preview"></div>
                 <span>Triangle isocèle</span>
             </button>
-            <button class="shape-btn" onclick="selectShape('triangle-inverted')" title="Triangle isocèle inversé">
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('triangle-inverted'); } else { alert('selectShape non trouvé'); } return false;" title="Triangle isocèle inversé">
                 <div class="shape-preview triangle-inverted-preview"></div>
                 <span>Triangle isocèle inversé</span>
             </button>
-            <button class="shape-btn" onclick="selectShape('diamond')" title="Losange">
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('diamond'); } else { alert('selectShape non trouvé'); } return false;" title="Losange">
                 <div class="shape-preview diamond-preview"></div>
                 <span>Losange</span>
             </button>
-            <button class="shape-btn" onclick="selectShape('hexagon')" title="Hexagone">
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('hexagon'); } else { alert('selectShape non trouvé'); } return false;" title="Hexagone">
                 <div class="shape-preview hexagon-preview"></div>
                 <span>Hexagone</span>
             </button>
@@ -408,9 +785,15 @@
                     <input type="range" id="brushSizeSlider" min="1" max="20" value="5" 
                            style="width: 100%; margin-bottom: 10px;">
                     <span id="brushSizeValue" style="display: block; text-align: center; margin-bottom: 15px;">5px</span>
-                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <div style="display: flex; gap: 10px; margin-top: 15px; flex-direction: column;">
                         <button class="tool-btn" onclick="activateMarkerMode()" style="flex: 1; background: #6c5ce7; width: 100%;">
                             🖍️ Feutre
+                        </button>
+                        <button class="tool-btn" onclick="activateEraserMode()" style="flex: 1; background: #e74c3c; width: 100%; margin-top: 10px;">
+                            🧹 Gomme
+                        </button>
+                        <button class="tool-btn" onclick="deactivateDrawingTools()" style="flex: 1; background: #95a5a6; width: 100%; margin-top: 10px;">
+                            ✋ Désactiver
                         </button>
                     </div>
                 </div>
@@ -445,6 +828,23 @@
 </div>
 
 <script>
+// Vérifier que toutes les fonctions globales sont disponibles
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== Vérification des fonctions globales ===');
+    console.log('window.toggleToolsMenu:', typeof window.toggleToolsMenu);
+    console.log('window.selectTool:', typeof window.selectTool);
+    console.log('window.selectShape:', typeof window.selectShape);
+    console.log('window.closeShapesSubmenu:', typeof window.closeShapesSubmenu);
+    console.log('window.closeLinesSubmenu:', typeof window.closeLinesSubmenu);
+    console.log('window.closeDrawSubmenu:', typeof window.closeDrawSubmenu);
+    
+    // Si selectTool n'est pas disponible, essayer de la redéfinir
+    if (typeof window.selectTool !== 'function') {
+        console.error('ERREUR CRITIQUE: window.selectTool n\'est pas disponible!');
+        alert('Erreur: Les fonctions JavaScript ne sont pas chargées. Veuillez recharger la page.');
+    }
+});
+
 function deleteFile(filename) {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette image ?')) {
         fetch("/delete/" + filename, {
@@ -466,9 +866,12 @@ let isDrawing = false;
 let isTextMode = false;
 let isDrawMode = false;
 let isMarkerMode = false;
+let isEraserMode = false;
 let isMoving = false;
 let isResizing = false;
 let selectedElement = null;
+// Rendre selectedElement accessible globalement
+window.selectedElement = selectedElement;
 let resizeHandle = null;
 let currentText = '';
 let currentFontSize = 24;
@@ -485,34 +888,86 @@ let canvas, ctx, img, imageData;
 let addedElements = []; // Stocker tous les éléments ajoutés (formes et textes)
 let eventsSetup = false; // Flag pour éviter les doublons d'événements
 
+// Flags pour éviter les récursions infinies
+let isRedrawing = false;
+let isUpdatingPointerEvents = false;
+let isResizingCanvas = false;
+let isInitializingCanvas = false;
+
+// Rendre addedElements accessible globalement
+// Initialiser window.addedElements si ce n'est pas déjà fait
+if (!window.addedElements) {
+    window.addedElements = [];
+}
+// Synchroniser avec la variable locale
+addedElements = window.addedElements;
+
 function initCanvas() {
+    // Éviter les appels récursifs
+    if (isInitializingCanvas) {
+        console.warn('initCanvas déjà en cours, appel ignoré');
+        return;
+    }
+    
+    isInitializingCanvas = true;
+    
     try {
         const imageElement = document.getElementById('editableImage');
         if (!imageElement) {
             console.log('Image non trouvée');
+            isInitializingCanvas = false;
             return;
         }
         
         canvas = document.getElementById('editingCanvas');
         if (!canvas) {
             console.log('Canvas non trouvé');
+            isInitializingCanvas = false;
             return;
         }
+        
+        // Rendre canvas accessible globalement
+        window.canvas = canvas;
         
         ctx = canvas.getContext('2d');
         if (!ctx) {
             console.log('Contexte canvas non disponible');
+            isInitializingCanvas = false;
             return;
         }
         
+        // Rendre ctx accessible globalement
+        window.ctx = ctx;
+        
         img = imageElement;
+        
+        // Forcer la visibilité du canvas (sans déclencher d'événements)
+        if (canvas.style.display !== 'block') {
+            canvas.style.setProperty('display', 'block', 'important');
+        }
+        if (canvas.style.visibility !== 'visible') {
+            canvas.style.setProperty('visibility', 'visible', 'important');
+        }
+        if (canvas.style.opacity !== '1') {
+            canvas.style.setProperty('opacity', '1', 'important');
+        }
+        canvas.style.setProperty('position', 'fixed', 'important');
+        canvas.style.setProperty('top', '0', 'important');
+        canvas.style.setProperty('left', '0', 'important');
+        canvas.style.setProperty('z-index', '100', 'important');
+        canvas.style.setProperty('pointer-events', 'none', 'important');
         
         // Attendre que l'image soit chargée
         if (img.complete && img.naturalWidth > 0) {
-            resizeCanvas();
+            // Ne pas appeler resizeCanvas si déjà en cours
+            if (!isResizingCanvas) {
+                resizeCanvas();
+            }
         } else {
             img.onload = function() {
-                resizeCanvas();
+                if (!isResizingCanvas) {
+                    resizeCanvas();
+                }
             };
             img.onerror = function() {
                 console.error('Erreur lors du chargement de l\'image');
@@ -520,6 +975,8 @@ function initCanvas() {
         }
     } catch (error) {
         console.error('Erreur lors de l\'initialisation du canvas:', error);
+    } finally {
+        isInitializingCanvas = false;
     }
 }
 
@@ -527,54 +984,94 @@ function initCanvas() {
 function updateCanvasPointerEvents() {
     if (!canvas) return;
     
-    // Vérifier si le menu est ouvert - si oui, TOUJOURS désactiver le canvas
-    const menu = document.getElementById('toolsMenu');
-    const isMenuOpen = menu && menu.classList.contains('active');
-    
-    // Vérifier si on est sur le bouton "Outils"
-    const toolsBtn = document.getElementById('toolsBtn');
-    let isOverButton = false;
-    if (toolsBtn && window.mouseX !== undefined && window.mouseY !== undefined) {
-        const element = document.elementFromPoint(window.mouseX, window.mouseY);
-        isOverButton = element && (element === toolsBtn || element.closest('#toolsBtn') || element.closest('.tools-btn'));
-    }
-    
-    // Si le menu est ouvert ou si on est sur le bouton, désactiver le canvas
-    if (isMenuOpen || isOverButton) {
-        canvas.style.pointerEvents = 'none';
-        canvas.style.zIndex = '50';
+    // Éviter les appels récursifs
+    if (isUpdatingPointerEvents) {
         return;
     }
     
-    // Activer seulement si un outil est sélectionné
-    const hasActiveTool = currentShape !== null || 
-                         currentLineType !== null || 
-                         isTextMode || 
-                         isDrawMode || 
-                         isMarkerMode ||
-                         selectedElement !== null;
+    isUpdatingPointerEvents = true;
     
-    if (hasActiveTool) {
-        canvas.style.pointerEvents = 'auto';
-        canvas.style.zIndex = '100'; // Remonter le z-index pour l'interaction
-    } else {
-        canvas.style.pointerEvents = 'none';
-        canvas.style.zIndex = '50'; // En dessous des boutons
+    try {
+        // Vérifier si le menu est ouvert - si oui, TOUJOURS désactiver le canvas
+        const menu = document.getElementById('toolsMenu');
+        const isMenuOpen = menu && menu.classList.contains('active');
+        
+        // Vérifier si on est sur le bouton "Outils" ou "Sauvegarder"
+        const toolsBtn = document.getElementById('toolsBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        let isOverButton = false;
+        if ((toolsBtn || saveBtn) && window.mouseX !== undefined && window.mouseY !== undefined) {
+            const element = document.elementFromPoint(window.mouseX, window.mouseY);
+            isOverButton = element && (
+                (toolsBtn && (element === toolsBtn || element.closest('#toolsBtn'))) ||
+                (saveBtn && (element === saveBtn || element.closest('#saveBtn'))) ||
+                element.closest('.tools-btn')
+            );
+        }
+        
+        // Si le menu est ouvert ou si on est sur le bouton, désactiver le canvas
+        if (isMenuOpen || isOverButton) {
+            if (canvas.style.pointerEvents !== 'none') {
+                canvas.style.pointerEvents = 'none';
+                canvas.style.zIndex = '50';
+            }
+            isUpdatingPointerEvents = false;
+            return;
+        }
+        
+        // Activer seulement si un outil est sélectionné ou si une forme est sélectionnée
+        const currentSelected = window.selectedElement || selectedElement;
+        const hasActiveTool = currentShape !== null || 
+                             currentLineType !== null || 
+                             isTextMode || 
+                             isDrawMode || 
+                             isMarkerMode ||
+                             isEraserMode ||
+                             currentSelected !== null ||
+                             (window.addedElements && window.addedElements.length > 0);
+        
+        if (hasActiveTool) {
+            if (canvas.style.pointerEvents !== 'auto') {
+                canvas.style.pointerEvents = 'auto';
+                canvas.style.zIndex = '1000'; // Z-index élevé pour l'interaction
+            }
+        } else {
+            if (canvas.style.pointerEvents !== 'none') {
+                canvas.style.pointerEvents = 'none';
+                canvas.style.zIndex = '50'; // En dessous des boutons
+            }
+        }
+    } finally {
+        isUpdatingPointerEvents = false;
     }
 }
 
 // Tracker la position de la souris pour updateCanvasPointerEvents
+// Ajouter un throttling pour éviter les appels trop fréquents
+let lastUpdateTime = 0;
+const UPDATE_THROTTLE = 50; // Mettre à jour au maximum toutes les 50ms
+
 document.addEventListener('mousemove', function(e) {
     window.mouseX = e.clientX;
     window.mouseY = e.clientY;
-    // Mettre à jour le canvas en temps réel
-    if (canvas) {
+    // Mettre à jour le canvas en temps réel avec throttling
+    const now = Date.now();
+    if (canvas && (now - lastUpdateTime > UPDATE_THROTTLE)) {
+        lastUpdateTime = now;
         updateCanvasPointerEvents();
     }
 }, true);
 
 function resizeCanvas() {
     if (!canvas || !img) return;
+    
+    // Éviter les appels récursifs
+    if (isResizingCanvas) {
+        console.warn('resizeCanvas déjà en cours, appel ignoré');
+        return;
+    }
+    
+    isResizingCanvas = true;
     
     // Attendre un peu pour que la page soit rendue
     setTimeout(() => {
@@ -622,16 +1119,18 @@ function resizeCanvas() {
                     canvas.style.webkitClipPath = 'none';
                 }
                 
-                // Mettre à jour selon l'état actuel
+                // Mettre à jour selon l'état actuel (sans déclencher de récursion)
                 updateCanvasPointerEvents();
                 
-                // Redessiner les éléments après redimensionnement
-                if (addedElements && addedElements.length > 0) {
+                // Redessiner les éléments après redimensionnement (seulement si pas déjà en cours)
+                if (window.addedElements && window.addedElements.length > 0 && !isRedrawing) {
                     redrawCanvas();
                 }
             }
         } catch (error) {
             console.error('Erreur lors du redimensionnement du canvas:', error);
+        } finally {
+            isResizingCanvas = false;
         }
     }, 100);
 }
@@ -807,6 +1306,7 @@ function activateDrawMode() {
 
 function activateMarkerMode() {
     isMarkerMode = true;
+    isEraserMode = false;
     isDrawMode = false;
     isTextMode = false;
     currentShape = null;
@@ -823,6 +1323,286 @@ function activateMarkerMode() {
     // Activer le canvas pour le feutre
     updateCanvasPointerEvents();
 }
+
+function activateEraserMode() {
+    isEraserMode = true;
+    isMarkerMode = false;
+    isDrawMode = false;
+    isTextMode = false;
+    currentShape = null;
+    currentLineType = null;
+    currentBrushSize = parseInt(document.getElementById('brushSizeSlider').value);
+    if (typeof window.closeDrawSubmenu === 'function') {
+        window.closeDrawSubmenu();
+    }
+    
+    if (canvas && ctx) {
+        canvas.style.cursor = 'grab';
+    }
+    
+    // Activer le canvas pour la gomme
+    updateCanvasPointerEvents();
+}
+
+function deactivateDrawingTools() {
+    isMarkerMode = false;
+    isEraserMode = false;
+    isDrawMode = false;
+    isTextMode = false;
+    currentShape = null;
+    currentLineType = null;
+    
+    if (canvas && ctx) {
+        canvas.style.cursor = 'default';
+    }
+    
+    // Désactiver le canvas si aucun élément n'est sélectionné
+    const hasSelectedElement = window.selectedElement || (window.addedElements && window.addedElements.length > 0);
+    if (!hasSelectedElement && canvas) {
+        canvas.style.pointerEvents = 'none';
+        canvas.style.zIndex = '50';
+    } else {
+        updateCanvasPointerEvents();
+    }
+}
+
+// Fonction pour exporter l'image modifiée - retourne une promesse avec le blob
+window.exportImageToBlob = function() {
+    return new Promise((resolve, reject) => {
+        try {
+            const imageElement = document.getElementById('editableImage');
+            const editingCanvas = document.getElementById('editingCanvas');
+            
+            if (!imageElement || !editingCanvas) {
+                reject(new Error('Image ou canvas non trouvé.'));
+                return;
+            }
+            
+            if (!imageElement.complete || imageElement.naturalWidth === 0) {
+                reject(new Error('Veuillez attendre que l\'image soit complètement chargée.'));
+                return;
+            }
+            
+            const exportCanvas = document.createElement('canvas');
+            const exportCtx = exportCanvas.getContext('2d');
+            
+            exportCanvas.width = imageElement.naturalWidth;
+            exportCanvas.height = imageElement.naturalHeight;
+            
+            exportCtx.drawImage(imageElement, 0, 0, exportCanvas.width, exportCanvas.height);
+            
+            const scaleX = exportCanvas.width / editingCanvas.width;
+            const scaleY = exportCanvas.height / editingCanvas.height;
+            
+            exportCtx.drawImage(editingCanvas, 0, 0, editingCanvas.width, editingCanvas.height, 
+                               0, 0, exportCanvas.width, exportCanvas.height);
+            
+            const elements = window.addedElements || [];
+            elements.forEach(element => {
+                if (element.type === 'shape') {
+                    exportCtx.save();
+                    const scaledX = element.x * scaleX;
+                    const scaledY = element.y * scaleY;
+                    const scaledWidth = element.width * scaleX;
+                    const scaledHeight = element.height * scaleY;
+                    
+                    const shapeType = element.shapeType;
+                    exportCtx.strokeStyle = '#FFD700';
+                    exportCtx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+                    exportCtx.lineWidth = 3;
+                    
+                    switch(shapeType) {
+                        case 'square':
+                            exportCtx.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
+                            exportCtx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight);
+                            break;
+                        case 'rounded-square':
+                            const radius = Math.min(scaledWidth, scaledHeight) * 0.2;
+                            exportCtx.beginPath();
+                            exportCtx.moveTo(scaledX + radius, scaledY);
+                            exportCtx.lineTo(scaledX + scaledWidth - radius, scaledY);
+                            exportCtx.quadraticCurveTo(scaledX + scaledWidth, scaledY, scaledX + scaledWidth, scaledY + radius);
+                            exportCtx.lineTo(scaledX + scaledWidth, scaledY + scaledHeight - radius);
+                            exportCtx.quadraticCurveTo(scaledX + scaledWidth, scaledY + scaledHeight, scaledX + scaledWidth - radius, scaledY + scaledHeight);
+                            exportCtx.lineTo(scaledX + radius, scaledY + scaledHeight);
+                            exportCtx.quadraticCurveTo(scaledX, scaledY + scaledHeight, scaledX, scaledY + scaledHeight - radius);
+                            exportCtx.lineTo(scaledX, scaledY + radius);
+                            exportCtx.quadraticCurveTo(scaledX, scaledY, scaledX + radius, scaledY);
+                            exportCtx.closePath();
+                            exportCtx.fill();
+                            exportCtx.stroke();
+                            break;
+                        case 'circle':
+                            const centerX = scaledX + scaledWidth / 2;
+                            const centerY = scaledY + scaledHeight / 2;
+                            const radius_circle = Math.min(scaledWidth, scaledHeight) / 2;
+                            exportCtx.beginPath();
+                            exportCtx.arc(centerX, centerY, radius_circle, 0, 2 * Math.PI);
+                            exportCtx.fill();
+                            exportCtx.stroke();
+                            break;
+                        case 'triangle':
+                            exportCtx.beginPath();
+                            exportCtx.moveTo(scaledX + scaledWidth / 2, scaledY);
+                            exportCtx.lineTo(scaledX, scaledY + scaledHeight);
+                            exportCtx.lineTo(scaledX + scaledWidth, scaledY + scaledHeight);
+                            exportCtx.closePath();
+                            exportCtx.fill();
+                            exportCtx.stroke();
+                            break;
+                        case 'triangle-inverted':
+                            exportCtx.beginPath();
+                            exportCtx.moveTo(scaledX + scaledWidth / 2, scaledY + scaledHeight);
+                            exportCtx.lineTo(scaledX, scaledY);
+                            exportCtx.lineTo(scaledX + scaledWidth, scaledY);
+                            exportCtx.closePath();
+                            exportCtx.fill();
+                            exportCtx.stroke();
+                            break;
+                        case 'diamond':
+                            exportCtx.beginPath();
+                            exportCtx.moveTo(scaledX + scaledWidth / 2, scaledY);
+                            exportCtx.lineTo(scaledX + scaledWidth, scaledY + scaledHeight / 2);
+                            exportCtx.lineTo(scaledX + scaledWidth / 2, scaledY + scaledHeight);
+                            exportCtx.lineTo(scaledX, scaledY + scaledHeight / 2);
+                            exportCtx.closePath();
+                            exportCtx.fill();
+                            exportCtx.stroke();
+                            break;
+                        case 'hexagon':
+                            const centerX_hex = scaledX + scaledWidth / 2;
+                            const centerY_hex = scaledY + scaledHeight / 2;
+                            const radius_hex = Math.min(scaledWidth, scaledHeight) / 2;
+                            exportCtx.beginPath();
+                            for (let i = 0; i < 6; i++) {
+                                const angle = (Math.PI / 3) * i;
+                                const px = centerX_hex + radius_hex * Math.cos(angle);
+                                const py = centerY_hex + radius_hex * Math.sin(angle);
+                                if (i === 0) {
+                                    exportCtx.moveTo(px, py);
+                                } else {
+                                    exportCtx.lineTo(px, py);
+                                }
+                            }
+                            exportCtx.closePath();
+                            exportCtx.fill();
+                            exportCtx.stroke();
+                            break;
+                    }
+                    exportCtx.restore();
+                } else if (element.type === 'text') {
+                    exportCtx.save();
+                    const scaledX = element.x * scaleX;
+                    const scaledY = element.y * scaleY;
+                    const scaledFontSize = (element.fontSize || 24) * scaleX;
+                    exportCtx.fillStyle = '#FFD700';
+                    exportCtx.strokeStyle = '#000000';
+                    exportCtx.lineWidth = 2 * scaleX;
+                    exportCtx.font = `bold ${scaledFontSize}px Arial`;
+                    exportCtx.textAlign = 'left';
+                    exportCtx.textBaseline = 'top';
+                    exportCtx.strokeText(element.text, scaledX, scaledY);
+                    exportCtx.fillText(element.text, scaledX, scaledY);
+                    exportCtx.restore();
+                }
+            });
+            
+            exportCanvas.toBlob(function(blob) {
+                if (!blob) {
+                    reject(new Error('Erreur lors de la création de l\'image.'));
+                    return;
+                }
+                resolve(blob);
+            }, 'image/png');
+            
+        } catch (error) {
+            reject(error);
+        }
+    });
+};
+
+// Fonction pour exporter/envoyer l'image modifiée (version originale pour compatibilité)
+window.exportImage = function() {
+    window.exportImageToBlob()
+        .then(blob => {
+            const formData = new FormData();
+            formData.append('file', blob, 'image_modifiee.png');
+            
+            return fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.text();
+            } else {
+                throw new Error('Erreur lors de l\'envoi de l\'image.');
+            }
+        })
+        .then(() => {
+            alert('Image modifiée envoyée avec succès !');
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors de l\'envoi: ' + error.message);
+        });
+};
+
+// Fonction pour télécharger l'image modifiée sur l'ordinateur/téléphone
+window.downloadModifiedImage = function() {
+    const saveBtn = document.getElementById('saveBtn');
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.style.opacity = '0.6';
+        saveBtn.textContent = '⏳ Préparation...';
+    }
+    
+    window.exportImageToBlob()
+        .then(blob => {
+            // Créer un lien de téléchargement
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            
+            // Générer un nom de fichier avec la date et l'heure
+            const now = new Date();
+            const dateStr = now.toISOString().slice(0, 19).replace(/:/g, '-').replace('T', '_');
+            link.download = `image_modifiee_${dateStr}.png`;
+            
+            // Ajouter le lien au DOM, cliquer dessus, puis le retirer
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Nettoyer l'URL après un court délai
+            setTimeout(() => {
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            // Restaurer le bouton
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.style.opacity = '1';
+                saveBtn.textContent = '💾 Sauvegarder l\'image modifiée';
+            }
+            
+            // Afficher un message de confirmation
+            alert('Image modifiée téléchargée avec succès !');
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors du téléchargement: ' + error.message);
+            
+            // Restaurer le bouton en cas d'erreur
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.style.opacity = '1';
+                saveBtn.textContent = '💾 Sauvegarder l\'image modifiée';
+            }
+        });
+};
 
 // Gestion des sliders
 document.addEventListener('DOMContentLoaded', function() {
@@ -849,172 +1629,17 @@ document.addEventListener('DOMContentLoaded', function() {
     selectColor('#FFD700');
 });
 
-function selectShape(shapeType) {
-    currentShape = null; // Réinitialiser pour éviter les conflits
-    currentLineType = null;
-    isTextMode = false;
-    isDrawMode = false;
-    isMarkerMode = false;
-    closeShapesSubmenu();
-    
-    // Désactiver le canvas temporairement
-    updateCanvasPointerEvents();
-    
-    // Fonction pour ajouter la forme directement sur l'image
-    function addShape() {
-        // Vérifier que le canvas et le contexte sont disponibles
-        if (!canvas || !ctx) {
-            // Réessayer après un court délai
-            setTimeout(addShape, 50);
-            return;
-        }
-        
-        // Vérifier que le canvas a une taille valide
-        if (canvas.width === 0 || canvas.height === 0) {
-            // Réinitialiser le canvas si nécessaire
-            resizeCanvas();
-            setTimeout(addShape, 100);
-            return;
-        }
-        
-        // Placer la forme au centre de l'écran (viewport)
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
-        const defaultSize = 100; // Taille par défaut de la forme
-        
-        // Ajouter la forme au centre de l'écran (toujours en jaune)
-        drawShape(shapeType, centerX - defaultSize/2, centerY - defaultSize/2, defaultSize, defaultSize);
-        
-        // Sélectionner automatiquement la nouvelle forme pour pouvoir l'ajuster
-        if (addedElements.length > 0) {
-            selectedElement = addedElements[addedElements.length - 1];
-        }
-        
-        // Redessiner immédiatement pour afficher la forme avec ses poignées
-        redrawCanvas();
-        
-        canvas.style.cursor = 'default';
-        
-        // Activer le canvas pour permettre de déplacer/redimensionner la forme
-        updateCanvasPointerEvents();
-    }
-    
-    // Essayer d'ajouter la forme immédiatement
-    addShape();
-}
+// La fonction selectShape est maintenant définie globalement en haut du script (window.selectShape)
+// La fonction drawShape est maintenant définie globalement en haut du script (window.drawShape)
 
+// Garder aussi la fonction locale pour compatibilité
 function drawShape(shapeType, x, y, width, height, elementId = null) {
-    if (!ctx) {
-        console.log('Contexte canvas non disponible pour dessiner la forme');
+    if (typeof window.drawShape === 'function') {
+        return window.drawShape(shapeType, x, y, width, height, elementId);
+    } else {
+        console.error('window.drawShape n\'est pas définie');
         return null;
     }
-    
-    const id = elementId || 'shape_' + Date.now();
-    
-    // Toutes les formes en jaune (or)
-    ctx.strokeStyle = '#FFD700';
-    ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
-    ctx.lineWidth = 3;
-    
-    switch(shapeType) {
-        case 'square':
-            ctx.fillRect(x, y, width, height);
-            ctx.strokeRect(x, y, width, height);
-            break;
-            
-        case 'rounded-square':
-            const radius = Math.min(width, height) * 0.2;
-            ctx.beginPath();
-            ctx.moveTo(x + radius, y);
-            ctx.lineTo(x + width - radius, y);
-            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-            ctx.lineTo(x + width, y + height - radius);
-            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-            ctx.lineTo(x + radius, y + height);
-            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-            ctx.lineTo(x, y + radius);
-            ctx.quadraticCurveTo(x, y, x + radius, y);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            break;
-            
-        case 'circle':
-            const centerX = x + width / 2;
-            const centerY = y + height / 2;
-            const radius_circle = Math.min(width, height) / 2;
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius_circle, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.stroke();
-            break;
-            
-        case 'triangle':
-            ctx.beginPath();
-            ctx.moveTo(x + width / 2, y);
-            ctx.lineTo(x, y + height);
-            ctx.lineTo(x + width, y + height);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            break;
-            
-        case 'triangle-inverted':
-            ctx.beginPath();
-            ctx.moveTo(x + width / 2, y + height);
-            ctx.lineTo(x, y);
-            ctx.lineTo(x + width, y);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            break;
-            
-        case 'diamond':
-            ctx.beginPath();
-            ctx.moveTo(x + width / 2, y);
-            ctx.lineTo(x + width, y + height / 2);
-            ctx.lineTo(x + width / 2, y + height);
-            ctx.lineTo(x, y + height / 2);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            break;
-            
-        case 'hexagon':
-            const centerX_hex = x + width / 2;
-            const centerY_hex = y + height / 2;
-            const radius_hex = Math.min(width, height) / 2;
-            ctx.beginPath();
-            for (let i = 0; i < 6; i++) {
-                const angle = (Math.PI / 3) * i;
-                const px = centerX_hex + radius_hex * Math.cos(angle);
-                const py = centerY_hex + radius_hex * Math.sin(angle);
-                if (i === 0) {
-                    ctx.moveTo(px, py);
-                } else {
-                    ctx.lineTo(px, py);
-                }
-            }
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            break;
-    }
-    
-    // Si c'est un nouvel élément, l'ajouter à la liste
-    if (!elementId) {
-        addedElements.push({
-            type: 'shape',
-            id: id,
-            shapeType: shapeType,
-            x: x,
-            y: y,
-            width: width,
-            height: height
-        });
-    }
-    
-    return { id, x, y, width, height };
 }
 
 function drawLine(lineType, x1, y1, x2, y2) {
@@ -1121,7 +1746,10 @@ function drawTextOnCanvas(text, x, y, elementId = null) {
     
     // Si c'est un nouvel élément, l'ajouter à la liste
     if (!elementId) {
-        addedElements.push({
+        if (!window.addedElements) {
+            window.addedElements = [];
+        }
+        window.addedElements.push({
             type: 'text',
             id: id,
             text: text,
@@ -1134,50 +1762,126 @@ function drawTextOnCanvas(text, x, y, elementId = null) {
     return { id, x, y, width: textWidth, height: textHeight };
 }
 
-function redrawCanvas() {
+// Rendre redrawCanvas accessible globalement
+window.redrawCanvas = function() {
+    // Éviter les appels récursifs
+    if (isRedrawing) {
+        console.warn('redrawCanvas déjà en cours, appel ignoré');
+        return;
+    }
+    
+    isRedrawing = true;
+    
     try {
-        if (!ctx || !canvas) {
+        // Utiliser window.ctx et window.canvas si disponibles
+        let currentCtx = window.ctx || ctx;
+        let currentCanvas = window.canvas || canvas;
+        
+        // Si le canvas n'est pas disponible, essayer de le récupérer
+        if (!currentCanvas) {
+            currentCanvas = document.getElementById('editingCanvas');
+            if (currentCanvas) {
+                window.canvas = currentCanvas;
+            }
+        }
+        
+        // Si le contexte n'est pas disponible, essayer de le récupérer
+        if (!currentCtx && currentCanvas) {
+            currentCtx = currentCanvas.getContext('2d');
+            if (currentCtx) {
+                window.ctx = currentCtx;
+            }
+        }
+        
+        if (!currentCtx || !currentCanvas) {
+            console.error('Canvas ou contexte non disponible pour redrawCanvas');
+            console.log('currentCtx:', currentCtx);
+            console.log('currentCanvas:', currentCanvas);
+            isRedrawing = false;
             return;
         }
         
-        if (canvas.width === 0 || canvas.height === 0) {
-            resizeCanvas();
-            return;
+        // Vérifier que le canvas a une taille valide
+        if (currentCanvas.width === 0 || currentCanvas.height === 0) {
+            console.log('Canvas sans taille, redimensionnement...');
+            currentCanvas.width = window.innerWidth;
+            currentCanvas.height = window.innerHeight;
+            console.log('Canvas redimensionné à:', currentCanvas.width, 'x', currentCanvas.height);
         }
         
-        // Effacer le canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // S'assurer que le canvas est visible (sans déclencher d'événements)
+        if (currentCanvas.style.display !== 'block') {
+            currentCanvas.style.setProperty('display', 'block', 'important');
+        }
+        if (currentCanvas.style.visibility !== 'visible') {
+            currentCanvas.style.setProperty('visibility', 'visible', 'important');
+        }
+        if (currentCanvas.style.opacity !== '1') {
+            currentCanvas.style.setProperty('opacity', '1', 'important');
+        }
+        if (currentCanvas.style.clipPath !== 'none') {
+            currentCanvas.style.setProperty('clip-path', 'none', 'important');
+            currentCanvas.style.setProperty('-webkit-clip-path', 'none', 'important');
+        }
+        
+        // Effacer le canvas complètement
+        currentCtx.clearRect(0, 0, currentCanvas.width, currentCanvas.height);
         
         // Redessiner tous les éléments
-        if (addedElements && Array.isArray(addedElements) && addedElements.length > 0) {
-            addedElements.forEach(element => {
+        const elements = window.addedElements || addedElements || [];
+        console.log('redrawCanvas: nombre d\'éléments à redessiner:', elements.length);
+        
+        if (elements && Array.isArray(elements) && elements.length > 0) {
+            elements.forEach((element, index) => {
+                if (!element) return;
+                
                 try {
-                    if (element && element.type === 'text') {
-                        drawTextOnCanvas(element.text, element.x, element.y, element.id);
-                    } else if (element && element.type === 'shape') {
-                        drawShape(element.shapeType, element.x, element.y, element.width, element.height, element.id);
+                    if (element.type === 'text') {
+                        if (typeof drawTextOnCanvas === 'function') {
+                            drawTextOnCanvas(element.text, element.x, element.y, element.id);
+                        }
+                    } else if (element.type === 'shape') {
+                        const drawShapeFunc = window.drawShape;
+                        if (typeof drawShapeFunc === 'function') {
+                            // Dessiner la forme avec ses propriétés actuelles
+                            console.log(`Redessin forme ${index}:`, element);
+                            drawShapeFunc(element.shapeType, element.x, element.y, element.width, element.height, element.id);
+                        } else {
+                            console.error('window.drawShape n\'est pas une fonction');
+                        }
                     }
                 } catch (error) {
-                    console.error('Erreur lors du dessin d\'un élément:', error);
+                    console.error('Erreur lors du dessin d\'un élément:', error, element);
                 }
             });
         }
         
         // Si un élément est sélectionné, dessiner les poignées de redimensionnement
-        if (selectedElement && (selectedElement.type === 'shape' || selectedElement.type === 'text')) {
+        const currentSelectedElement = window.selectedElement || selectedElement;
+        if (currentSelectedElement && (currentSelectedElement.type === 'shape' || currentSelectedElement.type === 'text')) {
             try {
-                drawResizeHandles(selectedElement);
+                if (typeof drawResizeHandles === 'function') {
+                    drawResizeHandles(currentSelectedElement);
+                }
             } catch (error) {
                 console.error('Erreur lors du dessin des poignées:', error);
             }
         }
+        
+        console.log('✅ redrawCanvas terminé');
     } catch (error) {
         console.error('Erreur lors du redessin du canvas:', error);
+    } finally {
+        // Réinitialiser le flag après un court délai pour permettre les mises à jour nécessaires
+        setTimeout(() => {
+            isRedrawing = false;
+        }, 10);
     }
 }
 
 function drawResizeHandles(element) {
-    if (!ctx) return;
+    const currentCtx = window.ctx || ctx;
+    if (!currentCtx) return;
     
     const handleSize = 8;
     const handles = [];
@@ -1196,7 +1900,7 @@ function drawResizeHandles(element) {
         );
     } else if (element.type === 'text') {
         // 4 poignées pour le texte (coins)
-        const metrics = ctx.measureText(element.text);
+        const metrics = currentCtx.measureText(element.text);
         handles.push(
             {x: element.x, y: element.y},
             {x: element.x + metrics.width, y: element.y},
@@ -1207,13 +1911,13 @@ function drawResizeHandles(element) {
     
     // Dessiner les poignées
     handles.forEach(handle => {
-        ctx.fillStyle = '#4a90e2';
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(handle.x, handle.y, handleSize, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
+        currentCtx.fillStyle = '#4a90e2';
+        currentCtx.strokeStyle = '#ffffff';
+        currentCtx.lineWidth = 2;
+        currentCtx.beginPath();
+        currentCtx.arc(handle.x, handle.y, handleSize, 0, Math.PI * 2);
+        currentCtx.fill();
+        currentCtx.stroke();
     });
 }
 
@@ -1257,8 +1961,9 @@ function getResizeHandleAtPosition(x, y, element) {
 
 function getElementAtPosition(x, y) {
     // Chercher un élément à la position donnée (en ordre inverse pour prendre le dernier ajouté)
-    for (let i = addedElements.length - 1; i >= 0; i--) {
-        const element = addedElements[i];
+    const elementsArray = window.addedElements || [];
+    for (let i = elementsArray.length - 1; i >= 0; i--) {
+        const element = elementsArray[i];
         
         if (element.type === 'text') {
             const metrics = ctx.measureText(element.text);
@@ -1304,23 +2009,25 @@ function setupCanvasEvents() {
         }
         
         // VÉRIFIER D'ABORD si on clique sur un bouton ou élément interactif
-        const clickedElement = document.elementFromPoint(e.clientX, e.clientY);
+        const domElement = document.elementFromPoint(e.clientX, e.clientY);
         
         // Ignorer les clics sur les boutons, menus, et autres éléments interactifs
-        if (clickedElement && (
-            clickedElement.id === 'toolsBtn' ||
-            clickedElement.closest('#toolsBtn') ||
-            clickedElement.closest('.tools-btn') ||
-            clickedElement.closest('.delete-btn') ||
-            clickedElement.closest('.tools-menu') ||
-            clickedElement.closest('.tools-overlay') ||
-            clickedElement.closest('.shapes-submenu') ||
-            clickedElement.closest('button') ||
-            clickedElement.closest('input') ||
-            clickedElement.closest('select') ||
-            clickedElement.tagName === 'BUTTON' ||
-            clickedElement.tagName === 'INPUT' ||
-            clickedElement.tagName === 'SELECT'
+        if (domElement && (
+            domElement.id === 'toolsBtn' ||
+            domElement.id === 'saveBtn' ||
+            domElement.closest('#toolsBtn') ||
+            domElement.closest('#saveBtn') ||
+            domElement.closest('.tools-btn') ||
+            domElement.closest('.delete-btn') ||
+            domElement.closest('.tools-menu') ||
+            domElement.closest('.tools-overlay') ||
+            domElement.closest('.shapes-submenu') ||
+            domElement.closest('button') ||
+            domElement.closest('input') ||
+            domElement.closest('select') ||
+            domElement.tagName === 'BUTTON' ||
+            domElement.tagName === 'INPUT' ||
+            domElement.tagName === 'SELECT'
         )) {
             // Désactiver le canvas pour permettre le clic sur le bouton
             canvas.style.pointerEvents = 'none';
@@ -1332,16 +2039,19 @@ function setupCanvasEvents() {
         const x = e.clientX;
         const y = e.clientY;
         
+        // Utiliser window.selectedElement comme source de vérité
+        const currentSelected = window.selectedElement || selectedElement;
+        
         // Vérifier d'abord si on clique sur une poignée de redimensionnement
-        if (selectedElement) {
-            resizeHandle = getResizeHandleAtPosition(x, y, selectedElement);
+        if (currentSelected) {
+            resizeHandle = getResizeHandleAtPosition(x, y, currentSelected);
             if (resizeHandle) {
                 isResizing = true;
                 initialElementState = {
-                    x: selectedElement.x,
-                    y: selectedElement.y,
-                    width: selectedElement.width || (selectedElement.type === 'text' ? ctx.measureText(selectedElement.text).width : 0),
-                    height: selectedElement.height || (selectedElement.type === 'text' ? selectedElement.fontSize : 0)
+                    x: currentSelected.x,
+                    y: currentSelected.y,
+                    width: currentSelected.width || (currentSelected.type === 'text' ? ctx.measureText(currentSelected.text).width : 0),
+                    height: currentSelected.height || (currentSelected.type === 'text' ? currentSelected.fontSize : 0)
                 };
                 startX = x;
                 startY = y;
@@ -1355,15 +2065,17 @@ function setupCanvasEvents() {
         if (clickedElement && !isTextMode && !currentShape && !isDrawMode && !isMarkerMode && !currentLineType) {
             // Mode déplacement ou sélection
             selectedElement = clickedElement;
+            window.selectedElement = clickedElement; // Synchroniser avec window
             isMoving = true;
             offsetX = x - clickedElement.x;
             offsetY = y - clickedElement.y;
             canvas.style.cursor = 'move';
             redrawCanvas(); // Redessiner pour afficher les poignées
             updateCanvasPointerEvents(); // Activer le canvas pour l'interaction
-        } else if (!isTextMode && !currentShape && !isDrawMode && !isMarkerMode && !currentLineType) {
+        } else if (!isTextMode && !currentShape && !isDrawMode && !isMarkerMode && !isEraserMode && !currentLineType) {
             // Désélectionner si on clique ailleurs
             selectedElement = null;
+            window.selectedElement = null; // Synchroniser avec window
             redrawCanvas();
             updateCanvasPointerEvents(); // Désactiver si aucun élément sélectionné
         } else if (isTextMode) {
@@ -1372,8 +2084,8 @@ function setupCanvasEvents() {
                 drawTextOnCanvas(currentText, x, y);
                 redrawCanvas();
             }
-        } else if (isDrawMode || isMarkerMode) {
-            // Commencer à dessiner ou colorier
+        } else if (isDrawMode || isMarkerMode || isEraserMode) {
+            // Commencer à dessiner, colorier ou effacer
             isDrawing = true;
             lastX = x;
             lastY = y;
@@ -1387,6 +2099,13 @@ function setupCanvasEvents() {
                 ctx.arc(x, y, currentBrushSize, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.globalAlpha = 1.0;
+                ctx.globalCompositeOperation = 'source-over';
+            } else if (isEraserMode) {
+                // Mode gomme - effacer avec destination-out
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.beginPath();
+                ctx.arc(x, y, currentBrushSize, 0, Math.PI * 2);
+                ctx.fill();
                 ctx.globalCompositeOperation = 'source-over';
             }
         } else if (currentLineType) {
@@ -1406,78 +2125,115 @@ function setupCanvasEvents() {
         const currentX = e.clientX;
         const currentY = e.clientY;
         
-        if (isResizing && selectedElement && resizeHandle && initialElementState) {
+        // Utiliser window.selectedElement comme source de vérité
+        const currentSelectedForResize = window.selectedElement || selectedElement;
+        
+        if (isResizing && currentSelectedForResize && resizeHandle && initialElementState) {
             // Redimensionner l'élément
             const dx = currentX - startX;
             const dy = currentY - startY;
             
-            if (selectedElement.type === 'shape') {
+            if (currentSelectedForResize.type === 'shape') {
                 switch(resizeHandle.type) {
                     case 'nw':
-                        selectedElement.x = initialElementState.x + dx;
-                        selectedElement.y = initialElementState.y + dy;
-                        selectedElement.width = initialElementState.width - dx;
-                        selectedElement.height = initialElementState.height - dy;
+                        currentSelectedForResize.x = initialElementState.x + dx;
+                        currentSelectedForResize.y = initialElementState.y + dy;
+                        currentSelectedForResize.width = initialElementState.width - dx;
+                        currentSelectedForResize.height = initialElementState.height - dy;
                         break;
                     case 'n':
-                        selectedElement.y = initialElementState.y + dy;
-                        selectedElement.height = initialElementState.height - dy;
+                        currentSelectedForResize.y = initialElementState.y + dy;
+                        currentSelectedForResize.height = initialElementState.height - dy;
                         break;
                     case 'ne':
-                        selectedElement.y = initialElementState.y + dy;
-                        selectedElement.width = initialElementState.width + dx;
-                        selectedElement.height = initialElementState.height - dy;
+                        currentSelectedForResize.y = initialElementState.y + dy;
+                        currentSelectedForResize.width = initialElementState.width + dx;
+                        currentSelectedForResize.height = initialElementState.height - dy;
                         break;
                     case 'e':
-                        selectedElement.width = initialElementState.width + dx;
+                        currentSelectedForResize.width = initialElementState.width + dx;
                         break;
                     case 'se':
-                        selectedElement.width = initialElementState.width + dx;
-                        selectedElement.height = initialElementState.height + dy;
+                        currentSelectedForResize.width = initialElementState.width + dx;
+                        currentSelectedForResize.height = initialElementState.height + dy;
                         break;
                     case 's':
-                        selectedElement.height = initialElementState.height + dy;
+                        currentSelectedForResize.height = initialElementState.height + dy;
                         break;
                     case 'sw':
-                        selectedElement.x = initialElementState.x + dx;
-                        selectedElement.width = initialElementState.width - dx;
-                        selectedElement.height = initialElementState.height + dy;
+                        currentSelectedForResize.x = initialElementState.x + dx;
+                        currentSelectedForResize.width = initialElementState.width - dx;
+                        currentSelectedForResize.height = initialElementState.height + dy;
                         break;
                     case 'w':
-                        selectedElement.x = initialElementState.x + dx;
-                        selectedElement.width = initialElementState.width - dx;
+                        currentSelectedForResize.x = initialElementState.x + dx;
+                        currentSelectedForResize.width = initialElementState.width - dx;
                         break;
                 }
                 
                 // Limiter la taille minimale
-                if (selectedElement.width < 20) selectedElement.width = 20;
-                if (selectedElement.height < 20) selectedElement.height = 20;
-            } else if (selectedElement.type === 'text') {
+                if (currentSelectedForResize.width < 20) currentSelectedForResize.width = 20;
+                if (currentSelectedForResize.height < 20) currentSelectedForResize.height = 20;
+                
+                // Synchroniser avec window.selectedElement et window.addedElements
+                window.selectedElement = currentSelectedForResize;
+                selectedElement = currentSelectedForResize;
+                const elementsArray = window.addedElements || [];
+                const elementIndex = elementsArray.findIndex(el => el.id === currentSelectedForResize.id);
+                if (elementIndex !== -1) {
+                    elementsArray[elementIndex] = currentSelectedForResize;
+                    window.addedElements = elementsArray;
+                }
+            } else if (currentSelectedForResize.type === 'text') {
                 // Pour le texte, on ajuste seulement la taille de police
                 const scale = 1 + (dx / 100);
-                selectedElement.fontSize = Math.max(12, Math.min(72, initialElementState.height * scale));
+                currentSelectedForResize.fontSize = Math.max(12, Math.min(72, initialElementState.height * scale));
+                
+                // Synchroniser avec window.selectedElement et window.addedElements
+                window.selectedElement = currentSelectedForResize;
+                selectedElement = currentSelectedForResize;
+                const elementsArray = window.addedElements || [];
+                const elementIndex = elementsArray.findIndex(el => el.id === currentSelectedForResize.id);
+                if (elementIndex !== -1) {
+                    elementsArray[elementIndex] = currentSelectedForResize;
+                    window.addedElements = elementsArray;
+                }
             }
             
             redrawCanvas();
             return;
         }
         
-        if (isMoving && selectedElement) {
+        // Utiliser window.selectedElement pour le déplacement
+        const currentSelectedForMove = window.selectedElement || selectedElement;
+        if (isMoving && currentSelectedForMove) {
             // Déplacer l'élément sélectionné sur tout l'écran
             let newX = currentX - offsetX;
             let newY = currentY - offsetY;
             
             // Permettre le déplacement sur tout l'écran (pas de limitation)
-            selectedElement.x = newX;
-            selectedElement.y = newY;
+            currentSelectedForMove.x = newX;
+            currentSelectedForMove.y = newY;
+            
+            // Synchroniser avec window.selectedElement et window.addedElements
+            window.selectedElement = currentSelectedForMove;
+            selectedElement = currentSelectedForMove;
+            const elementsArray = window.addedElements || [];
+            const elementIndex = elementsArray.findIndex(el => el.id === currentSelectedForMove.id);
+            if (elementIndex !== -1) {
+                elementsArray[elementIndex] = currentSelectedForMove;
+                window.addedElements = elementsArray;
+            }
+            
             redrawCanvas();
             return;
         }
         
         if (!isDrawing) {
             // Vérifier si on survole une poignée de redimensionnement
-            if (selectedElement) {
-                const handle = getResizeHandleAtPosition(currentX, currentY, selectedElement);
+            const currentSelectedForHover = window.selectedElement || selectedElement;
+            if (currentSelectedForHover) {
+                const handle = getResizeHandleAtPosition(currentX, currentY, currentSelectedForHover);
                 if (handle) {
                     // Changer le curseur selon le type de poignée
                     const cursors = {
@@ -1492,12 +2248,12 @@ function setupCanvasEvents() {
             
             // Vérifier si on survole un élément pour changer le curseur
             const hoveredElement = getElementAtPosition(currentX, currentY);
-            if (hoveredElement && !isTextMode && !currentShape && !isDrawMode && !isMarkerMode && !currentLineType) {
+            if (hoveredElement && !isTextMode && !currentShape && !isDrawMode && !isMarkerMode && !isEraserMode && !currentLineType) {
                 canvas.style.cursor = 'move';
             } else if (isTextMode) {
                 canvas.style.cursor = 'text';
-            } else if (currentShape || currentLineType || isDrawMode || isMarkerMode) {
-                canvas.style.cursor = 'crosshair';
+            } else if (currentShape || currentLineType || isDrawMode || isMarkerMode || isEraserMode) {
+                canvas.style.cursor = isEraserMode ? 'grab' : 'crosshair';
             } else {
                 canvas.style.cursor = 'default';
             }
@@ -1529,6 +2285,16 @@ function setupCanvasEvents() {
             ctx.fill();
             
             ctx.globalAlpha = 1.0;
+            ctx.globalCompositeOperation = 'source-over';
+            
+            lastX = currentX;
+            lastY = currentY;
+        } else if (isEraserMode) {
+            // Mode gomme - effacer avec destination-out
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(currentX, currentY, currentBrushSize, 0, Math.PI * 2);
+            ctx.fill();
             ctx.globalCompositeOperation = 'source-over';
             
             lastX = currentX;
@@ -1579,6 +2345,55 @@ function setupCanvasEvents() {
         }
     });
     
+    // Gestion du zoom avec la molette de souris pour les formes sélectionnées
+    canvas.addEventListener('wheel', function(e) {
+        // Vérifier que le canvas est activé
+        if (canvas.style.pointerEvents === 'none') {
+            return;
+        }
+        
+        // Vérifier qu'une forme est sélectionnée
+        const currentSelectedElement = window.selectedElement || selectedElement;
+        if (!currentSelectedElement || currentSelectedElement.type !== 'shape') {
+            return;
+        }
+        
+        // Empêcher le scroll de la page
+        e.preventDefault();
+        
+        // Calculer le facteur de zoom (agrandir ou réduire)
+        const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1; // Réduire si scroll vers le bas, agrandir si vers le haut
+        
+        // Calculer le centre de la forme
+        const centerX = currentSelectedElement.x + currentSelectedElement.width / 2;
+        const centerY = currentSelectedElement.y + currentSelectedElement.height / 2;
+        
+        // Calculer les nouvelles dimensions
+        const newWidth = Math.max(20, currentSelectedElement.width * zoomFactor);
+        const newHeight = Math.max(20, currentSelectedElement.height * zoomFactor);
+        
+        // Ajuster la position pour garder le centre fixe
+        currentSelectedElement.x = centerX - newWidth / 2;
+        currentSelectedElement.y = centerY - newHeight / 2;
+        currentSelectedElement.width = newWidth;
+        currentSelectedElement.height = newHeight;
+        
+        // Synchroniser avec window.selectedElement
+        window.selectedElement = currentSelectedElement;
+        selectedElement = currentSelectedElement;
+        
+        // Mettre à jour l'élément dans window.addedElements
+        const elementsArray = window.addedElements || [];
+        const elementIndex = elementsArray.findIndex(el => el.id === currentSelectedElement.id);
+        if (elementIndex !== -1) {
+            elementsArray[elementIndex] = currentSelectedElement;
+            window.addedElements = elementsArray;
+        }
+        
+        // Redessiner le canvas
+        redrawCanvas();
+    }, { passive: false });
+    
     // Gestion du menu contextuel (clic droit)
     canvas.addEventListener('contextmenu', function(e) {
         // Vérifier que le canvas est activé
@@ -1606,8 +2421,9 @@ function setupCanvasEvents() {
         // Vérifier si on clique sur un élément
         const elementAtPosition = getElementAtPosition(x, y);
         
-        if (clickedElement && (clickedElement.type === 'shape' || clickedElement.type === 'text')) {
-            selectedElement = clickedElement;
+        if (elementAtPosition && (elementAtPosition.type === 'shape' || elementAtPosition.type === 'text')) {
+            selectedElement = elementAtPosition;
+            window.selectedElement = elementAtPosition;
             redrawCanvas();
             
             // Afficher le menu contextuel
@@ -1629,6 +2445,9 @@ function setupCanvasEvents() {
             hideContextMenu();
         }
     });
+    } catch (error) {
+        console.error('Erreur lors de la configuration des événements du canvas:', error);
+    }
 }
 
 function hideContextMenu() {
@@ -1639,13 +2458,17 @@ function hideContextMenu() {
 }
 
 function deleteSelectedElement() {
-    if (selectedElement) {
+    const currentSelected = window.selectedElement || selectedElement;
+    if (currentSelected) {
         // Trouver l'index de l'élément dans le tableau
-        const index = addedElements.findIndex(el => el.id === selectedElement.id);
+        const elementsArray = window.addedElements || [];
+        const index = elementsArray.findIndex(el => el.id === currentSelected.id);
         if (index !== -1) {
             // Supprimer l'élément
-            addedElements.splice(index, 1);
+            elementsArray.splice(index, 1);
+            window.addedElements = elementsArray;
             selectedElement = null;
+            window.selectedElement = null;
             hideContextMenu();
             redrawCanvas();
             updateCanvasPointerEvents(); // Mettre à jour l'état du canvas
@@ -1701,34 +2524,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             }
             
-            // Ajouter plusieurs gestionnaires pour être sûr
-            toolsBtn.addEventListener('click', handleToolsClick, {capture: true, passive: false});
-            toolsBtn.addEventListener('mousedown', handleToolsClick, {capture: true, passive: false});
-            
-            // Vérifier que le menu existe et tester l'ouverture
-            const menuCheck = document.getElementById('toolsMenu');
-            console.log('Menu trouvé au chargement:', menuCheck); // Debug
-            if (!menuCheck) {
-                console.error('Le menu toolsMenu n\'existe pas dans le DOM');
-            } else {
-                // Tester l'ouverture du menu au clic
-                console.log('Menu existe, test de l\'ouverture...');
-                // Ajouter un test visuel
-                menuCheck.style.border = '3px solid red'; // Pour voir si le menu est là
-                setTimeout(() => {
-                    menuCheck.style.border = '';
-                }, 2000);
+            // Désactiver le canvas par défaut pour ne pas bloquer le bouton
+            // Le canvas sera réactivé uniquement quand nécessaire (formes sélectionnées, etc.)
+            if (canvas) {
+                canvas.style.pointerEvents = 'none';
+                canvas.style.zIndex = '50';
             }
             
-            // Test direct de la fonction
-            console.log('toggleToolsMenu disponible:', typeof toggleToolsMenu);
-            if (typeof toggleToolsMenu === 'function') {
-                console.log('toggleToolsMenu est une fonction, prêt à être utilisé');
-            } else {
-                console.error('toggleToolsMenu n\'est pas une fonction !');
-            }
-            
-            // Fonction pour désactiver le canvas quand on survole le bouton
+            // Désactiver le canvas quand on survole le bouton
             toolsBtn.addEventListener('mouseenter', function() {
                 if (canvas) {
                     canvas.style.pointerEvents = 'none';
@@ -1736,21 +2539,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            // Surveiller le canvas et le désactiver si nécessaire
-            setInterval(function() {
-                if (canvas && toolsBtn) {
-                    const rect = toolsBtn.getBoundingClientRect();
-                    const mouseX = window.mouseX || 0;
-                    const mouseY = window.mouseY || 0;
-                    
-                    // Si la souris est sur le bouton, désactiver le canvas
-                    if (mouseX >= rect.left && mouseX <= rect.right && 
-                        mouseY >= rect.top && mouseY <= rect.bottom) {
+            // Réactiver le canvas quand on quitte le bouton (sauf si le menu est ouvert)
+            toolsBtn.addEventListener('mouseleave', function() {
+                const menu = document.getElementById('toolsMenu');
+                const isMenuOpen = menu && menu.classList.contains('active');
+                if (canvas && !isMenuOpen) {
+                    // Ne réactiver le canvas que si une forme est sélectionnée
+                    const hasSelectedElement = window.selectedElement || (window.addedElements && window.addedElements.length > 0);
+                    if (hasSelectedElement) {
+                        canvas.style.pointerEvents = 'auto';
+                        canvas.style.zIndex = '100';
+                    }
+                }
+            });
+            
+            // Gestion du bouton "Sauvegarder"
+            const saveBtn = document.getElementById('saveBtn');
+            if (saveBtn) {
+                saveBtn.style.cssText += 'z-index: 10001 !important; pointer-events: auto !important; position: relative !important;';
+                
+                saveBtn.addEventListener('mouseenter', function() {
+                    if (canvas) {
                         canvas.style.pointerEvents = 'none';
                         canvas.style.zIndex = '50';
                     }
-                }
-            }, 50);
+                });
+                
+                saveBtn.addEventListener('mouseleave', function() {
+                    const menu = document.getElementById('toolsMenu');
+                    const isMenuOpen = menu && menu.classList.contains('active');
+                    if (canvas && !isMenuOpen) {
+                        const hasSelectedElement = window.selectedElement || (window.addedElements && window.addedElements.length > 0);
+                        if (hasSelectedElement) {
+                            canvas.style.pointerEvents = 'auto';
+                            canvas.style.zIndex = '100';
+                        }
+                    }
+                });
+            }
         } else {
             // Si le bouton n'existe pas, le canvas peut être activé par défaut
             if (canvas) {
@@ -1804,5 +2630,91 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Erreur lors de l\'initialisation:', error);
     }
 });
+
+// Script de débogage - à supprimer en production
+window.testShapes = function() {
+    console.log('=== TEST DES FORMES ===');
+    console.log('window.selectShape:', typeof window.selectShape);
+    console.log('window.canvas:', !!window.canvas, window.canvas ? {
+        width: window.canvas.width,
+        height: window.canvas.height,
+        style: {
+            display: window.canvas.style.display,
+            visibility: window.canvas.style.visibility,
+            zIndex: window.canvas.style.zIndex,
+            pointerEvents: window.canvas.style.pointerEvents
+        }
+    } : null);
+    console.log('window.ctx:', !!window.ctx);
+    console.log('window.drawShape:', typeof window.drawShape);
+    console.log('window.redrawCanvas:', typeof window.redrawCanvas);
+    console.log('window.addedElements:', window.addedElements ? window.addedElements.length : 0, window.addedElements);
+    
+    const canvas = document.getElementById('editingCanvas');
+    console.log('Canvas DOM:', !!canvas, canvas ? {
+        width: canvas.width,
+        height: canvas.height,
+        style: {
+            display: canvas.style.display,
+            visibility: canvas.style.visibility,
+            zIndex: canvas.style.zIndex,
+            pointerEvents: canvas.style.pointerEvents,
+            clipPath: canvas.style.clipPath
+        }
+    } : null);
+    
+    const image = document.getElementById('editableImage');
+    console.log('Image:', !!image, image ? {
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+        rect: image.getBoundingClientRect()
+    } : null);
+    
+    if (typeof window.selectShape === 'function') {
+        console.log('Test: Appel de selectShape("square")...');
+        window.selectShape('square');
+    } else {
+        console.error('window.selectShape n\'est pas une fonction!');
+    }
+};
+
+// Fonction de test pour vérifier le dessin directement
+window.testDrawShape = function() {
+    console.log('=== TEST DRAW SHAPE DIRECT ===');
+    const canvas = document.getElementById('editingCanvas');
+    const ctx = canvas ? canvas.getContext('2d') : null;
+    
+    if (!canvas || !ctx) {
+        console.error('Canvas ou contexte non disponible');
+        return;
+    }
+    
+    // Forcer la visibilité
+    canvas.style.setProperty('display', 'block', 'important');
+    canvas.style.setProperty('visibility', 'visible', 'important');
+    canvas.style.setProperty('opacity', '1', 'important');
+    canvas.style.setProperty('clip-path', 'none', 'important');
+    
+    // S'assurer que le canvas a une taille
+    if (canvas.width === 0 || canvas.height === 0) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    
+    // Dessiner un carré de test au centre
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    const size = 100;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#FFD700';
+    ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+    ctx.lineWidth = 3;
+    ctx.fillRect(centerX - size/2, centerY - size/2, size, size);
+    ctx.strokeRect(centerX - size/2, centerY - size/2, size, size);
+    
+    console.log('✅ Carré de test dessiné au centre:', {centerX, centerY, size});
+    console.log('Si vous voyez un carré jaune au centre, le canvas fonctionne!');
+};
 </script>
 {% endblock %}

@@ -66,6 +66,32 @@ La reconnaissance vocale permet de dicter vos recherches directement dans la bar
 
 **Note** : La reconnaissance vocale nécessite un navigateur moderne (Chrome, Edge, Safari) et l'autorisation d'accès au microphone.
 
+### Édition d'images
+
+L'application permet d'éditer vos images avec de nombreux outils :
+
+1. **Accéder aux outils** : Cliquez sur le bouton "🔧 Outils" sur la page Image
+2. **Ajouter des formes** :
+   - Cliquez sur "📐 Formes" dans le menu
+   - Sélectionnez une forme (carré, rond, triangle, etc.)
+   - La forme apparaît au centre de l'image
+   - Utilisez la molette de la souris pour redimensionner
+   - Cliquez et glissez pour déplacer
+3. **Dessiner sur l'image** :
+   - Cliquez sur "🖌️ Dessin" dans le menu
+   - Choisissez une couleur parmi les 20 disponibles
+   - Cliquez sur "🖍️ Feutre" pour activer le dessin
+   - Dessinez directement sur l'image avec la souris
+   - Utilisez "🧹 Gomme" pour effacer vos dessins
+   - Cliquez sur "✋ Désactiver" pour désactiver les outils de dessin
+4. **Sauvegarder l'image modifiée** :
+   - Cliquez sur "💾 Sauvegarder l'image modifiée" pour télécharger l'image sur votre appareil
+   - Le fichier sera nommé avec la date et l'heure pour éviter les écrasements
+5. **Envoyer à l'API** :
+   - (Optionnel) Saisissez du texte dans la barre de recherche
+   - Cliquez sur "ENVOYER" dans la barre intelligente
+   - L'image modifiée et le texte seront envoyés simultanément à l'API externe
+
 ### API externe de traitement (requise pour certaines fonctionnalités)
 
 Pour utiliser l'API externe de traitement de médias et de requêtes :
@@ -143,7 +169,10 @@ projet ydays/
 - ✅ Suppression de fichiers
 - ✅ Drag & drop pour l'upload
 - ✅ Envoi à l'API externe pour traitement via bouton "ENVOYER"
+- ✅ **Envoi de l'image modifiée** : export automatique et envoi de l'image modifiée avec toutes les annotations
+- ✅ **Envoi simultané** : envoi de l'image modifiée et du texte de la barre de recherche en une seule requête
 - ✅ Téléchargement des médias traités
+- ✅ **Téléchargement local** : sauvegarde de l'image modifiée directement sur l'appareil
 
 ### Interface utilisateur
 - ✅ Design moderne avec fond doré et motifs
@@ -167,15 +196,21 @@ projet ydays/
 - ✅ Validation des champs obligatoires
 
 ### Édition d'images
-- ✅ **Menu Outils** : menu déroulant accessible depuis la page Image
+- ✅ **Menu Outils** : menu déroulant accessible depuis la page Image avec un seul clic
 - ✅ **Sous-menu Formes** : 7 formes disponibles (carré, carré arrondi, rond, triangle isocèle, triangle isocèle inversé, losange, hexagone)
 - ✅ **Sous-menu Lignes** : 3 types de lignes (flèche, courbe, ligne torsadée)
-- ✅ **Sous-menu Dessin** : palette de 20 couleurs avec outil feutre pour colorier l'image
+- ✅ **Sous-menu Dessin** : palette de 20 couleurs avec outil feutre pour dessiner sur l'image
+- ✅ **Feutre** : outil de dessin avec couleur personnalisable et taille ajustable
+- ✅ **Gomme** : outil pour effacer les dessins au feutre sur l'image
+- ✅ **Désactivation des outils** : bouton pour désactiver le feutre et la gomme
 - ✅ **Ajout de formes** : clic sur une forme pour l'ajouter directement sur l'image au centre de l'écran
-- ✅ **Déplacement et redimensionnement** : formes et éléments déplaçables et redimensionnables sur toute l'image
+- ✅ **Déplacement et redimensionnement** : formes et éléments déplaçables et redimensionnables avec la molette de la souris
 - ✅ **Suppression** : clic droit sur un élément pour le supprimer
 - ✅ **Bouton Retour** : retour au menu principal depuis tous les sous-menus
 - ✅ **Canvas interactif** : édition en temps réel avec Canvas API
+- ✅ **Sauvegarde locale** : bouton "Sauvegarder l'image modifiée" pour télécharger l'image modifiée sur l'ordinateur/téléphone
+- ✅ **Export automatique** : export automatique de l'image modifiée avant envoi à l'API
+- ✅ **Envoi simultané** : envoi de l'image modifiée et du texte de la barre de recherche simultanément à l'API externe via le bouton "ENVOYER"
 
 ### Fonctionnalités avancées
 - ✅ **Reconnaissance vocale** : transcription en temps réel de la voix dans la barre de recherche
@@ -239,6 +274,16 @@ Ce projet est fourni tel quel, sans garantie.
 Projet développé dans le cadre de YDays.
 
 ## 🔄 Changelog
+
+### Version 2.6
+- ✨ **Feutre et Gomme** : outils de dessin et d'effacement pour modifier l'image
+- ✨ **Bouton "Sauvegarder l'image modifiée"** : téléchargement de l'image modifiée sur l'ordinateur/téléphone
+- ✨ **Export automatique** : export automatique de l'image modifiée avant envoi à l'API
+- ✨ **Envoi simultané** : envoi de l'image modifiée et du texte de la barre de recherche simultanément à l'API externe
+- ✨ **Désactivation des outils** : bouton pour désactiver le feutre et la gomme après utilisation
+- ✨ **Amélioration du menu Outils** : ouverture avec un seul clic (plus besoin de maintenir)
+- ✨ **Gestion améliorée** : meilleure détection de l'image modifiée et messages de statut plus clairs
+- 🐛 **Corrections** : résolution des problèmes de détection de l'image modifiée lors de l'envoi à l'API
 
 ### Version 2.5
 - ✨ **Menu Outils d'édition** : menu déroulant accessible depuis la page Image
