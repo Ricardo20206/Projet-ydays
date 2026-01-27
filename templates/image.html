@@ -140,59 +140,111 @@
         try {
             console.log('selectTool appelé avec:', tool);
             
-            // Fermer tous les sous-menus d'abord
-            document.querySelectorAll('.shapes-submenu').forEach(submenu => {
-                submenu.classList.remove('active');
-                submenu.style.right = '-400px';
-            });
+            // Vérifier que tool est valide
+            if (!tool || typeof tool !== 'string') {
+                console.error('selectTool: tool invalide:', tool);
+                return;
+            }
+            
+            // Fermer tous les sous-menus d'abord de manière sécurisée
+            try {
+                const allSubmenus = document.querySelectorAll('.shapes-submenu');
+                if (allSubmenus && allSubmenus.length > 0) {
+                    allSubmenus.forEach(submenu => {
+                        try {
+                            if (submenu) {
+                                submenu.classList.remove('active');
+                                submenu.style.right = '-400px';
+                            }
+                        } catch (e) {
+                            console.warn('Erreur lors de la fermeture d\'un sous-menu:', e);
+                        }
+                    });
+                }
+            } catch (e) {
+                console.warn('Erreur lors de la fermeture des sous-menus:', e);
+            }
             
             // Cacher le menu principal temporairement pour laisser place au sous-menu
-            const mainMenu = document.getElementById('toolsMenu');
-            if (mainMenu) {
-                mainMenu.style.right = '-400px';
+            try {
+                const mainMenu = document.getElementById('toolsMenu');
+                if (mainMenu) {
+                    mainMenu.style.right = '-400px';
+                }
+            } catch (e) {
+                console.warn('Erreur lors de la fermeture du menu principal:', e);
+            }
+            
+            // Désactiver le canvas immédiatement pour éviter qu'il bloque les clics
+            try {
+                const canvas = document.getElementById('editingCanvas');
+                if (canvas) {
+                    canvas.style.pointerEvents = 'none';
+                    canvas.style.zIndex = '50';
+                }
+            } catch (e) {
+                console.warn('Erreur lors de la désactivation du canvas:', e);
             }
             
             // Attendre un peu avant d'ouvrir le sous-menu pour l'animation
             setTimeout(() => {
-                // Ouvrir le sous-menu correspondant
-                if (tool === 'formes') {
-                    const shapesMenu = document.getElementById('shapesSubmenu');
-                    if (shapesMenu) {
-                        shapesMenu.classList.add('active');
-                        shapesMenu.style.right = '0';
-                        shapesMenu.style.display = 'flex';
-                        shapesMenu.style.visibility = 'visible';
-                        shapesMenu.style.opacity = '1';
-                        shapesMenu.style.zIndex = '2001';
-                        console.log('Sous-menu Formes ouvert');
+                try {
+                    // Ouvrir le sous-menu correspondant
+                    if (tool === 'formes') {
+                        const shapesMenu = document.getElementById('shapesSubmenu');
+                        if (shapesMenu) {
+                            shapesMenu.classList.add('active');
+                            shapesMenu.style.setProperty('right', '0', 'important');
+                            shapesMenu.style.setProperty('display', 'flex', 'important');
+                            shapesMenu.style.setProperty('visibility', 'visible', 'important');
+                            shapesMenu.style.setProperty('opacity', '1', 'important');
+                            shapesMenu.style.setProperty('z-index', '2001', 'important');
+                            console.log('✅ Sous-menu Formes ouvert');
+                        } else {
+                            console.error('❌ Sous-menu Formes non trouvé dans le DOM');
+                            alert('Erreur: Le sous-menu Formes n\'a pas été trouvé. Veuillez recharger la page.');
+                        }
+                    } else if (tool === 'lignes') {
+                        const linesMenu = document.getElementById('linesSubmenu');
+                        if (linesMenu) {
+                            linesMenu.classList.add('active');
+                            linesMenu.style.setProperty('right', '0', 'important');
+                            linesMenu.style.setProperty('display', 'flex', 'important');
+                            linesMenu.style.setProperty('visibility', 'visible', 'important');
+                            linesMenu.style.setProperty('opacity', '1', 'important');
+                            linesMenu.style.setProperty('z-index', '2001', 'important');
+                            console.log('✅ Sous-menu Lignes ouvert');
+                        } else {
+                            console.error('❌ Sous-menu Lignes non trouvé dans le DOM');
+                            alert('Erreur: Le sous-menu Lignes n\'a pas été trouvé. Veuillez recharger la page.');
+                        }
+                    } else if (tool === 'dessin') {
+                        const drawMenu = document.getElementById('drawSubmenu');
+                        if (drawMenu) {
+                            drawMenu.classList.add('active');
+                            drawMenu.style.setProperty('right', '0', 'important');
+                            drawMenu.style.setProperty('display', 'flex', 'important');
+                            drawMenu.style.setProperty('visibility', 'visible', 'important');
+                            drawMenu.style.setProperty('opacity', '1', 'important');
+                            drawMenu.style.setProperty('z-index', '2001', 'important');
+                            console.log('✅ Sous-menu Dessin ouvert');
+                        } else {
+                            console.error('❌ Sous-menu Dessin non trouvé dans le DOM');
+                            alert('Erreur: Le sous-menu Dessin n\'a pas été trouvé. Veuillez recharger la page.');
+                        }
+                    } else {
+                        console.warn('selectTool: tool non reconnu:', tool);
                     }
-                } else if (tool === 'lignes') {
-                    const linesMenu = document.getElementById('linesSubmenu');
-                    if (linesMenu) {
-                        linesMenu.classList.add('active');
-                        linesMenu.style.right = '0';
-                        linesMenu.style.display = 'flex';
-                        linesMenu.style.visibility = 'visible';
-                        linesMenu.style.opacity = '1';
-                        linesMenu.style.zIndex = '2001';
-                        console.log('Sous-menu Lignes ouvert');
-                    }
-                } else if (tool === 'dessin') {
-                    const drawMenu = document.getElementById('drawSubmenu');
-                    if (drawMenu) {
-                        drawMenu.classList.add('active');
-                        drawMenu.style.right = '0';
-                        drawMenu.style.display = 'flex';
-                        drawMenu.style.visibility = 'visible';
-                        drawMenu.style.opacity = '1';
-                        drawMenu.style.zIndex = '2001';
-                        console.log('Sous-menu Dessin ouvert');
-                    }
+                } catch (error) {
+                    console.error('Erreur dans setTimeout de selectTool:', error);
+                    console.error('Stack trace:', error.stack);
+                    alert('Erreur lors de l\'ouverture du sous-menu: ' + error.message);
                 }
             }, 100);
         } catch (error) {
-            console.error('Erreur dans selectTool:', error);
-            alert('Erreur: ' + error.message);
+            console.error('Erreur critique dans selectTool:', error);
+            console.error('Stack trace:', error.stack);
+            alert('Erreur critique: ' + error.message + '\nVeuillez recharger la page.');
         }
     };
     
@@ -645,9 +697,9 @@
             <button class="tools-close-btn" onclick="window.toggleToolsMenu();">×</button>
         </div>
         <div class="tools-menu-content">
-            <button class="tool-btn" onclick="if(typeof window.selectTool === 'function') { window.selectTool('formes'); } else { alert('selectTool non trouvé'); } return false;">📐 Formes</button>
-            <button class="tool-btn" onclick="if(typeof window.selectTool === 'function') { window.selectTool('lignes'); } else { alert('selectTool non trouvé'); } return false;">📏 Lignes</button>
-            <button class="tool-btn" onclick="if(typeof window.selectTool === 'function') { window.selectTool('dessin'); } else { alert('selectTool non trouvé'); } return false;">🖌️ Dessin</button>
+            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); try { if(typeof window.selectTool === 'function') { window.selectTool('formes'); } else { console.error('selectTool non trouvé'); alert('Erreur: selectTool non trouvé. Veuillez recharger la page.'); } } catch(e) { console.error('Erreur lors du clic sur Formes:', e); alert('Erreur: ' + e.message); } return false;" style="pointer-events: auto !important; z-index: 2003 !important; position: relative !important;">📐 Formes</button>
+            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); try { if(typeof window.selectTool === 'function') { window.selectTool('lignes'); } else { console.error('selectTool non trouvé'); alert('Erreur: selectTool non trouvé. Veuillez recharger la page.'); } } catch(e) { console.error('Erreur lors du clic sur Lignes:', e); alert('Erreur: ' + e.message); } return false;" style="pointer-events: auto !important; z-index: 2003 !important; position: relative !important;">📏 Lignes</button>
+            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); try { if(typeof window.selectTool === 'function') { window.selectTool('dessin'); } else { console.error('selectTool non trouvé'); alert('Erreur: selectTool non trouvé. Veuillez recharger la page.'); } } catch(e) { console.error('Erreur lors du clic sur Dessin:', e); alert('Erreur: ' + e.message); } return false;" style="pointer-events: auto !important; z-index: 2003 !important; position: relative !important;">🖌️ Dessin</button>
         </div>
     </div>
     
