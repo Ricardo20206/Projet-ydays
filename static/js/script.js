@@ -4,11 +4,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const sendToApiBtn = document.getElementById('sendToApiBtn');
     const apiStatusGlobal = document.getElementById('apiStatusGlobal');
     
-    // Afficher le bouton si un média est présent
-    if (sendToApiBtn && window.currentMedia) {
-        if (window.currentMedia.video || window.currentMedia.image) {
-            sendToApiBtn.style.display = 'block';
-        }
+    // Afficher le bouton ENVOYER - il doit toujours être visible pour envoyer média ou texte
+    if (sendToApiBtn) {
+        sendToApiBtn.style.display = 'block';
+        console.log('Bouton ENVOYER affiché et prêt à être utilisé');
     }
     
     // Gestion de la recherche
@@ -167,22 +166,46 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } else {
                 // Si on n'est pas sur la page d'édition d'image, récupérer le média depuis window.currentMedia
+                // window.currentMedia est initialisé dans base.html à partir des attributs data-video et data-image
                 const currentMedia = window.currentMedia;
                 
-                if (currentMedia && currentMedia.video) {
-                    filename = currentMedia.video;
-                    isVideo = true;
-                } else if (currentMedia && currentMedia.image) {
-                    filename = currentMedia.image;
-                    isVideo = false;
+                console.log('currentMedia:', currentMedia);
+                
+                if (currentMedia) {
+                    if (currentMedia.video) {
+                        filename = currentMedia.video;
+                        isVideo = true;
+                        console.log('Vidéo détectée:', filename);
+                    } else if (currentMedia.image) {
+                        filename = currentMedia.image;
+                        isVideo = false;
+                        console.log('Image détectée:', filename);
+                    }
+                }
+                
+                // Si window.currentMedia n'a pas de média, essayer de détecter depuis l'URL
+                if (!filename) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const videoParam = urlParams.get('video');
+                    const imageParam = urlParams.get('image');
+                    
+                    if (videoParam) {
+                        filename = videoParam;
+                        isVideo = true;
+                        console.log('Vidéo détectée depuis URL:', filename);
+                    } else if (imageParam) {
+                        filename = imageParam;
+                        isVideo = false;
+                        console.log('Image détectée depuis URL:', filename);
+                    }
                 }
             }
             
             // Vérifier si on a quelque chose à envoyer
-            console.log('Vérification finale - filename:', filename, 'searchQuery:', searchQuery);
+            console.log('Vérification finale - filename:', filename, 'searchQuery:', searchQuery, 'isVideo:', isVideo);
             if (!filename && !searchQuery) {
                 console.error('Aucun média ni texte à envoyer');
-                alert('Aucun média ni texte à envoyer. Veuillez charger un média ou saisir une requête.');
+                alert('Aucun média ni texte à envoyer. Veuillez charger un média ou saisir une requête dans la barre de recherche.');
                 return;
             }
             
@@ -237,7 +260,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Afficher le statut de chargement avec indication du texte
             if (apiStatusGlobal) {
                 const mediaType = isVideo ? 'vidéo' : 'image';
-                let statusMessage = `<div class="status-message status-loading">⏳ Envoi de l'${mediaType === 'image' ? 'image' : 'vidéo'} modifiée`;
+                let statusMessage = `<div class="status-message status-loading">⏳ Envoi de la ${mediaType}`;
+                if (isImagePage) {
+                    statusMessage += ' modifiée';
+                }
                 if (searchQuery) {
                     statusMessage += ` avec le texte "${searchQuery.substring(0, 30)}${searchQuery.length > 30 ? '...' : ''}"`;
                 }
@@ -261,7 +287,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     if (apiStatusGlobal) {
                         const mediaType = isVideo ? 'vidéo' : 'image';
-                        let successMessage = `✅ ${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)} modifiée envoyée et traitée avec succès`;
+                        let successMessage = `✅ ${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)}`;
+                        if (isImagePage) {
+                            successMessage += ' modifiée';
+                        }
+                        successMessage += ' envoyée et traitée avec succès';
                         if (searchQuery) {
                             successMessage += ` avec le texte "${searchQuery.substring(0, 30)}${searchQuery.length > 30 ? '...' : ''}"`;
                         }
