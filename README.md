@@ -68,29 +68,37 @@ La reconnaissance vocale permet de dicter vos recherches directement dans la bar
 
 ### Édition d'images
 
-L'application permet d'éditer vos images avec de nombreux outils :
+L'application permet d'éditer vos images avec de nombreux outils. **Les objets ajoutés (formes, lignes, texte, dessins) restent fixés à l'image et défilent avec elle** lorsque vous parcourez la page.
 
 1. **Accéder aux outils** : Cliquez sur le bouton "🔧 Outils" sur la page Image
 2. **Ajouter des formes** :
    - Cliquez sur "📐 Formes" dans le menu
    - Sélectionnez une forme (carré, rond, triangle, etc.)
    - La forme apparaît au centre de l'image
-   - Utilisez la molette de la souris pour redimensionner
+   - Utilisez la molette de la souris pour redimensionner, ou les poignées en la sélectionnant
    - Cliquez et glissez pour déplacer
-3. **Dessiner sur l'image** :
+3. **Ajouter des lignes** :
+   - Cliquez sur "📏 Lignes" puis choisissez un type (flèche, courbe, zigzag)
+   - La ligne apparaît au centre de l'image ; déplacez les poignées de début et de fin pour l’ajuster
+   - Cliquez et glissez pour déplacer la ligne entière
+4. **Ajouter du texte** :
+   - Cliquez sur "📝 Texte", saisissez votre texte et réglez la taille, puis cliquez sur l’image pour le placer
+5. **Dessiner sur l'image** :
    - Cliquez sur "🖌️ Dessin" dans le menu
    - Choisissez une couleur parmi les 20 disponibles
    - Cliquez sur "🖍️ Feutre" pour activer le dessin
    - Dessinez directement sur l'image avec la souris
    - Utilisez "🧹 Gomme" pour effacer vos dessins
    - Cliquez sur "✋ Désactiver" pour désactiver les outils de dessin
-4. **Sauvegarder l'image modifiée** :
+6. **Sauvegarder l'image modifiée** :
    - Cliquez sur "💾 Sauvegarder l'image modifiée" pour télécharger l'image sur votre appareil
    - Le fichier sera nommé avec la date et l'heure pour éviter les écrasements
-5. **Envoyer à l'API** :
+7. **Envoyer à l'API** :
    - (Optionnel) Saisissez du texte dans la barre de recherche
    - Cliquez sur "ENVOYER" dans la barre intelligente
    - L'image modifiée et le texte seront envoyés simultanément à l'API externe
+
+**Suppression** : Clic droit sur une forme, une ligne ou un texte pour afficher le menu et le supprimer.
 
 ### API externe de traitement (requise pour certaines fonctionnalités)
 
@@ -198,14 +206,15 @@ projet ydays/
 ### Édition d'images
 - ✅ **Menu Outils** : menu déroulant accessible depuis la page Image avec un seul clic
 - ✅ **Sous-menu Formes** : 7 formes disponibles (carré, carré arrondi, rond, triangle isocèle, triangle isocèle inversé, losange, hexagone)
-- ✅ **Sous-menu Lignes** : 3 types de lignes (flèche, courbe, ligne torsadée)
+- ✅ **Sous-menu Lignes** : 3 types de lignes (flèche, courbe, zigzag) ; déplacement et redimensionnement par les poignées début/fin
+- ✅ **Sous-menu Texte** : ajout de texte sur l'image avec taille réglable
 - ✅ **Sous-menu Dessin** : palette de 20 couleurs avec outil feutre pour dessiner sur l'image
 - ✅ **Feutre** : outil de dessin avec couleur personnalisable et taille ajustable
 - ✅ **Gomme** : outil pour effacer les dessins au feutre sur l'image
 - ✅ **Désactivation des outils** : bouton pour désactiver le feutre et la gomme
-- ✅ **Ajout de formes** : clic sur une forme pour l'ajouter directement sur l'image au centre de l'écran
-- ✅ **Déplacement et redimensionnement** : formes et éléments déplaçables et redimensionnables avec la molette de la souris
-- ✅ **Suppression** : clic droit sur un élément pour le supprimer
+- ✅ **Ajout de formes/lignes** : clic pour ajouter au centre de l'image ; formes et lignes déplaçables et redimensionnables (poignées ou molette)
+- ✅ **Objets liés à l'image** : le canvas d’édition est calé sur l’image ; formes, lignes, texte et dessins défilent avec l’image lors du défilement de la page
+- ✅ **Suppression** : clic droit sur un élément (forme, ligne, texte) pour le supprimer
 - ✅ **Bouton Retour** : retour au menu principal depuis tous les sous-menus
 - ✅ **Canvas interactif** : édition en temps réel avec Canvas API
 - ✅ **Sauvegarde locale** : bouton "Sauvegarder l'image modifiée" pour télécharger l'image modifiée sur l'ordinateur/téléphone
@@ -274,6 +283,12 @@ Ce projet est fourni tel quel, sans garantie.
 Projet développé dans le cadre de YDays.
 
 ## 🔄 Changelog
+
+### Version 2.7
+- ✨ **Objets qui défilent avec l'image** : le canvas d’édition est positionné exactement sur l’image ; formes, lignes, texte et dessins restent fixés à l’image et se déplacent avec elle lors du défilement de la page
+- ✨ **Coordonnées en espace image** : toutes les annotations sont stockées en coordonnées relatives à l’image pour un comportement cohérent au scroll et au redimensionnement
+- ✨ **Sous-menu Texte** : ajout de texte sur l’image avec taille réglable
+- 🐛 **Stabilité** : évitement du dépassement de pile (Maximum call stack size exceeded) lors du clic sur une forme ; exécution différée de `redrawCanvas` et `updateCanvasPointerEvents`, garde anti-réentrance sur le clic canvas
 
 ### Version 2.6
 - ✨ **Feutre et Gomme** : outils de dessin et d'effacement pour modifier l'image

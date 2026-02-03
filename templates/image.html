@@ -597,22 +597,10 @@
                     return;
                 }
                 
-                // Calculer la position - utiliser getBoundingClientRect de manière sécurisée
-                let centerX, centerY;
-                try {
-                    const imageRect = imageElement.getBoundingClientRect();
-                    centerX = imageRect.left + imageRect.width / 2;
-                    centerY = imageRect.top + imageRect.height / 2;
-                } catch (rectError) {
-                    console.error('Erreur getBoundingClientRect:', rectError);
-                    // Utiliser une position par défaut au centre de l'écran
-                    centerX = window.innerWidth / 2;
-                    centerY = window.innerHeight / 2;
-                }
-                
+                // Position au centre du canvas (espace image) pour que la forme défile avec l'image
                 const defaultSize = 100;
-                const shapeStartX = centerX - defaultSize / 2;
-                const shapeStartY = centerY - defaultSize / 2;
+                const shapeStartX = (currentCanvas.width / 2) - defaultSize / 2;
+                const shapeStartY = (currentCanvas.height / 2) - defaultSize / 2;
                 
                 console.log('Création de la forme:', {shapeType, shapeStartX, shapeStartY});
                 
@@ -651,13 +639,29 @@
                     return;
                 }
                 
-                // Sélectionner la forme
+                // Sélectionner la forme et activer les interactions (déplacer, agrandir/réduire)
                 window.selectedElement = newElement;
+                if (typeof selectedElement !== 'undefined') selectedElement = newElement;
                 
-                console.log('✅ Forme créée avec succès');
+                // Activer le canvas pour pouvoir déplacer et redimensionner la forme
+                if (currentCanvas) {
+                    currentCanvas.style.pointerEvents = 'auto';
+                    currentCanvas.style.zIndex = '100';
+                }
                 
-                // Réinitialiser le flag IMMÉDIATEMENT après le dessin
+                // Réinitialiser le flag AVANT tout appel différé pour éviter la récursion
                 window.isSelectingShape = false;
+                
+                // Différer redrawCanvas et updateCanvasPointerEvents pour éviter "Maximum call stack size exceeded"
+                setTimeout(function() {
+                    try {
+                        if (typeof redrawCanvas === 'function') redrawCanvas();
+                        if (typeof updateCanvasPointerEvents === 'function') updateCanvasPointerEvents();
+                        console.log('✅ Forme créée - vous pouvez la déplacer (glisser-déposer) et l\'agrandir/réduire (poignées ou molette)');
+                    } catch (err) {
+                        console.warn('Erreur lors du redessin après ajout de forme:', err);
+                    }
+                }, 0);
                 
             } catch (error) {
                 console.error('ERREUR dans selectShape:', error);
@@ -1004,27 +1008,27 @@ function initCanvas() {
         if (canvas.style.opacity !== '1') {
             canvas.style.setProperty('opacity', '1', 'important');
         }
-        canvas.style.setProperty('position', 'fixed', 'important');
-        canvas.style.setProperty('top', '0', 'important');
-        canvas.style.setProperty('left', '0', 'important');
-        canvas.style.setProperty('z-index', '100', 'important');
-        canvas.style.setProperty('pointer-events', 'none', 'important');
+        // Position/taille du canvas sont définies par resizeCanvas() pour recouvrir l'image (défile avec la page)
         
-        // Attendre que l'image soit chargée
+        // Attendre que l'image soit chargée puis positionner le canvas sur l'image
         if (img.complete && img.naturalWidth > 0) {
-            // Ne pas appeler resizeCanvas si déjà en cours
-            if (!isResizingCanvas) {
-                resizeCanvas();
-            }
+            if (!isResizingCanvas) resizeCanvas();
         } else {
             img.onload = function() {
-                if (!isResizingCanvas) {
-                    resizeCanvas();
-                }
+                if (!isResizingCanvas) resizeCanvas();
             };
             img.onerror = function() {
                 console.error('Erreur lors du chargement de l\'image');
             };
+        }
+        // Réaligner le canvas si la taille de l'image change (layout, zoom, etc.)
+        if (typeof ResizeObserver !== 'undefined') {
+            try {
+                const ro = new ResizeObserver(function() {
+                    if (!isResizingCanvas && canvas && img) resizeCanvas();
+                });
+                ro.observe(img);
+            } catch (err) { /* ignore */ }
         }
     } catch (error) {
         console.error('Erreur lors de l\'initialisation du canvas:', error);
@@ -1033,23 +1037,17 @@ function initCanvas() {
     }
 }
 
-// Fonction pour activer/désactiver le canvas selon l'outil sélectionné
-function updateCanvasPointerEvents() {
+// Implémentation réelle (appelée de façon différée pour éviter récursion / stack overflow)
+function updateCanvasPointerEventsImpl() {
     if (!canvas) return;
     
-    // Éviter les appels récursifs
-    if (isUpdatingPointerEvents) {
-        return;
-    }
-    
+    if (isUpdatingPointerEvents) return;
     isUpdatingPointerEvents = true;
     
     try {
-        // Vérifier si le menu est ouvert - si oui, TOUJOURS désactiver le canvas
         const menu = document.getElementById('toolsMenu');
         const isMenuOpen = menu && menu.classList.contains('active');
         
-        // Vérifier si on est sur le bouton "Outils" ou "Sauvegarder"
         const toolsBtn = document.getElementById('toolsBtn');
         const saveBtn = document.getElementById('saveBtn');
         let isOverButton = false;
@@ -1062,17 +1060,14 @@ function updateCanvasPointerEvents() {
             );
         }
         
-        // Si le menu est ouvert ou si on est sur le bouton, désactiver le canvas
         if (isMenuOpen || isOverButton) {
             if (canvas.style.pointerEvents !== 'none') {
                 canvas.style.pointerEvents = 'none';
                 canvas.style.zIndex = '50';
             }
-            isUpdatingPointerEvents = false;
             return;
         }
         
-        // Activer seulement si un outil est sélectionné ou si une forme est sélectionnée
         const currentSelected = window.selectedElement || selectedElement;
         const hasActiveTool = currentShape !== null || 
                              currentLineType !== null || 
@@ -1086,17 +1081,28 @@ function updateCanvasPointerEvents() {
         if (hasActiveTool) {
             if (canvas.style.pointerEvents !== 'auto') {
                 canvas.style.pointerEvents = 'auto';
-                canvas.style.zIndex = '1000'; // Z-index élevé pour l'interaction
+                canvas.style.zIndex = '1000';
             }
         } else {
             if (canvas.style.pointerEvents !== 'none') {
                 canvas.style.pointerEvents = 'none';
-                canvas.style.zIndex = '50'; // En dessous des boutons
+                canvas.style.zIndex = '50';
             }
         }
     } finally {
         isUpdatingPointerEvents = false;
     }
+}
+
+// Toujours différer pour ne jamais exécuter dans la pile d'un event handler (évite "Maximum call stack size exceeded")
+let updateCanvasPointerEventsScheduled = false;
+function updateCanvasPointerEvents() {
+    if (updateCanvasPointerEventsScheduled) return;
+    updateCanvasPointerEventsScheduled = true;
+    setTimeout(function() {
+        updateCanvasPointerEventsScheduled = false;
+        updateCanvasPointerEventsImpl();
+    }, 0);
 }
 
 // Tracker la position de la souris pour updateCanvasPointerEvents
@@ -1118,74 +1124,45 @@ document.addEventListener('mousemove', function(e) {
 function resizeCanvas() {
     if (!canvas || !img) return;
     
-    // Éviter les appels récursifs
-    if (isResizingCanvas) {
-        console.warn('resizeCanvas déjà en cours, appel ignoré');
-        return;
-    }
-    
+    if (isResizingCanvas) return;
     isResizingCanvas = true;
     
-    // Attendre un peu pour que la page soit rendue
     setTimeout(() => {
         try {
-            // Le canvas couvre tout l'écran MAIS exclut la zone des boutons avec clip-path
-            if (window.innerWidth > 0 && window.innerHeight > 0) {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-                canvas.style.width = '100vw';
-                canvas.style.height = '100vh';
-                canvas.style.position = 'fixed';
-                canvas.style.top = '0';
-                canvas.style.left = '0';
-                canvas.style.pointerEvents = 'none'; // Désactivé par défaut pour ne pas bloquer les boutons
-                canvas.style.cursor = 'default';
-                canvas.style.zIndex = '50'; // En dessous des boutons
-                
-                // Calculer la zone des boutons pour l'exclure avec clip-path
-                const buttonsContainer = document.getElementById('buttonsContainer');
-                if (buttonsContainer) {
-                    const rect = buttonsContainer.getBoundingClientRect();
-                    // Créer un clip-path qui exclut la zone des boutons
-                    // Format: polygon(0% 0%, 100% 0%, 100% Y1%, X2% Y1%, X2% Y2%, X1% Y2%, X1% Y1%, 0% Y1%)
-                    const top = rect.top;
-                    const bottom = rect.bottom;
-                    const left = Math.max(0, rect.left - 20); // Marge de sécurité
-                    const right = Math.min(window.innerWidth, rect.right + 20);
-                    
-                    // Créer un polygone qui exclut la zone des boutons
-                    const clipPath = `polygon(
-                        0% 0%, 
-                        100% 0%, 
-                        100% ${top}px, 
-                        ${right}px ${top}px, 
-                        ${right}px ${bottom}px, 
-                        ${left}px ${bottom}px, 
-                        ${left}px ${top}px, 
-                        0% ${top}px
-                    )`;
-                    canvas.style.clipPath = clipPath;
-                    canvas.style.webkitClipPath = clipPath; // Pour Safari
-                } else {
-                    // Pas de boutons, pas besoin de clip-path
-                    canvas.style.clipPath = 'none';
-                    canvas.style.webkitClipPath = 'none';
-                }
-                
-                // Mettre à jour selon l'état actuel (sans déclencher de récursion)
-                updateCanvasPointerEvents();
-                
-                // Redessiner les éléments après redimensionnement (seulement si pas déjà en cours)
-                if (window.addedElements && window.addedElements.length > 0 && !isRedrawing) {
-                    redrawCanvas();
-                }
+            const imageElement = document.getElementById('editableImage');
+            if (!imageElement || imageElement.offsetWidth === 0 || imageElement.offsetHeight === 0) {
+                isResizingCanvas = false;
+                return;
+            }
+            // Positionner le canvas exactement sur l'image pour qu'il défile avec la page
+            const w = imageElement.offsetWidth;
+            const h = imageElement.offsetHeight;
+            const left = imageElement.offsetLeft;
+            const top = imageElement.offsetTop;
+            
+            canvas.width = w;
+            canvas.height = h;
+            canvas.style.position = 'absolute';
+            canvas.style.left = left + 'px';
+            canvas.style.top = top + 'px';
+            canvas.style.width = w + 'px';
+            canvas.style.height = h + 'px';
+            canvas.style.pointerEvents = 'none';
+            canvas.style.cursor = 'default';
+            canvas.style.zIndex = '10';
+            canvas.style.clipPath = 'none';
+            canvas.style.webkitClipPath = 'none';
+            
+            updateCanvasPointerEvents();
+            if (window.addedElements && window.addedElements.length > 0 && !isRedrawing) {
+                redrawCanvas();
             }
         } catch (error) {
             console.error('Erreur lors du redimensionnement du canvas:', error);
         } finally {
             isResizingCanvas = false;
         }
-    }, 100);
+    }, 50);
 }
 
 // La fonction selectTool est déjà définie en haut du script dans window.selectTool
@@ -1259,17 +1236,11 @@ window.selectLine = function(lineType) {
             alert('Veuillez attendre que l\'image soit chargée.');
             return;
         }
-        
-        let centerX, centerY;
-        try {
-            const imageRect = imageElement.getBoundingClientRect();
-            centerX = imageRect.left + imageRect.width / 2;
-            centerY = imageRect.top + imageRect.height / 2;
-        } catch (e) {
-            centerX = window.innerWidth / 2;
-            centerY = window.innerHeight / 2;
-        }
-        
+        // Coordonnées en espace canvas pour que la ligne défile avec l'image
+        const cw = currentCanvas.width || imageElement.offsetWidth;
+        const ch = currentCanvas.height || imageElement.offsetHeight;
+        const centerX = cw / 2;
+        const centerY = ch / 2;
         const defaultLength = 80;
         const x1 = centerX - defaultLength;
         const y1 = centerY;
@@ -1925,122 +1896,81 @@ function drawTextOnCanvas(text, x, y, elementId = null) {
     return { id, x, y, width: textWidth, height: textHeight };
 }
 
-// Rendre redrawCanvas accessible globalement
-window.redrawCanvas = function() {
-    // Éviter les appels récursifs
-    if (isRedrawing) {
-        console.warn('redrawCanvas déjà en cours, appel ignoré');
-        return;
-    }
-    
+// Implémentation réelle du redessin (appelée de façon différée pour éviter stack overflow)
+function redrawCanvasImpl() {
+    if (isRedrawing) return;
     isRedrawing = true;
     
     try {
-        // Utiliser window.ctx et window.canvas si disponibles
         let currentCtx = window.ctx || ctx;
         let currentCanvas = window.canvas || canvas;
         
-        // Si le canvas n'est pas disponible, essayer de le récupérer
         if (!currentCanvas) {
             currentCanvas = document.getElementById('editingCanvas');
-            if (currentCanvas) {
-                window.canvas = currentCanvas;
-            }
+            if (currentCanvas) window.canvas = currentCanvas;
         }
-        
-        // Si le contexte n'est pas disponible, essayer de le récupérer
         if (!currentCtx && currentCanvas) {
             currentCtx = currentCanvas.getContext('2d');
-            if (currentCtx) {
-                window.ctx = currentCtx;
-            }
+            if (currentCtx) window.ctx = currentCtx;
         }
         
         if (!currentCtx || !currentCanvas) {
-            console.error('Canvas ou contexte non disponible pour redrawCanvas');
-            console.log('currentCtx:', currentCtx);
-            console.log('currentCanvas:', currentCanvas);
             isRedrawing = false;
             return;
         }
         
-        // Vérifier que le canvas a une taille valide
         if (currentCanvas.width === 0 || currentCanvas.height === 0) {
-            console.log('Canvas sans taille, redimensionnement...');
-            currentCanvas.width = window.innerWidth;
-            currentCanvas.height = window.innerHeight;
-            console.log('Canvas redimensionné à:', currentCanvas.width, 'x', currentCanvas.height);
+            currentCanvas.width = window.innerWidth || 1920;
+            currentCanvas.height = window.innerHeight || 1080;
         }
         
-        // S'assurer que le canvas est visible (sans déclencher d'événements)
-        if (currentCanvas.style.display !== 'block') {
-            currentCanvas.style.setProperty('display', 'block', 'important');
-        }
-        if (currentCanvas.style.visibility !== 'visible') {
-            currentCanvas.style.setProperty('visibility', 'visible', 'important');
-        }
-        if (currentCanvas.style.opacity !== '1') {
-            currentCanvas.style.setProperty('opacity', '1', 'important');
-        }
+        if (currentCanvas.style.display !== 'block') currentCanvas.style.setProperty('display', 'block', 'important');
+        if (currentCanvas.style.visibility !== 'visible') currentCanvas.style.setProperty('visibility', 'visible', 'important');
+        if (currentCanvas.style.opacity !== '1') currentCanvas.style.setProperty('opacity', '1', 'important');
         if (currentCanvas.style.clipPath !== 'none') {
             currentCanvas.style.setProperty('clip-path', 'none', 'important');
             currentCanvas.style.setProperty('-webkit-clip-path', 'none', 'important');
         }
         
-        // Effacer le canvas complètement
         currentCtx.clearRect(0, 0, currentCanvas.width, currentCanvas.height);
         
-        // Redessiner tous les éléments
         const elements = window.addedElements || addedElements || [];
-        console.log('redrawCanvas: nombre d\'éléments à redessiner:', elements.length);
-        
         if (elements && Array.isArray(elements) && elements.length > 0) {
-            elements.forEach((element, index) => {
+            elements.forEach((element) => {
                 if (!element) return;
-                
                 try {
-                    if (element.type === 'text') {
-                        if (typeof drawTextOnCanvas === 'function') {
-                            drawTextOnCanvas(element.text, element.x, element.y, element.id);
-                        }
-                    } else if (element.type === 'shape') {
-                        const drawShapeFunc = window.drawShape;
-                        if (typeof drawShapeFunc === 'function') {
-                            drawShapeFunc(element.shapeType, element.x, element.y, element.width, element.height, element.id);
-                        }
-                    } else if (element.type === 'line') {
-                        if (typeof drawLine === 'function') {
-                            drawLine(element.lineType, element.x1, element.y1, element.x2, element.y2);
-                        }
+                    if (element.type === 'text' && typeof drawTextOnCanvas === 'function') {
+                        drawTextOnCanvas(element.text, element.x, element.y, element.id);
+                    } else if (element.type === 'shape' && typeof window.drawShape === 'function') {
+                        window.drawShape(element.shapeType, element.x, element.y, element.width, element.height, element.id);
+                    } else if (element.type === 'line' && typeof drawLine === 'function') {
+                        drawLine(element.lineType, element.x1, element.y1, element.x2, element.y2);
                     }
-                } catch (error) {
-                    console.error('Erreur lors du dessin d\'un élément:', error, element);
-                }
+                } catch (err) { console.error('Erreur dessin élément:', err); }
             });
         }
         
-        // Si un élément est sélectionné, dessiner les poignées de redimensionnement
         const currentSelectedElement = window.selectedElement || selectedElement;
-        if (currentSelectedElement && (currentSelectedElement.type === 'shape' || currentSelectedElement.type === 'text' || currentSelectedElement.type === 'line')) {
-            try {
-                if (typeof drawResizeHandles === 'function') {
-                    drawResizeHandles(currentSelectedElement);
-                }
-            } catch (error) {
-                console.error('Erreur lors du dessin des poignées:', error);
-            }
+        if (currentSelectedElement && (currentSelectedElement.type === 'shape' || currentSelectedElement.type === 'text' || currentSelectedElement.type === 'line') && typeof drawResizeHandles === 'function') {
+            try { drawResizeHandles(currentSelectedElement); } catch (err) { console.error('Erreur poignées:', err); }
         }
-        
-        console.log('✅ redrawCanvas terminé');
     } catch (error) {
-        console.error('Erreur lors du redessin du canvas:', error);
+        console.error('Erreur redrawCanvas:', error);
     } finally {
-        // Réinitialiser le flag après un court délai pour permettre les mises à jour nécessaires
-        setTimeout(() => {
-            isRedrawing = false;
-        }, 10);
+        isRedrawing = false;
     }
 }
+
+// Toujours différer pour ne jamais exécuter dans la pile d'un event handler (évite "Maximum call stack size exceeded")
+let redrawCanvasScheduled = false;
+window.redrawCanvas = function() {
+    if (redrawCanvasScheduled) return;
+    redrawCanvasScheduled = true;
+    setTimeout(function() {
+        redrawCanvasScheduled = false;
+        redrawCanvasImpl();
+    }, 0);
+};
 
 function drawResizeHandles(element) {
     const currentCtx = window.ctx || ctx;
@@ -2135,6 +2065,17 @@ function distanceToSegment(px, py, x1, y1, x2, y2) {
     return Math.sqrt((px - projX) * (px - projX) + (py - projY) * (py - projY));
 }
 
+// Convertit les coordonnées viewport (clientX, clientY) en coordonnées canvas (relatives à l'image) pour que les objets défilent avec l'image
+function getCanvasCoords(clientX, clientY) {
+    const c = document.getElementById('editingCanvas');
+    if (!c) return null;
+    const r = c.getBoundingClientRect();
+    return {
+        x: clientX - r.left,
+        y: clientY - r.top
+    };
+}
+
 function getElementAtPosition(x, y) {
     const elementsArray = window.addedElements || [];
     for (let i = elementsArray.length - 1; i >= 0; i--) {
@@ -2181,12 +2122,15 @@ function setupCanvasEvents() {
         eventsSetup = true;
     
     canvas.addEventListener('mousedown', function(e) {
+        // Anti-réentrance : éviter tout traitement si un mousedown est déjà en cours (évite stack overflow)
+        if (window.isHandlingCanvasMouseDown) return;
+        window.isHandlingCanvasMouseDown = true;
+        try {
         // VÉRIFIER D'ABORD si le canvas est activé
         if (!canvas || canvas.style.pointerEvents === 'none') {
-            return; // Canvas désactivé, ignorer
+            return;
         }
         
-        // VÉRIFIER D'ABORD si on clique sur un bouton ou élément interactif
         const domElement = document.elementFromPoint(e.clientX, e.clientY);
         
         // Ignorer les clics sur les boutons, menus, et autres éléments interactifs
@@ -2213,14 +2157,14 @@ function setupCanvasEvents() {
             return; // Ignorer ce clic
         }
         
-        // Utiliser les coordonnées directement de la fenêtre (tout l'écran)
-        const x = e.clientX;
-        const y = e.clientY;
+        // Coordonnées en espace canvas (relatives à l'image) pour que les objets défilent avec la page
+        const coords = getCanvasCoords(e.clientX, e.clientY);
+        if (!coords) return;
+        const x = coords.x;
+        const y = coords.y;
         
-        // Utiliser window.selectedElement comme source de vérité
         const currentSelected = window.selectedElement || selectedElement;
         
-        // Vérifier d'abord si on clique sur une poignée de redimensionnement
         if (currentSelected) {
             resizeHandle = getResizeHandleAtPosition(x, y, currentSelected);
             if (resizeHandle) {
@@ -2257,14 +2201,20 @@ function setupCanvasEvents() {
                 offsetY = y - clickedElement.y;
             }
             canvas.style.cursor = 'move';
-            redrawCanvas();
-            updateCanvasPointerEvents();
+            // Différer pour éviter "Maximum call stack size exceeded" au clic sur une forme
+            setTimeout(function() {
+                if (typeof redrawCanvas === 'function') redrawCanvas();
+                if (typeof updateCanvasPointerEvents === 'function') updateCanvasPointerEvents();
+            }, 0);
         } else if (!isTextMode && !currentShape && !isDrawMode && !isMarkerMode && !isEraserMode && !currentLineType) {
             // Désélectionner si on clique ailleurs
             selectedElement = null;
             window.selectedElement = null; // Synchroniser avec window
-            redrawCanvas();
-            updateCanvasPointerEvents(); // Désactiver si aucun élément sélectionné
+            // Différer pour éviter récursion
+            setTimeout(function() {
+                if (typeof redrawCanvas === 'function') redrawCanvas();
+                if (typeof updateCanvasPointerEvents === 'function') updateCanvasPointerEvents();
+            }, 0);
         } else if (isTextMode) {
             // Placer le texte à la position cliquée
             if (currentText) {
@@ -2300,19 +2250,20 @@ function setupCanvasEvents() {
             startX = x;
             startY = y;
         }
+        } finally {
+            setTimeout(function() { window.isHandlingCanvasMouseDown = false; }, 0);
+        }
     });
     
     canvas.addEventListener('mousemove', function(e) {
-        // Vérifier que le canvas est activé
-        if (canvas.style.pointerEvents === 'none') {
-            return;
-        }
+        if (canvas.style.pointerEvents === 'none') return;
         
-        // Utiliser les coordonnées directement de la fenêtre (tout l'écran)
-        const currentX = e.clientX;
-        const currentY = e.clientY;
+        // Coordonnées en espace canvas (relatives à l'image)
+        const coords = getCanvasCoords(e.clientX, e.clientY);
+        if (!coords) return;
+        const currentX = coords.x;
+        const currentY = coords.y;
         
-        // Utiliser window.selectedElement comme source de vérité
         const currentSelectedForResize = window.selectedElement || selectedElement;
         
         if (isResizing && currentSelectedForResize && resizeHandle && initialElementState) {
@@ -2616,19 +2567,21 @@ function setupCanvasEvents() {
             return; // Ignorer
         }
         
-        e.preventDefault(); // Empêcher le menu contextuel par défaut
+        e.preventDefault();
         
-        // Utiliser les coordonnées directement de la fenêtre
-        const x = e.clientX;
-        const y = e.clientY;
+        const coords = getCanvasCoords(e.clientX, e.clientY);
+        if (!coords) return;
+        const x = coords.x;
+        const y = coords.y;
         
-        // Vérifier si on clique sur un élément
         const elementAtPosition = getElementAtPosition(x, y);
         
         if (elementAtPosition && (elementAtPosition.type === 'shape' || elementAtPosition.type === 'text' || elementAtPosition.type === 'line')) {
             selectedElement = elementAtPosition;
             window.selectedElement = elementAtPosition;
-            redrawCanvas();
+            setTimeout(function() {
+                if (typeof redrawCanvas === 'function') redrawCanvas();
+            }, 0);
             
             // Afficher le menu contextuel
             const contextMenu = document.getElementById('contextMenu');
