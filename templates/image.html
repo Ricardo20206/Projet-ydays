@@ -936,6 +936,7 @@ let lastY = 0;
 let offsetX = 0;
 let offsetY = 0;
 let initialElementState = null;
+let initialLineMoveState = null;
 let canvas, ctx, img, imageData;
 let addedElements = []; // Stocker tous les éléments ajoutés (formes et textes)
 let eventsSetup = false; // Flag pour éviter les doublons d'événements
@@ -1236,19 +1237,84 @@ function showLinesSubmenu() {
 
 // La fonction closeLinesSubmenu est déjà définie en haut du script
 
-function selectLineType(lineType) {
-    currentLineType = lineType;
-    currentShape = null;
-    isTextMode = false;
-    isDrawMode = false;
-    closeLinesSubmenu();
-    
-    if (canvas && ctx) {
-        canvas.style.cursor = 'crosshair';
+// Ajouter une ligne à l'image au centre (comme les formes) - déplaçable et rallongable
+window.selectLine = function(lineType) {
+    console.log('=== selectLine appelé avec:', lineType);
+    try {
+        if (typeof window.closeLinesSubmenu === 'function') {
+            window.closeLinesSubmenu();
+        }
+        currentLineType = null;
+        currentShape = null;
+        isTextMode = false;
+        isDrawMode = false;
+        
+        const currentCanvas = document.getElementById('editingCanvas');
+        const imageElement = document.getElementById('editableImage');
+        if (!currentCanvas || !imageElement) {
+            alert('Canvas ou image non trouvé.');
+            return;
+        }
+        if (!imageElement.complete || imageElement.naturalWidth === 0) {
+            alert('Veuillez attendre que l\'image soit chargée.');
+            return;
+        }
+        
+        let centerX, centerY;
+        try {
+            const imageRect = imageElement.getBoundingClientRect();
+            centerX = imageRect.left + imageRect.width / 2;
+            centerY = imageRect.top + imageRect.height / 2;
+        } catch (e) {
+            centerX = window.innerWidth / 2;
+            centerY = window.innerHeight / 2;
+        }
+        
+        const defaultLength = 80;
+        const x1 = centerX - defaultLength;
+        const y1 = centerY;
+        const x2 = centerX + defaultLength;
+        const y2 = centerY;
+        
+        if (!window.addedElements) window.addedElements = [];
+        const newElementId = 'line_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        const newElement = {
+            type: 'line',
+            id: newElementId,
+            lineType: lineType,
+            x1: x1, y1: y1, x2: x2, y2: y2
+        };
+        window.addedElements.push(newElement);
+        
+        window.selectedElement = newElement;
+        selectedElement = newElement;
+        
+        if (canvas && ctx) {
+            canvas.style.pointerEvents = 'auto';
+            canvas.style.zIndex = '100';
+        }
+        redrawCanvas();
+        updateCanvasPointerEvents();
+        console.log('✅ Ligne ajoutée:', newElement);
+    } catch (error) {
+        console.error('Erreur selectLine:', error);
+        alert('Erreur: ' + error.message);
     }
-    
-    // Activer le canvas pour le dessin
-    updateCanvasPointerEvents();
+};
+
+function selectLineType(lineType) {
+    // Comportement par défaut : ajouter la ligne à l'image immédiatement
+    if (typeof window.selectLine === 'function') {
+        window.selectLine(lineType);
+    } else {
+        currentLineType = lineType;
+        currentShape = null;
+        isTextMode = false;
+        isDrawMode = false;
+        closeLinesSubmenu();
+        if (canvas && ctx) canvas.style.cursor = 'crosshair';
+        updateCanvasPointerEvents();
+    }
 }
 
 function showTextSubmenu() {
@@ -1555,6 +1621,51 @@ window.exportImageToBlob = function() {
                     exportCtx.textBaseline = 'top';
                     exportCtx.strokeText(element.text, scaledX, scaledY);
                     exportCtx.fillText(element.text, scaledX, scaledY);
+                    exportCtx.restore();
+                } else if (element.type === 'line') {
+                    const x1 = element.x1 * scaleX, y1 = element.y1 * scaleY, x2 = element.x2 * scaleX, y2 = element.y2 * scaleY;
+                    exportCtx.save();
+                    exportCtx.strokeStyle = '#FFD700';
+                    exportCtx.fillStyle = '#FFD700';
+                    exportCtx.lineWidth = 3 * scaleX;
+                    exportCtx.lineCap = 'round';
+                    exportCtx.lineJoin = 'round';
+                    if (element.lineType === 'straight-arrow') {
+                        exportCtx.beginPath();
+                        exportCtx.moveTo(x1, y1);
+                        exportCtx.lineTo(x2, y2);
+                        exportCtx.stroke();
+                        const angle = Math.atan2(y2 - y1, x2 - x1);
+                        const arrowLength = 15 * scaleX;
+                        exportCtx.beginPath();
+                        exportCtx.moveTo(x2, y2);
+                        exportCtx.lineTo(x2 - arrowLength * Math.cos(angle - Math.PI / 6), y2 - arrowLength * Math.sin(angle - Math.PI / 6));
+                        exportCtx.lineTo(x2 - arrowLength * Math.cos(angle + Math.PI / 6), y2 - arrowLength * Math.sin(angle + Math.PI / 6));
+                        exportCtx.closePath();
+                        exportCtx.fill();
+                    } else if (element.lineType === 'curved') {
+                        const midX = (x1 + x2) / 2, midY = (y1 + y2) / 2;
+                        const controlX = midX + (y2 - y1) * 0.3, controlY = midY - (x2 - x1) * 0.3;
+                        exportCtx.beginPath();
+                        exportCtx.moveTo(x1, y1);
+                        exportCtx.quadraticCurveTo(controlX, controlY, x2, y2);
+                        exportCtx.stroke();
+                    } else if (element.lineType === 'zigzag') {
+                        const dx = x2 - x1, dy = y2 - y1;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        const segments = Math.max(3, Math.floor(distance / (20 * scaleX)));
+                        const perpX = -dy / distance, perpY = dx / distance;
+                        const amplitude = 10 * scaleX;
+                        exportCtx.beginPath();
+                        exportCtx.moveTo(x1, y1);
+                        for (let i = 1; i <= segments; i++) {
+                            const t = i / segments;
+                            const x = x1 + dx * t, y = y1 + dy * t;
+                            const offset = (i % 2 === 0 ? 1 : -1) * amplitude;
+                            exportCtx.lineTo(x + perpX * offset, y + perpY * offset);
+                        }
+                        exportCtx.stroke();
+                    }
                     exportCtx.restore();
                 }
             });
@@ -1895,11 +2006,11 @@ window.redrawCanvas = function() {
                     } else if (element.type === 'shape') {
                         const drawShapeFunc = window.drawShape;
                         if (typeof drawShapeFunc === 'function') {
-                            // Dessiner la forme avec ses propriétés actuelles
-                            console.log(`Redessin forme ${index}:`, element);
                             drawShapeFunc(element.shapeType, element.x, element.y, element.width, element.height, element.id);
-                        } else {
-                            console.error('window.drawShape n\'est pas une fonction');
+                        }
+                    } else if (element.type === 'line') {
+                        if (typeof drawLine === 'function') {
+                            drawLine(element.lineType, element.x1, element.y1, element.x2, element.y2);
                         }
                     }
                 } catch (error) {
@@ -1910,7 +2021,7 @@ window.redrawCanvas = function() {
         
         // Si un élément est sélectionné, dessiner les poignées de redimensionnement
         const currentSelectedElement = window.selectedElement || selectedElement;
-        if (currentSelectedElement && (currentSelectedElement.type === 'shape' || currentSelectedElement.type === 'text')) {
+        if (currentSelectedElement && (currentSelectedElement.type === 'shape' || currentSelectedElement.type === 'text' || currentSelectedElement.type === 'line')) {
             try {
                 if (typeof drawResizeHandles === 'function') {
                     drawResizeHandles(currentSelectedElement);
@@ -1951,7 +2062,6 @@ function drawResizeHandles(element) {
             {x: element.x, y: element.y + element.height/2} // Milieu gauche
         );
     } else if (element.type === 'text') {
-        // 4 poignées pour le texte (coins)
         const metrics = currentCtx.measureText(element.text);
         handles.push(
             {x: element.x, y: element.y},
@@ -1959,6 +2069,9 @@ function drawResizeHandles(element) {
             {x: element.x + metrics.width, y: element.y + element.fontSize},
             {x: element.x, y: element.y + element.fontSize}
         );
+    } else if (element.type === 'line') {
+        handles.push({ x: element.x1, y: element.y1 });
+        handles.push({ x: element.x2, y: element.y2 });
     }
     
     // Dessiner les poignées
@@ -1976,7 +2089,7 @@ function drawResizeHandles(element) {
 function getResizeHandleAtPosition(x, y, element) {
     if (!element) return null;
     
-    const handleSize = 12; // Zone de détection plus large
+    const handleSize = 12;
     const handles = [];
     
     if (element.type === 'shape') {
@@ -1999,6 +2112,9 @@ function getResizeHandleAtPosition(x, y, element) {
             {x: element.x + metrics.width, y: element.y + element.fontSize, type: 'se'},
             {x: element.x, y: element.y + element.fontSize, type: 'sw'}
         );
+    } else if (element.type === 'line') {
+        handles.push({ x: element.x1, y: element.y1, type: 'start' });
+        handles.push({ x: element.x2, y: element.y2, type: 'end' });
     }
     
     for (let handle of handles) {
@@ -2011,8 +2127,15 @@ function getResizeHandleAtPosition(x, y, element) {
     return null;
 }
 
+function distanceToSegment(px, py, x1, y1, x2, y2) {
+    const dx = x2 - x1, dy = y2 - y1;
+    const len = Math.sqrt(dx * dx + dy * dy) || 1e-6;
+    const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / (len * len)));
+    const projX = x1 + t * dx, projY = y1 + t * dy;
+    return Math.sqrt((px - projX) * (px - projX) + (py - projY) * (py - projY));
+}
+
 function getElementAtPosition(x, y) {
-    // Chercher un élément à la position donnée (en ordre inverse pour prendre le dernier ajouté)
     const elementsArray = window.addedElements || [];
     for (let i = elementsArray.length - 1; i >= 0; i--) {
         const element = elementsArray[i];
@@ -2028,6 +2151,9 @@ function getElementAtPosition(x, y) {
                 y >= element.y && y <= element.y + element.height) {
                 return element;
             }
+        } else if (element.type === 'line') {
+            const d = distanceToSegment(x, y, element.x1, element.y1, element.x2, element.y2);
+            if (d <= 15) return element;
         }
     }
     return null;
@@ -2099,31 +2225,40 @@ function setupCanvasEvents() {
             resizeHandle = getResizeHandleAtPosition(x, y, currentSelected);
             if (resizeHandle) {
                 isResizing = true;
-                initialElementState = {
-                    x: currentSelected.x,
-                    y: currentSelected.y,
-                    width: currentSelected.width || (currentSelected.type === 'text' ? ctx.measureText(currentSelected.text).width : 0),
-                    height: currentSelected.height || (currentSelected.type === 'text' ? currentSelected.fontSize : 0)
-                };
+                if (currentSelected.type === 'line') {
+                    initialElementState = {
+                        x1: currentSelected.x1, y1: currentSelected.y1,
+                        x2: currentSelected.x2, y2: currentSelected.y2
+                    };
+                } else {
+                    initialElementState = {
+                        x: currentSelected.x,
+                        y: currentSelected.y,
+                        width: currentSelected.width || (currentSelected.type === 'text' ? ctx.measureText(currentSelected.text).width : 0),
+                        height: currentSelected.height || (currentSelected.type === 'text' ? currentSelected.fontSize : 0)
+                    };
+                }
                 startX = x;
                 startY = y;
                 return;
             }
         }
         
-        // Vérifier si on clique sur un élément existant pour le déplacer
         const clickedElement = getElementAtPosition(x, y);
         
         if (clickedElement && !isTextMode && !currentShape && !isDrawMode && !isMarkerMode && !currentLineType) {
-            // Mode déplacement ou sélection
             selectedElement = clickedElement;
-            window.selectedElement = clickedElement; // Synchroniser avec window
+            window.selectedElement = clickedElement;
             isMoving = true;
-            offsetX = x - clickedElement.x;
-            offsetY = y - clickedElement.y;
+            if (clickedElement.type === 'line') {
+                initialLineMoveState = { x1: clickedElement.x1, y1: clickedElement.y1, x2: clickedElement.x2, y2: clickedElement.y2 };
+            } else {
+                offsetX = x - clickedElement.x;
+                offsetY = y - clickedElement.y;
+            }
             canvas.style.cursor = 'move';
-            redrawCanvas(); // Redessiner pour afficher les poignées
-            updateCanvasPointerEvents(); // Activer le canvas pour l'interaction
+            redrawCanvas();
+            updateCanvasPointerEvents();
         } else if (!isTextMode && !currentShape && !isDrawMode && !isMarkerMode && !isEraserMode && !currentLineType) {
             // Désélectionner si on clique ailleurs
             selectedElement = null;
@@ -2237,11 +2372,24 @@ function setupCanvasEvents() {
                     window.addedElements = elementsArray;
                 }
             } else if (currentSelectedForResize.type === 'text') {
-                // Pour le texte, on ajuste seulement la taille de police
                 const scale = 1 + (dx / 100);
                 currentSelectedForResize.fontSize = Math.max(12, Math.min(72, initialElementState.height * scale));
-                
-                // Synchroniser avec window.selectedElement et window.addedElements
+                window.selectedElement = currentSelectedForResize;
+                selectedElement = currentSelectedForResize;
+                const elementsArray = window.addedElements || [];
+                const elementIndex = elementsArray.findIndex(el => el.id === currentSelectedForResize.id);
+                if (elementIndex !== -1) {
+                    elementsArray[elementIndex] = currentSelectedForResize;
+                    window.addedElements = elementsArray;
+                }
+            } else if (currentSelectedForResize.type === 'line') {
+                if (resizeHandle.type === 'start') {
+                    currentSelectedForResize.x1 = currentX;
+                    currentSelectedForResize.y1 = currentY;
+                } else if (resizeHandle.type === 'end') {
+                    currentSelectedForResize.x2 = currentX;
+                    currentSelectedForResize.y2 = currentY;
+                }
                 window.selectedElement = currentSelectedForResize;
                 selectedElement = currentSelectedForResize;
                 const elementsArray = window.addedElements || [];
@@ -2256,18 +2404,22 @@ function setupCanvasEvents() {
             return;
         }
         
-        // Utiliser window.selectedElement pour le déplacement
+        // Déplacement
         const currentSelectedForMove = window.selectedElement || selectedElement;
         if (isMoving && currentSelectedForMove) {
-            // Déplacer l'élément sélectionné sur tout l'écran
-            let newX = currentX - offsetX;
-            let newY = currentY - offsetY;
+            const dx = currentX - startX;
+            const dy = currentY - startY;
             
-            // Permettre le déplacement sur tout l'écran (pas de limitation)
-            currentSelectedForMove.x = newX;
-            currentSelectedForMove.y = newY;
+            if (currentSelectedForMove.type === 'line' && initialLineMoveState) {
+                currentSelectedForMove.x1 = initialLineMoveState.x1 + dx;
+                currentSelectedForMove.y1 = initialLineMoveState.y1 + dy;
+                currentSelectedForMove.x2 = initialLineMoveState.x2 + dx;
+                currentSelectedForMove.y2 = initialLineMoveState.y2 + dy;
+            } else {
+                currentSelectedForMove.x = currentX - offsetX;
+                currentSelectedForMove.y = currentY - offsetY;
+            }
             
-            // Synchroniser avec window.selectedElement et window.addedElements
             window.selectedElement = currentSelectedForMove;
             selectedElement = currentSelectedForMove;
             const elementsArray = window.addedElements || [];
@@ -2276,7 +2428,6 @@ function setupCanvasEvents() {
                 elementsArray[elementIndex] = currentSelectedForMove;
                 window.addedElements = elementsArray;
             }
-            
             redrawCanvas();
             return;
         }
@@ -2287,11 +2438,11 @@ function setupCanvasEvents() {
             if (currentSelectedForHover) {
                 const handle = getResizeHandleAtPosition(currentX, currentY, currentSelectedForHover);
                 if (handle) {
-                    // Changer le curseur selon le type de poignée
                     const cursors = {
                         'nw': 'nw-resize', 'n': 'n-resize', 'ne': 'ne-resize',
                         'e': 'e-resize', 'se': 'se-resize', 's': 's-resize',
-                        'sw': 'sw-resize', 'w': 'w-resize'
+                        'sw': 'sw-resize', 'w': 'w-resize',
+                        'start': 'nw-resize', 'end': 'se-resize'
                     };
                     canvas.style.cursor = cursors[handle.type] || 'default';
                     return;
@@ -2372,7 +2523,7 @@ function setupCanvasEvents() {
         
         if (isMoving) {
             isMoving = false;
-            // Ne pas désélectionner, garder l'élément sélectionné pour pouvoir le redimensionner
+            initialLineMoveState = null;
             canvas.style.cursor = 'default';
         }
         
@@ -2390,6 +2541,7 @@ function setupCanvasEvents() {
         
         if (isMoving) {
             isMoving = false;
+            initialLineMoveState = null;
         }
         
         if (isDrawing) {
@@ -2473,7 +2625,7 @@ function setupCanvasEvents() {
         // Vérifier si on clique sur un élément
         const elementAtPosition = getElementAtPosition(x, y);
         
-        if (elementAtPosition && (elementAtPosition.type === 'shape' || elementAtPosition.type === 'text')) {
+        if (elementAtPosition && (elementAtPosition.type === 'shape' || elementAtPosition.type === 'text' || elementAtPosition.type === 'line')) {
             selectedElement = elementAtPosition;
             window.selectedElement = elementAtPosition;
             redrawCanvas();
