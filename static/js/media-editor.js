@@ -1394,6 +1394,7 @@ window.exportImageToBlob = function() {
             
             const elements = window.addedElements || [];
             elements.forEach(element => {
+                if (element.removedAtTime !== undefined) return;
                 drawElementToExportCtx(element, exportCtx, scaleX, scaleY);
             });
             
@@ -1647,6 +1648,7 @@ window.recordModifiedVideo = function() {
         for (var i = 0; i < elements.length; i++) {
             var el = elements[i];
             if (el.addedAtTime !== undefined && el.addedAtTime > currentTime) continue;
+            if (el.removedAtTime !== undefined && el.removedAtTime <= currentTime) continue;
             drawElementToExportCtx(el, exportCtx, scaleX, scaleY);
         }
         var badge = document.getElementById('recordProgressBadge');
@@ -1859,7 +1861,7 @@ function redrawCanvasImpl() {
         const elements = window.addedElements || addedElements || [];
         if (elements && Array.isArray(elements) && elements.length > 0) {
             elements.forEach((element) => {
-                if (!element) return;
+                if (!element || element.removedAtTime !== undefined) return;
                 try {
                     if (element.type === 'text' && typeof drawTextOnCanvas === 'function') {
                         drawTextOnCanvas(element.text, element.x, element.y, element.id);
@@ -2002,6 +2004,7 @@ function getElementAtPosition(x, y) {
     const elementsArray = window.addedElements || [];
     for (let i = elementsArray.length - 1; i >= 0; i--) {
         const element = elementsArray[i];
+        if (element.removedAtTime !== undefined) continue;
         
         if (element.type === 'text') {
             const metrics = ctx.measureText(element.text);
@@ -2584,18 +2587,26 @@ function hideContextMenu() {
 function deleteSelectedElement() {
     const currentSelected = window.selectedElement || selectedElement;
     if (currentSelected) {
-        // Trouver l'index de l'élément dans le tableau
-        const elementsArray = window.addedElements || [];
-        const index = elementsArray.findIndex(el => el.id === currentSelected.id);
-        if (index !== -1) {
-            // Supprimer l'élément
-            elementsArray.splice(index, 1);
-            window.addedElements = elementsArray;
+        var mediaEl = getMediaEl();
+        if (mediaEl && mediaEl.tagName === 'VIDEO') {
+            currentSelected.removedAtTime = getCurrentMediaTime();
             selectedElement = null;
             window.selectedElement = null;
             hideContextMenu();
             redrawCanvas();
-            updateCanvasPointerEvents(); // Mettre à jour l'état du canvas
+            updateCanvasPointerEvents();
+        } else {
+            const elementsArray = window.addedElements || [];
+            const index = elementsArray.findIndex(el => el.id === currentSelected.id);
+            if (index !== -1) {
+                elementsArray.splice(index, 1);
+                window.addedElements = elementsArray;
+                selectedElement = null;
+                window.selectedElement = null;
+                hideContextMenu();
+                redrawCanvas();
+                updateCanvasPointerEvents();
+            }
         }
     }
 }
