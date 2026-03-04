@@ -462,8 +462,8 @@ document.addEventListener('DOMContentLoaded', function() {
             micIcon.addEventListener('click', function() {
                 alert('Votre navigateur ne supporte pas la reconnaissance vocale. Veuillez utiliser Chrome, Edge ou Safari.');
             });
-        });
-    }
+    });
+}
     
     // Gestion de l'icône son
     const soundIcon = document.querySelector('.sound-icon');

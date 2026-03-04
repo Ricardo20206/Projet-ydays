@@ -95,6 +95,12 @@ body.home-page .nav-links a:hover {
     background: rgba(255, 215, 0, 0.2);
 }
 
+/* Page d'accueil : toutes les écritures en Arial */
+body.home-page,
+body.home-page * {
+    font-family: Arial, sans-serif !important;
+}
+
 /* Page Vidéo - liens en bleu et gras */
 body.video-page .nav-links a {
     color: #0066CC;
@@ -952,5 +958,13 @@ footer {
 }
 
 #imageContainer img {
+    display: block;
+}
+
+#videoContainer {
+    position: relative;
+}
+
+#videoContainer video {
     display: block;
 }

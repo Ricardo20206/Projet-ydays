@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify, send_file
 from flask_mail import Mail, Message
 import os
 import requests
+import subprocess
+import tempfile
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -262,6 +264,53 @@ def send_to_api(filename):
         return jsonify({"error": "Impossible de se connecter à l'API externe. Assurez-vous qu'elle est démarrée sur le port 5001."}), 503
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/api/convert-webm-to-mp4", methods=["POST"])
+def convert_webm_to_mp4():
+    """Reçoit un fichier WebM (enregistrement avec annotations), le convertit en MP4 avec ffmpeg, renvoie le fichier."""
+    if "file" not in request.files:
+        return "Aucun fichier", 400
+    f = request.files["file"]
+    if not f or f.filename == "":
+        return "Aucun fichier", 400
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as tmp_in:
+            f.save(tmp_in.name)
+            path_in = tmp_in.name
+        path_out = path_in.replace(".webm", ".mp4")
+        try:
+            subprocess.run(
+                [
+                    "ffmpeg", "-y", "-i", path_in,
+                    "-c:v", "libx264", "-c:a", "aac", "-movflags", "+faststart",
+                    path_out
+                ],
+                check=True,
+                capture_output=True,
+                timeout=600,
+            )
+        except (subprocess.CalledProcessError, FileNotFoundError) as e:
+            if os.path.exists(path_in):
+                os.unlink(path_in)
+            return ("Conversion impossible (ffmpeg manquant ou erreur). Installez ffmpeg sur le serveur.", 500)
+        if not os.path.exists(path_out):
+            if os.path.exists(path_in):
+                os.unlink(path_in)
+            return "Fichier MP4 non créé", 500
+        try:
+            return send_file(
+                path_out,
+                mimetype="video/mp4",
+                as_attachment=True,
+                download_name="video_modifiee_annotations.mp4",
+            )
+        finally:
+            if os.path.exists(path_in):
+                os.unlink(path_in)
+            if os.path.exists(path_out):
+                os.unlink(path_out)
+    except Exception as e:
+        return (str(e), 500)
 
 if __name__ == "__main__":
     app.run(debug=True)

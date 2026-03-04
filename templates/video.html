@@ -6,6 +6,9 @@
         video: {{ video|default('null')|tojson }},
         image: null
     };
+    if (!window.addedElements) window.addedElements = [];
+    if (typeof window.isSelectingShape === 'undefined') window.isSelectingShape = false;
+    window.TOOLS_MENU_FROM_LEFT = true; // Menu Outils s'ouvre depuis la gauche sur la page vidéo
 </script>
 <div class="page-content">
     <h1 style="color: #2a2a2a; margin-bottom: 15px;">📹 Gestion des Vidéos</h1>
@@ -16,14 +19,111 @@
     </form>
     
     {% if video %}
-    <div class="media-container">
-        <video controls autoplay>
+    <div class="media-container" id="videoContainer" style="position: relative;">
+        <video id="editableVideo" controls autoplay style="display: block; max-width: 100%; height: auto;">
             <source src="{{ url_for('serve_video', filename=video) }}">
         </video>
+        <canvas id="editingCanvas"></canvas>
     </div>
     
-    <div style="margin-top: 10px; text-align: center;">
+    <div style="margin-top: 10px; text-align: center; position: relative; z-index: 10001 !important; pointer-events: auto !important; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; align-items: center;">
+        <button class="tools-btn" id="toolsBtn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.toggleToolsMenu === 'function') { window.toggleToolsMenu(); } else { alert('toggleToolsMenu non trouvé'); } return false;" style="pointer-events: auto !important; position: relative !important; z-index: 10002 !important; cursor: pointer !important; background: #6c5ce7 !important; color: white !important; padding: 10px 20px !important; border: none !important; border-radius: 5px !important; font-size: 16px !important; font-weight: bold !important;">🔧 Outils</button>
+        <button class="tools-btn" id="recordVideoBtn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.recordModifiedVideo === 'function') { window.recordModifiedVideo(); } else { alert('recordModifiedVideo non trouvé'); } return false;" style="pointer-events: auto !important; position: relative !important; z-index: 10002 !important; cursor: pointer !important; background: #2980b9 !important; color: white !important; padding: 10px 20px !important; border: none !important; border-radius: 5px !important; font-size: 16px !important; font-weight: bold !important;">🎬 Enregistrer la vidéo avec annotations</button>
+        <span id="recordProgressBadge" style="display: none; background: #f1c40f; color: #1a1a1a; font-weight: bold; padding: 8px 14px; border-radius: 20px; font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); pointer-events: none;">0%</span>
         <button class="delete-btn" onclick="deleteFile('{{ video }}')">🗑 Supprimer la vidéo</button>
+    </div>
+    
+    <!-- Menu déroulant des outils : s'ouvre depuis la gauche avec Formes, Lignes, Dessin -->
+    <div class="tools-menu tools-menu-left" id="toolsMenu" style="position: fixed !important; top: 0 !important; left: -400px !important; right: auto !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2000 !important; display: none !important; flex-direction: column !important; visibility: visible !important; opacity: 1 !important; box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3); transition: left 0.4s ease-in-out;">
+        <div class="tools-menu-header">
+            <h3>Outils d'édition</h3>
+            <button class="tools-close-btn" onclick="window.toggleToolsMenu();">×</button>
+        </div>
+        <div class="tools-menu-content">
+            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.selectTool === 'function') { window.selectTool('formes'); } return false;">📐 Formes</button>
+            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.selectTool === 'function') { window.selectTool('lignes'); } return false;">📏 Lignes</button>
+            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.selectTool === 'function') { window.selectTool('dessin'); } return false;">🖌️ Dessin</button>
+        </div>
+    </div>
+    
+    <div class="shapes-submenu tools-menu-left" id="shapesSubmenu" style="position: fixed !important; top: 0 !important; left: -400px !important; right: auto !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3) !important; transition: left 0.4s ease-in-out;">
+        <div class="shapes-submenu-header">
+            <button class="shapes-back-btn" onclick="window.closeShapesSubmenu(); return false;">← Retour</button>
+            <h3>Formes disponibles</h3>
+        </div>
+        <div class="shapes-submenu-content">
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('square'); } return false;" title="Carré"><div class="shape-preview square-preview"></div><span>Carré</span></button>
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('rounded-square'); } return false;" title="Carré arrondi"><div class="shape-preview rounded-square-preview"></div><span>Carré arrondi</span></button>
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('circle'); } return false;" title="Rond"><div class="shape-preview circle-preview"></div><span>Rond</span></button>
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('triangle'); } return false;" title="Triangle"><div class="shape-preview triangle-preview"></div><span>Triangle</span></button>
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('triangle-inverted'); } return false;" title="Triangle inversé"><div class="shape-preview triangle-inverted-preview"></div><span>Triangle inversé</span></button>
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('diamond'); } return false;" title="Losange"><div class="shape-preview diamond-preview"></div><span>Losange</span></button>
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('hexagon'); } return false;" title="Hexagone"><div class="shape-preview hexagon-preview"></div><span>Hexagone</span></button>
+        </div>
+    </div>
+    
+    <div class="shapes-submenu tools-menu-left" id="linesSubmenu" style="position: fixed !important; top: 0 !important; left: -400px !important; right: auto !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3) !important; transition: left 0.4s ease-in-out;">
+        <div class="shapes-submenu-header">
+            <button class="shapes-back-btn" onclick="window.closeLinesSubmenu(); return false;">← Retour</button>
+            <h3>Types de lignes</h3>
+        </div>
+        <div class="shapes-submenu-content">
+            <button class="shape-btn" onclick="selectLineType('straight-arrow')" title="Flèche"><div class="line-preview straight-arrow-preview"><svg width="50" height="50" viewBox="0 0 50 50"><line x1="10" y1="25" x2="40" y2="25" stroke="#6c5ce7" stroke-width="2"/><polygon points="40,25 35,20 35,30" fill="#6c5ce7"/></svg></div><span>Flèche</span></button>
+            <button class="shape-btn" onclick="selectLineType('curved')" title="Courbe"><div class="line-preview curved-preview"><svg width="50" height="50" viewBox="0 0 50 50"><path d="M 10 40 Q 25 10, 40 40" stroke="#6c5ce7" stroke-width="2" fill="none"/></svg></div><span>Courbe</span></button>
+            <button class="shape-btn" onclick="selectLineType('zigzag')" title="Zigzag"><div class="line-preview zigzag-preview"><svg width="50" height="50" viewBox="0 0 50 50"><path d="M 10 25 L 20 15 L 30 25 L 40 15" stroke="#6c5ce7" stroke-width="2" fill="none"/></svg></div><span>Ligne torsadée</span></button>
+        </div>
+    </div>
+    
+    <div class="shapes-submenu tools-menu-left" id="textSubmenu" style="position: fixed !important; top: 0 !important; left: -400px !important; right: auto !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3) !important; transition: left 0.4s ease-in-out;">
+        <div class="shapes-submenu-header">
+            <button class="shapes-back-btn" onclick="window.closeTextSubmenu(); return false;">← Retour</button>
+            <h3>Ajouter du texte</h3>
+        </div>
+        <div class="shapes-submenu-content">
+            <div style="width: 100%; padding: 15px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 500;">Texte :</label>
+                <input type="text" id="textInput" placeholder="Entrez votre texte" style="width: 100%; padding: 10px; border: 2px solid #e9ecef; border-radius: 5px; margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 500;">Taille :</label>
+                <input type="range" id="fontSizeSlider" min="12" max="72" value="24" style="width: 100%; margin-bottom: 10px;">
+                <span id="fontSizeValue" style="display: block; text-align: center; margin-bottom: 15px;">24px</span>
+                <button class="tool-btn" onclick="activateTextMode()" style="width: 100%;">✓ Activer le mode texte</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="shapes-submenu tools-menu-left" id="drawSubmenu" style="position: fixed !important; top: 0 !important; left: -400px !important; right: auto !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3) !important; transition: left 0.4s ease-in-out;">
+        <div class="shapes-submenu-header">
+            <button class="shapes-back-btn" onclick="if(typeof window.closeDrawSubmenu === 'function') { window.closeDrawSubmenu(); } return false;">← Retour</button>
+            <h3>Palette de couleurs</h3>
+        </div>
+        <div class="shapes-submenu-content">
+            <div style="width: 100%; padding: 15px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 500;">Couleur :</label>
+                <div class="color-palette" id="colorPalette">
+                    <div class="color-item" data-color="#000000" style="background: #000000;" onclick="selectColor('#000000')"></div>
+                    <div class="color-item" data-color="#FFFFFF" style="background: #FFFFFF; border: 1px solid #ccc;" onclick="selectColor('#FFFFFF')"></div>
+                    <div class="color-item" data-color="#FF0000" style="background: #FF0000;" onclick="selectColor('#FF0000')"></div>
+                    <div class="color-item" data-color="#00FF00" style="background: #00FF00;" onclick="selectColor('#00FF00')"></div>
+                    <div class="color-item" data-color="#0000FF" style="background: #0000FF;" onclick="selectColor('#0000FF')"></div>
+                    <div class="color-item" data-color="#FFFF00" style="background: #FFFF00;" onclick="selectColor('#FFFF00')"></div>
+                    <div class="color-item" data-color="#FFD700" style="background: #FFD700;" onclick="selectColor('#FFD700')"></div>
+                    <div class="color-item" data-color="#FFA500" style="background: #FFA500;" onclick="selectColor('#FFA500')"></div>
+                    <div class="color-item" data-color="#808080" style="background: #808080;" onclick="selectColor('#808080')"></div>
+                </div>
+                <div id="selectedColorDisplay" style="width: 100%; height: 40px; border: 2px solid #6c5ce7; border-radius: 5px; background: #FFD700; margin: 10px 0;"></div>
+                <label style="display: block; margin-bottom: 10px; font-weight: 500;">Épaisseur :</label>
+                <input type="range" id="brushSizeSlider" min="1" max="20" value="5" style="width: 100%; margin-bottom: 10px;">
+                <span id="brushSizeValue" style="display: block; text-align: center; margin-bottom: 15px;">5px</span>
+                <button class="tool-btn" onclick="activateMarkerMode()" style="width: 100%; background: #6c5ce7;">🖍️ Feutre</button>
+                <button class="tool-btn" onclick="activateEraserMode()" style="width: 100%; margin-top: 10px; background: #e74c3c;">🧹 Gomme</button>
+                <button class="tool-btn" onclick="deactivateDrawingTools()" style="width: 100%; margin-top: 10px; background: #95a5a6;">✋ Désactiver</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tools-overlay" id="toolsOverlay" onclick="window.toggleToolsMenu();"></div>
+    <div class="context-menu" id="contextMenu">
+        <button class="context-menu-item" onclick="deleteSelectedElement()">🗑️ Supprimer</button>
     </div>
     
     {% if processed_video %}
@@ -47,13 +147,10 @@
 <script>
 function deleteFile(filename) {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette vidéo ?')) {
-        fetch("/delete/" + filename, {
-            method: "POST"
-        })
-        .then(() => {
-            location.reload();
-        });
+        fetch("/delete/" + filename, { method: "POST" })
+        .then(() => { location.reload(); });
     }
 }
 </script>
+<script src="{{ url_for('static', filename='js/media-editor.js') }}"></script>
 {% endblock %}
