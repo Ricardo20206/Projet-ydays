@@ -17,6 +17,7 @@ Ce projet est une application Flask complète qui permet de :
 
 - Python 3.7 ou supérieur
 - pip (gestionnaire de paquets Python)
+- **FFmpeg** (optionnel) : pour exporter la vidéo avec annotations en MP4 avec bande-son. Sans FFmpeg, l’enregistrement est téléchargé en WebM.
 
 ### Étapes d'installation
 
@@ -100,6 +101,21 @@ L'application permet d'éditer vos images avec de nombreux outils. **Les objets 
 
 **Suppression** : Clic droit sur une forme, une ligne ou un texte pour afficher le menu et le supprimer.
 
+### Édition et enregistrement vidéo
+
+Sur la page **Vidéo**, les mêmes outils d’édition que sur l’image sont disponibles (formes, lignes, texte, dessin). Les annotations sont dessinées sur un calque au-dessus de la vidéo.
+
+1. **Outils** : Cliquez sur « 🔧 Outils » puis choisissez Formes, Lignes ou Dessin comme sur la page Image.
+2. **Contrôles vidéo** : En cliquant dans la zone de la barre de contrôle (en bas de la vidéo), la barre s’affiche et vous pouvez utiliser Play/Pause. Un clic sur une forme ou une ligne permet de la déplacer sans lancer la lecture.
+3. **Enregistrer la vidéo avec annotations** :
+   - Cliquez sur « 🎬 Enregistrer la vidéo avec annotations ».
+   - La vidéo se lit du début à la fin (avec le son) et est enregistrée avec toutes les annotations.
+   - Un **badge jaune** affiche le **pourcentage d’avancement** de l’enregistrement (0 % → 100 %).
+   - À la fin, le fichier est converti en **MP4** (avec bande-son) si FFmpeg est installé sur le serveur, sinon il est téléchargé en WebM.
+4. **Moment d’apparition des annotations** : Les **formes, lignes et texte** n’apparaissent dans la vidéo exportée **qu’à partir du moment où vous les avez ajoutés**. Par exemple, si vous mettez la vidéo en pause à 0:30 et ajoutez une flèche, cette flèche n’apparaîtra qu’à partir de 0:30 dans la vidéo enregistrée. Le dessin au feutre n’est pas inclus dans l’export vidéo (seules les formes, lignes et textes le sont, avec timing).
+
+**Note** : Pour obtenir un fichier MP4 avec le son, installez FFmpeg sur la machine qui exécute le serveur Flask (par ex. `winget install ffmpeg` sous Windows) et ajoutez le dossier `bin` de FFmpeg au PATH.
+
 ### API externe de traitement (requise pour certaines fonctionnalités)
 
 Pour utiliser l'API externe de traitement de médias et de requêtes :
@@ -128,7 +144,8 @@ projet ydays/
 │   │   └── style.css     # Styles CSS avec design moderne
 │   ├── js/
 │   │   ├── script.js     # JavaScript pour interactions
-│   │   └── zoom.js       # Fonctionnalité de zoom pour médias
+│   │   ├── zoom.js       # Fonctionnalité de zoom pour médias
+│   │   └── media-editor.js  # Édition image/vidéo (formes, lignes, dessin, enregistrement)
 │   └── img/
 └── templates/            # Templates HTML
     ├── base.html         # Template de base avec header/footer
@@ -156,6 +173,7 @@ projet ydays/
 
 **API :**
 - `POST /upload` : Upload d'un fichier (vidéo ou image)
+- `POST /api/convert-webm-to-mp4` : Conversion WebM → MP4 (pour l’enregistrement vidéo avec annotations)
 - `GET /videos/<filename>` : Accès à une vidéo spécifique
 - `GET /images/<filename>` : Accès à une image spécifique
 - `POST /delete/<filename>` : Suppression d'un fichier
@@ -181,6 +199,14 @@ projet ydays/
 - ✅ **Envoi simultané** : envoi de l'image modifiée et du texte de la barre de recherche en une seule requête
 - ✅ Téléchargement des médias traités
 - ✅ **Téléchargement local** : sauvegarde de l'image modifiée directement sur l'appareil
+
+### Page Vidéo (édition et enregistrement)
+- ✅ **Menu Outils** sur la page Vidéo (formes, lignes, dessin) comme sur la page Image
+- ✅ **Enregistrement de la vidéo avec annotations** : export en MP4 (avec bande-son) ou WebM, selon la présence de FFmpeg sur le serveur
+- ✅ **Indicateur de progression** : badge jaune affichant le pourcentage d'avancement (0 % à 100 %) pendant l'enregistrement
+- ✅ **Annotations avec timing** : formes, lignes et texte n'apparaissent dans la vidéo exportée qu'à partir du moment où ils ont été ajoutés
+- ✅ **Contrôles vidéo** : clic dans la barre de contrôle pour afficher la barre et utiliser Play/Pause ; clic sur une annotation pour la déplacer sans lancer la lecture
+- ✅ **Lignes et formes stables** : déplacement et redimensionnement sans disparition
 
 ### Interface utilisateur
 - ✅ Design moderne avec fond doré et motifs
@@ -267,12 +293,13 @@ Les dépendances principales sont listées dans `requirements.txt` :
 ## 🚀 Démarrage rapide
 
 1. Installer les dépendances : `pip install -r requirements.txt`
-2. (Optionnel) Configurer l'envoi d'email :
+2. (Optionnel) Installer **FFmpeg** pour l’export vidéo en MP4 avec son : par ex. `winget install ffmpeg` (Windows) ou depuis [ffmpeg.org](https://ffmpeg.org/download.html), et ajouter le dossier `bin` au PATH.
+3. (Optionnel) Configurer l'envoi d'email :
    - Définir les variables d'environnement `MAIL_USERNAME` et `MAIL_PASSWORD`
    - Pour Gmail, utiliser un [mot de passe d'application](https://support.google.com/accounts/answer/185833)
-3. Lancer l'application : `python app.py`
-4. (Optionnel) Lancer l'API externe : `python external_api.py`
-5. Ouvrir `http://localhost:5000` dans votre navigateur
+4. Lancer l'application : `python app.py`
+5. (Optionnel) Lancer l'API externe : `python external_api.py`
+6. Ouvrir `http://localhost:5000` dans votre navigateur
 
 ## 📄 Licence
 
@@ -283,6 +310,15 @@ Ce projet est fourni tel quel, sans garantie.
 Projet développé dans le cadre de YDays.
 
 ## 🔄 Changelog
+
+### Version 2.8
+- ✨ **Page Vidéo – Édition** : menu Outils (formes, lignes, dessin) sur la page Vidéo, comme sur la page Image
+- ✨ **Enregistrement vidéo avec annotations** : bouton « Enregistrer la vidéo avec annotations » pour exporter la vidéo entière avec les annotations en MP4 (bande-son incluse si FFmpeg est installé) ou WebM
+- ✨ **Indicateur de progression** : badge jaune affichant le pourcentage d’avancement pendant l’enregistrement
+- ✨ **Annotations avec timing** : les formes, lignes et texte n’apparaissent dans la vidéo exportée qu’à partir du moment où ils ont été ajoutés (pause à un instant, ajout, puis enregistrement)
+- ✨ **Contrôles vidéo** : affichage de la barre de contrôle au clic ; Play/Pause utilisables sans déclencher le déplacement des annotations
+- ✨ **Conversion WebM → MP4** : route `POST /api/convert-webm-to-mp4` et utilisation de FFmpeg pour fournir un MP4 avec bande-son
+- 🐛 **Lignes stables** : les lignes ne disparaissent plus au déplacement ; redessin correct après déplacement et redimensionnement
 
 ### Version 2.7
 - ✨ **Objets qui défilent avec l'image** : le canvas d’édition est positionné exactement sur l’image ; formes, lignes, texte et dessins restent fixés à l’image et se déplacent avec elle lors du défilement de la page

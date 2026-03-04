@@ -2,6 +2,7 @@
 function getMediaEl() { return document.getElementById('editableImage') || document.getElementById('editableVideo'); }
 function isMediaReady(el) { if (!el) return false; if (el.tagName === 'IMG') return el.complete && el.naturalWidth > 0; return el.readyState >= 2 && el.videoWidth > 0; }
 function getMediaNaturalSize(el) { if (el.tagName === 'IMG') return { w: el.naturalWidth, h: el.naturalHeight }; return { w: el.videoWidth, h: el.videoHeight }; }
+function getCurrentMediaTime() { var el = getMediaEl(); if (el && el.tagName === 'VIDEO' && typeof el.currentTime === 'number') return el.currentTime; return 0; }
 function menuFromLeft() { return !!window.TOOLS_MENU_FROM_LEFT; }
 function setMenuPos(el, open) {
     if (!el) return;
@@ -602,7 +603,8 @@ if (typeof window.currentMedia === 'undefined') {
                     x: shapeStartX,
                     y: shapeStartY,
                     width: defaultSize,
-                    height: defaultSize
+                    height: defaultSize,
+                    addedAtTime: getCurrentMediaTime()
                 };
                 
                 // Ajouter à la liste AVANT de dessiner
@@ -1025,7 +1027,8 @@ window.selectLine = function(lineType) {
             type: 'line',
             id: newElementId,
             lineType: lineType,
-            x1: x1, y1: y1, x2: x2, y2: y2
+            x1: x1, y1: y1, x2: x2, y2: y2,
+            addedAtTime: getCurrentMediaTime()
         };
         window.addedElements.push(newElement);
         
@@ -1225,6 +1228,140 @@ function deactivateDrawingTools() {
     }
 }
 
+// Dessine un élément (forme, ligne, texte) sur un contexte d'export avec mise à l'échelle (pour export image et enregistrement vidéo avec timing)
+function drawElementToExportCtx(element, ctx, scaleX, scaleY) {
+    if (element.type === 'shape') {
+        ctx.save();
+        var scaledX = element.x * scaleX, scaledY = element.y * scaleY, scaledWidth = element.width * scaleX, scaledHeight = element.height * scaleY;
+        var shapeType = element.shapeType;
+        ctx.strokeStyle = '#FFD700';
+        ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+        ctx.lineWidth = 3;
+        switch(shapeType) {
+            case 'square':
+                ctx.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
+                ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight);
+                break;
+            case 'rounded-square':
+                var radius = Math.min(scaledWidth, scaledHeight) * 0.2;
+                ctx.beginPath();
+                ctx.moveTo(scaledX + radius, scaledY);
+                ctx.lineTo(scaledX + scaledWidth - radius, scaledY);
+                ctx.quadraticCurveTo(scaledX + scaledWidth, scaledY, scaledX + scaledWidth, scaledY + radius);
+                ctx.lineTo(scaledX + scaledWidth, scaledY + scaledHeight - radius);
+                ctx.quadraticCurveTo(scaledX + scaledWidth, scaledY + scaledHeight, scaledX + scaledWidth - radius, scaledY + scaledHeight);
+                ctx.lineTo(scaledX + radius, scaledY + scaledHeight);
+                ctx.quadraticCurveTo(scaledX, scaledY + scaledHeight, scaledX, scaledY + scaledHeight - radius);
+                ctx.lineTo(scaledX, scaledY + radius);
+                ctx.quadraticCurveTo(scaledX, scaledY, scaledX + radius, scaledY);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                break;
+            case 'circle':
+                var centerX = scaledX + scaledWidth / 2, centerY = scaledY + scaledHeight / 2, radius_circle = Math.min(scaledWidth, scaledHeight) / 2;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius_circle, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.stroke();
+                break;
+            case 'triangle':
+                ctx.beginPath();
+                ctx.moveTo(scaledX + scaledWidth / 2, scaledY);
+                ctx.lineTo(scaledX, scaledY + scaledHeight);
+                ctx.lineTo(scaledX + scaledWidth, scaledY + scaledHeight);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                break;
+            case 'triangle-inverted':
+                ctx.beginPath();
+                ctx.moveTo(scaledX + scaledWidth / 2, scaledY + scaledHeight);
+                ctx.lineTo(scaledX, scaledY);
+                ctx.lineTo(scaledX + scaledWidth, scaledY);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                break;
+            case 'diamond':
+                ctx.beginPath();
+                ctx.moveTo(scaledX + scaledWidth / 2, scaledY);
+                ctx.lineTo(scaledX + scaledWidth, scaledY + scaledHeight / 2);
+                ctx.lineTo(scaledX + scaledWidth / 2, scaledY + scaledHeight);
+                ctx.lineTo(scaledX, scaledY + scaledHeight / 2);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                break;
+            case 'hexagon':
+                var centerX_hex = scaledX + scaledWidth / 2, centerY_hex = scaledY + scaledHeight / 2, radius_hex = Math.min(scaledWidth, scaledHeight) / 2;
+                ctx.beginPath();
+                for (var i = 0; i < 6; i++) {
+                    var angle = (Math.PI / 3) * i;
+                    var px = centerX_hex + radius_hex * Math.cos(angle), py = centerY_hex + radius_hex * Math.sin(angle);
+                    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                break;
+        }
+        ctx.restore();
+    } else if (element.type === 'text') {
+        ctx.save();
+        var scaledX = element.x * scaleX, scaledY = element.y * scaleY, scaledFontSize = (element.fontSize || 24) * scaleX;
+        ctx.fillStyle = '#FFD700';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2 * scaleX;
+        ctx.font = 'bold ' + scaledFontSize + 'px Arial';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.strokeText(element.text, scaledX, scaledY);
+        ctx.fillText(element.text, scaledX, scaledY);
+        ctx.restore();
+    } else if (element.type === 'line') {
+        var x1 = element.x1 * scaleX, y1 = element.y1 * scaleY, x2 = element.x2 * scaleX, y2 = element.y2 * scaleY;
+        ctx.save();
+        ctx.strokeStyle = '#FFD700';
+        ctx.fillStyle = '#FFD700';
+        ctx.lineWidth = 3 * scaleX;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        var lt = element.lineType || 'straight-arrow';
+        if (lt === 'straight-arrow') {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            var angle = Math.atan2(y2 - y1, x2 - x1), arrowLength = 15 * scaleX;
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - arrowLength * Math.cos(angle - Math.PI / 6), y2 - arrowLength * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(x2 - arrowLength * Math.cos(angle + Math.PI / 6), y2 - arrowLength * Math.sin(angle + Math.PI / 6));
+            ctx.closePath();
+            ctx.fill();
+        } else if (lt === 'curved') {
+            var midX = (x1 + x2) / 2, midY = (y1 + y2) / 2, controlX = midX + (y2 - y1) * 0.3, controlY = midY - (x2 - x1) * 0.3;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.quadraticCurveTo(controlX, controlY, x2, y2);
+            ctx.stroke();
+        } else if (lt === 'zigzag') {
+            var dx = x2 - x1, dy = y2 - y1, distance = Math.sqrt(dx * dx + dy * dy);
+            var segments = Math.max(3, Math.floor(distance / (20 * scaleX)));
+            var perpX = -dy / distance, perpY = dx / distance, amplitude = 10 * scaleX;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            for (var j = 1; j <= segments; j++) {
+                var t = j / segments, xx = x1 + dx * t, yy = y1 + dy * t, offset = (j % 2 === 0 ? 1 : -1) * amplitude;
+                ctx.lineTo(xx + perpX * offset, yy + perpY * offset);
+            }
+            ctx.stroke();
+        }
+        ctx.restore();
+    }
+}
+
 // Fonction pour exporter l'image modifiée - retourne une promesse avec le blob
 window.exportImageToBlob = function() {
     return new Promise((resolve, reject) => {
@@ -1257,157 +1394,7 @@ window.exportImageToBlob = function() {
             
             const elements = window.addedElements || [];
             elements.forEach(element => {
-                if (element.type === 'shape') {
-                    exportCtx.save();
-                    const scaledX = element.x * scaleX;
-                    const scaledY = element.y * scaleY;
-                    const scaledWidth = element.width * scaleX;
-                    const scaledHeight = element.height * scaleY;
-                    
-                    const shapeType = element.shapeType;
-                    exportCtx.strokeStyle = '#FFD700';
-                    exportCtx.fillStyle = 'rgba(255, 215, 0, 0.3)';
-                    exportCtx.lineWidth = 3;
-                    
-                    switch(shapeType) {
-                        case 'square':
-                            exportCtx.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
-                            exportCtx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight);
-                            break;
-                        case 'rounded-square':
-                            const radius = Math.min(scaledWidth, scaledHeight) * 0.2;
-                            exportCtx.beginPath();
-                            exportCtx.moveTo(scaledX + radius, scaledY);
-                            exportCtx.lineTo(scaledX + scaledWidth - radius, scaledY);
-                            exportCtx.quadraticCurveTo(scaledX + scaledWidth, scaledY, scaledX + scaledWidth, scaledY + radius);
-                            exportCtx.lineTo(scaledX + scaledWidth, scaledY + scaledHeight - radius);
-                            exportCtx.quadraticCurveTo(scaledX + scaledWidth, scaledY + scaledHeight, scaledX + scaledWidth - radius, scaledY + scaledHeight);
-                            exportCtx.lineTo(scaledX + radius, scaledY + scaledHeight);
-                            exportCtx.quadraticCurveTo(scaledX, scaledY + scaledHeight, scaledX, scaledY + scaledHeight - radius);
-                            exportCtx.lineTo(scaledX, scaledY + radius);
-                            exportCtx.quadraticCurveTo(scaledX, scaledY, scaledX + radius, scaledY);
-                            exportCtx.closePath();
-                            exportCtx.fill();
-                            exportCtx.stroke();
-                            break;
-                        case 'circle':
-                            const centerX = scaledX + scaledWidth / 2;
-                            const centerY = scaledY + scaledHeight / 2;
-                            const radius_circle = Math.min(scaledWidth, scaledHeight) / 2;
-                            exportCtx.beginPath();
-                            exportCtx.arc(centerX, centerY, radius_circle, 0, 2 * Math.PI);
-                            exportCtx.fill();
-                            exportCtx.stroke();
-                            break;
-                        case 'triangle':
-                            exportCtx.beginPath();
-                            exportCtx.moveTo(scaledX + scaledWidth / 2, scaledY);
-                            exportCtx.lineTo(scaledX, scaledY + scaledHeight);
-                            exportCtx.lineTo(scaledX + scaledWidth, scaledY + scaledHeight);
-                            exportCtx.closePath();
-                            exportCtx.fill();
-                            exportCtx.stroke();
-                            break;
-                        case 'triangle-inverted':
-                            exportCtx.beginPath();
-                            exportCtx.moveTo(scaledX + scaledWidth / 2, scaledY + scaledHeight);
-                            exportCtx.lineTo(scaledX, scaledY);
-                            exportCtx.lineTo(scaledX + scaledWidth, scaledY);
-                            exportCtx.closePath();
-                            exportCtx.fill();
-                            exportCtx.stroke();
-                            break;
-                        case 'diamond':
-                            exportCtx.beginPath();
-                            exportCtx.moveTo(scaledX + scaledWidth / 2, scaledY);
-                            exportCtx.lineTo(scaledX + scaledWidth, scaledY + scaledHeight / 2);
-                            exportCtx.lineTo(scaledX + scaledWidth / 2, scaledY + scaledHeight);
-                            exportCtx.lineTo(scaledX, scaledY + scaledHeight / 2);
-                            exportCtx.closePath();
-                            exportCtx.fill();
-                            exportCtx.stroke();
-                            break;
-                        case 'hexagon':
-                            const centerX_hex = scaledX + scaledWidth / 2;
-                            const centerY_hex = scaledY + scaledHeight / 2;
-                            const radius_hex = Math.min(scaledWidth, scaledHeight) / 2;
-                            exportCtx.beginPath();
-                            for (let i = 0; i < 6; i++) {
-                                const angle = (Math.PI / 3) * i;
-                                const px = centerX_hex + radius_hex * Math.cos(angle);
-                                const py = centerY_hex + radius_hex * Math.sin(angle);
-                                if (i === 0) {
-                                    exportCtx.moveTo(px, py);
-                                } else {
-                                    exportCtx.lineTo(px, py);
-                                }
-                            }
-                            exportCtx.closePath();
-                            exportCtx.fill();
-                            exportCtx.stroke();
-                            break;
-                    }
-                    exportCtx.restore();
-                } else if (element.type === 'text') {
-                    exportCtx.save();
-                    const scaledX = element.x * scaleX;
-                    const scaledY = element.y * scaleY;
-                    const scaledFontSize = (element.fontSize || 24) * scaleX;
-                    exportCtx.fillStyle = '#FFD700';
-                    exportCtx.strokeStyle = '#000000';
-                    exportCtx.lineWidth = 2 * scaleX;
-                    exportCtx.font = `bold ${scaledFontSize}px Arial`;
-                    exportCtx.textAlign = 'left';
-                    exportCtx.textBaseline = 'top';
-                    exportCtx.strokeText(element.text, scaledX, scaledY);
-                    exportCtx.fillText(element.text, scaledX, scaledY);
-                    exportCtx.restore();
-                } else if (element.type === 'line') {
-                    const x1 = element.x1 * scaleX, y1 = element.y1 * scaleY, x2 = element.x2 * scaleX, y2 = element.y2 * scaleY;
-                    exportCtx.save();
-                    exportCtx.strokeStyle = '#FFD700';
-                    exportCtx.fillStyle = '#FFD700';
-                    exportCtx.lineWidth = 3 * scaleX;
-                    exportCtx.lineCap = 'round';
-                    exportCtx.lineJoin = 'round';
-                    if (element.lineType === 'straight-arrow') {
-                        exportCtx.beginPath();
-                        exportCtx.moveTo(x1, y1);
-                        exportCtx.lineTo(x2, y2);
-                        exportCtx.stroke();
-                        const angle = Math.atan2(y2 - y1, x2 - x1);
-                        const arrowLength = 15 * scaleX;
-                        exportCtx.beginPath();
-                        exportCtx.moveTo(x2, y2);
-                        exportCtx.lineTo(x2 - arrowLength * Math.cos(angle - Math.PI / 6), y2 - arrowLength * Math.sin(angle - Math.PI / 6));
-                        exportCtx.lineTo(x2 - arrowLength * Math.cos(angle + Math.PI / 6), y2 - arrowLength * Math.sin(angle + Math.PI / 6));
-                        exportCtx.closePath();
-                        exportCtx.fill();
-                    } else if (element.lineType === 'curved') {
-                        const midX = (x1 + x2) / 2, midY = (y1 + y2) / 2;
-                        const controlX = midX + (y2 - y1) * 0.3, controlY = midY - (x2 - x1) * 0.3;
-                        exportCtx.beginPath();
-                        exportCtx.moveTo(x1, y1);
-                        exportCtx.quadraticCurveTo(controlX, controlY, x2, y2);
-                        exportCtx.stroke();
-                    } else if (element.lineType === 'zigzag') {
-                        const dx = x2 - x1, dy = y2 - y1;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        const segments = Math.max(3, Math.floor(distance / (20 * scaleX)));
-                        const perpX = -dy / distance, perpY = dx / distance;
-                        const amplitude = 10 * scaleX;
-                        exportCtx.beginPath();
-                        exportCtx.moveTo(x1, y1);
-                        for (let i = 1; i <= segments; i++) {
-                            const t = i / segments;
-                            const x = x1 + dx * t, y = y1 + dy * t;
-                            const offset = (i % 2 === 0 ? 1 : -1) * amplitude;
-                            exportCtx.lineTo(x + perpX * offset, y + perpY * offset);
-                        }
-                        exportCtx.stroke();
-                    }
-                    exportCtx.restore();
-                }
+                drawElementToExportCtx(element, exportCtx, scaleX, scaleY);
             });
             
             exportCanvas.toBlob(function(blob) {
@@ -1654,7 +1641,14 @@ window.recordModifiedVideo = function() {
     function drawFrame() {
         if (video.ended || video.paused) return;
         exportCtx.drawImage(video, 0, 0, w, h);
-        exportCtx.drawImage(editingCanvas, 0, 0, editingCanvas.width, editingCanvas.height, 0, 0, w, h);
+        var scaleX = w / editingCanvas.width, scaleY = h / editingCanvas.height;
+        var currentTime = video.currentTime;
+        var elements = window.addedElements || [];
+        for (var i = 0; i < elements.length; i++) {
+            var el = elements[i];
+            if (el.addedAtTime !== undefined && el.addedAtTime > currentTime) continue;
+            drawElementToExportCtx(el, exportCtx, scaleX, scaleY);
+        }
         var badge = document.getElementById('recordProgressBadge');
         if (badge && video.duration && isFinite(video.duration)) {
             var pct = Math.min(100, Math.round((video.currentTime / video.duration) * 100));
@@ -1816,7 +1810,8 @@ function drawTextOnCanvas(text, x, y, elementId = null) {
             text: text,
             x: x,
             y: y,
-            fontSize: fontSize
+            fontSize: fontSize,
+            addedAtTime: getCurrentMediaTime()
         });
     }
     
