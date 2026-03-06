@@ -21,7 +21,7 @@
     {% if video %}
     <div class="media-container" id="videoContainer" style="position: relative;">
         <video id="editableVideo" controls autoplay style="display: block; max-width: 100%; height: auto;">
-            <source src="{{ url_for('serve_video', filename=video) }}">
+            <source src="{{ url_for('serve_video', filename=video) }}" type="{% if video.lower().endswith('.mov') %}video/quicktime{% elif video.lower().endswith('.webm') %}video/webm{% elif video.lower().endswith('.avi') %}video/x-msvideo{% elif video.lower().endswith('.mkv') %}video/x-matroska{% else %}video/mp4{% endif %}">
         </video>
         <canvas id="editingCanvas"></canvas>
     </div>
@@ -43,6 +43,7 @@
             <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.selectTool === 'function') { window.selectTool('formes'); } return false;">📐 Formes</button>
             <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.selectTool === 'function') { window.selectTool('lignes'); } return false;">📏 Lignes</button>
             <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.selectTool === 'function') { window.selectTool('dessin'); } return false;">🖌️ Dessin</button>
+            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.selectTool === 'function') { window.selectTool('objets3d'); } return false;">🧊 Objets 3D</button>
         </div>
     </div>
     
@@ -121,8 +122,33 @@
         </div>
     </div>
     
+    <!-- Sous-menu Objets 3D -->
+    <div class="shapes-submenu tools-menu-left" id="objets3dSubmenu" style="position: fixed !important; top: 0 !important; left: -400px !important; right: auto !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3) !important; transition: left 0.4s ease-in-out;">
+        <div class="shapes-submenu-header">
+            <button class="shapes-back-btn" onclick="if(typeof window.closeObjets3dSubmenu === 'function') { window.closeObjets3dSubmenu(); } return false;">← Retour</button>
+            <h3>Objets 3D</h3>
+        </div>
+        <div class="shapes-submenu-content">
+            <p style="padding: 10px 15px; color: #666; margin: 0;">Choisissez un objet 3D à placer sur la vidéo.</p>
+            <button class="shape-btn" onclick="if(typeof window.selectShape3d === 'function') { window.selectShape3d('cube'); } return false;" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px;">
+                <span style="font-size: 24px;">🧊</span>
+                <span>Cube</span>
+            </button>
+            <button class="shape-btn" onclick="if(typeof window.selectShape3d === 'function') { window.selectShape3d('sphere'); } return false;" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px;">
+                <span style="font-size: 24px;">🔵</span>
+                <span>Bille</span>
+            </button>
+            <button class="shape-btn" onclick="if(typeof window.selectShape3d === 'function') { window.selectShape3d('hexagon3d'); } return false;" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px;">
+                <span style="font-size: 24px;">⬡</span>
+                <span>Hexagone 3D</span>
+            </button>
+            <p style="padding: 10px 15px; color: #888; font-size: 12px; margin: 8px 0 0 0; border-top: 1px solid #eee;">Maintenez <kbd>Maj</kbd> ou <kbd>Alt</kbd> + glisser pour faire tourner l’objet. Ou clic droit → « Faire tourner », puis glisser.</p>
+        </div>
+    </div>
+    
     <div class="tools-overlay" id="toolsOverlay" onclick="window.toggleToolsMenu();"></div>
     <div class="context-menu" id="contextMenu">
+        <button class="context-menu-item" id="contextMenuRotateShape3d" style="display: none;" onclick="if(typeof window.enableRotateShape3d === 'function') window.enableRotateShape3d(); if(typeof hideContextMenu === 'function') hideContextMenu();">🔄 Faire tourner</button>
         <button class="context-menu-item" onclick="deleteSelectedElement()">🗑️ Supprimer</button>
     </div>
     
@@ -131,7 +157,7 @@
         <h4>✅ Vidéo traitée disponible :</h4>
         <div class="media-container">
             <video controls>
-                <source src="{{ url_for('serve_video', filename=processed_video) }}">
+                <source src="{{ url_for('serve_video', filename=processed_video) }}" type="{% if processed_video.lower().endswith('.mov') %}video/quicktime{% elif processed_video.lower().endswith('.webm') %}video/webm{% elif processed_video.lower().endswith('.avi') %}video/x-msvideo{% elif processed_video.lower().endswith('.mkv') %}video/x-matroska{% else %}video/mp4{% endif %}">
             </video>
         </div>
         <div style="text-align: center; margin-top: 15px;">

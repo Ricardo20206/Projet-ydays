@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify, send_file
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify, send_file, abort
 from flask_mail import Mail, Message
 import os
 import requests
@@ -182,7 +182,19 @@ def upload_file():
 
 @app.route("/videos/<filename>")
 def serve_video(filename):
-    return send_from_directory(VIDEO_FOLDER, filename)
+    path = os.path.join(VIDEO_FOLDER, filename)
+    if not os.path.isfile(path):
+        abort(404)
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    mime_map = {
+        "mp4": "video/mp4",
+        "mov": "video/quicktime",
+        "webm": "video/webm",
+        "avi": "video/x-msvideo",
+        "mkv": "video/x-matroska",
+    }
+    mimetype = mime_map.get(ext)
+    return send_file(path, mimetype=mimetype, as_attachment=False)
 
 @app.route("/images/<filename>")
 def serve_image(filename):

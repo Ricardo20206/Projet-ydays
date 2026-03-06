@@ -103,16 +103,20 @@ L'application permet d'éditer vos images avec de nombreux outils. **Les objets 
 
 ### Édition et enregistrement vidéo
 
-Sur la page **Vidéo**, les mêmes outils d’édition que sur l’image sont disponibles (formes, lignes, texte, dessin). Les annotations sont dessinées sur un calque au-dessus de la vidéo.
+Sur la page **Vidéo**, les mêmes outils d’édition que sur l’image sont disponibles (formes, lignes, texte, dessin), plus des **objets 3D**. Les annotations sont dessinées sur un calque au-dessus de la vidéo.
 
-1. **Outils** : Cliquez sur « 🔧 Outils » puis choisissez Formes, Lignes ou Dessin comme sur la page Image.
-2. **Contrôles vidéo** : En cliquant dans la zone de la barre de contrôle (en bas de la vidéo), la barre s’affiche et vous pouvez utiliser Play/Pause. Un clic sur une forme ou une ligne permet de la déplacer sans lancer la lecture.
-3. **Enregistrer la vidéo avec annotations** :
+1. **Outils** : Cliquez sur « 🔧 Outils » puis choisissez Formes, Lignes, Dessin ou **Objets 3D** (Cube, Bille, Hexagone 3D). L’hexagone 3D est ajouté en **50×50** pixels ; le cube et la bille en 80×80.
+2. **Rotation des objets 3D** : Une fois un objet 3D placé, maintenez **Maj** (Shift) ou **Alt** puis glissez pour le faire tourner et l’observer sous tous les angles. Vous pouvez aussi faire un **clic droit** sur l’objet → « 🔄 Faire tourner », puis glisser pour tourner.
+3. **Contrôle vidéo (pause / play)** : Même avec la vidéo à 100 % et des annotations posées, vous pouvez toujours contrôler la lecture :
+   - **Clic sur la barre de contrôle** (en bas) : affiche la barre et permet Play/Pause.
+   - **Clic sur la zone vidéo** (en dehors de toute annotation) : met en pause ou relance la lecture. Un clic sur une forme, une ligne, un texte ou un objet 3D sert à le sélectionner/déplacer, pas à lancer la vidéo.
+4. **Enregistrer la vidéo avec annotations** :
    - Cliquez sur « 🎬 Enregistrer la vidéo avec annotations ».
-   - La vidéo se lit du début à la fin (avec le son) et est enregistrée avec toutes les annotations.
+   - La **vidéo entière** est enregistrée du début à la fin (l’enregistrement ne s’arrête qu’à la fin de la vidéo, pas à la pause).
+   - La vidéo se lit avec le son ; toutes les **modifications** (formes, lignes, texte, objets 3D) sont enregistrées. Chaque modification n’apparaît dans la vidéo exportée **qu’à partir de l’instant où vous l’avez ajoutée** ; si vous supprimez un élément, il disparaît à partir de cet instant.
    - Un **badge jaune** affiche le **pourcentage d’avancement** de l’enregistrement (0 % → 100 %).
    - À la fin, le fichier est converti en **MP4** (avec bande-son) si FFmpeg est installé sur le serveur, sinon il est téléchargé en WebM.
-4. **Moment d’apparition des annotations** : Les **formes, lignes et texte** n’apparaissent dans la vidéo exportée **qu’à partir du moment où vous les avez ajoutés**. Par exemple, si vous mettez la vidéo en pause à 0:30 et ajoutez une flèche, cette flèche n’apparaîtra qu’à partir de 0:30 dans la vidéo enregistrée. Le dessin au feutre n’est pas inclus dans l’export vidéo (seules les formes, lignes et textes le sont, avec timing).
+5. **Moment d’apparition des annotations** : Les **formes, lignes, texte et objets 3D** n’apparaissent dans la vidéo exportée **qu’à partir du moment où vous les avez ajoutés** ; les éléments supprimés (clic droit → Supprimer) disparaissent à partir de l’instant de suppression. Le dessin au feutre n’est pas inclus dans l’export vidéo.
 
 **Note** : Pour obtenir un fichier MP4 avec le son, installez FFmpeg sur la machine qui exécute le serveur Flask (par ex. `winget install ffmpeg` sous Windows) et ajoutez le dossier `bin` de FFmpeg au PATH.
 
@@ -201,11 +205,14 @@ projet ydays/
 - ✅ **Téléchargement local** : sauvegarde de l'image modifiée directement sur l'appareil
 
 ### Page Vidéo (édition et enregistrement)
-- ✅ **Menu Outils** sur la page Vidéo (formes, lignes, dessin) comme sur la page Image
-- ✅ **Enregistrement de la vidéo avec annotations** : export en MP4 (avec bande-son) ou WebM, selon la présence de FFmpeg sur le serveur
+- ✅ **Menu Outils** sur la page Vidéo (formes, lignes, dessin, **objets 3D**) comme sur la page Image
+- ✅ **Objets 3D** : Cube, Bille et Hexagone 3D ; rotation avec **Maj** ou **Alt** + glisser, ou clic droit → « Faire tourner »
+- ✅ **Taille par défaut** : hexagone 3D en 50×50, cube et bille en 80×80
+- ✅ **Enregistrement de la vidéo entière** : la vidéo est enregistrée du début à la fin ; l’enregistrement ne s’arrête qu’à la fin de la vidéo (pas à la pause)
+- ✅ **Toutes les modifications enregistrées avec timing** : formes, lignes, texte et objets 3D sont inclus ; chaque élément n’apparaît qu’à partir de l’instant où il a été ajouté et disparaît après suppression
+- ✅ **Lecture fluide** : capture synchronisée sur la timeline vidéo et débit adapté pour une lecture fluide du fichier exporté
 - ✅ **Indicateur de progression** : badge jaune affichant le pourcentage d'avancement (0 % à 100 %) pendant l'enregistrement
-- ✅ **Annotations avec timing** : formes, lignes et texte n'apparaissent dans la vidéo exportée qu'à partir du moment où ils ont été ajoutés
-- ✅ **Contrôles vidéo** : clic dans la barre de contrôle pour afficher la barre et utiliser Play/Pause ; clic sur une annotation pour la déplacer sans lancer la lecture
+- ✅ **Contrôle vidéo** : à 100 %, avec annotations, pause/play possible en cliquant sur la barre de contrôle ou sur la zone vidéo vide (pas sur une annotation)
 - ✅ **Lignes et formes stables** : déplacement et redimensionnement sans disparition
 
 ### Interface utilisateur
@@ -310,6 +317,17 @@ Ce projet est fourni tel quel, sans garantie.
 Projet développé dans le cadre de YDays.
 
 ## 🔄 Changelog
+
+### Version 2.10
+- ✨ **Vidéo entière enregistrée** : l’enregistrement ne s’arrête qu’à la fin de la vidéo (plus à la pause), pour obtenir systématiquement la vidéo complète
+- ✨ **Toutes les modifications enregistrées avec timing** : chaque annotation (forme, ligne, texte, objet 3D) n’apparaît dans la vidéo exportée qu’à partir de l’instant où elle a été ajoutée ; les éléments supprimés disparaissent à partir de l’instant de suppression
+- ✨ **Lecture fluide** : capture des images synchronisée sur la timeline vidéo et débit vidéo augmenté pour une lecture fluide du fichier enregistré
+
+### Version 2.9
+- ✨ **Objets 3D sur la vidéo** : sous-menu « Objets 3D » dans le menu Outils (Cube, Bille, Hexagone 3D)
+- ✨ **Rotation 3D** : Maj ou Alt + glisser pour faire tourner un objet 3D ; ou clic droit → « Faire tourner » puis glisser
+- ✨ **Taille hexagone 3D** : ajout en 50×50 pixels par défaut (cube et bille en 80×80)
+- ✨ **Contrôle vidéo avec annotations** : à 100 %, pause/play possible en cliquant sur la barre de contrôle ou sur la zone vidéo vide (hors annotations)
 
 ### Version 2.8
 - ✨ **Page Vidéo – Édition** : menu Outils (formes, lignes, dessin) sur la page Vidéo, comme sur la page Image

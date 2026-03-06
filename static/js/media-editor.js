@@ -221,6 +221,19 @@ if (typeof window.currentMedia === 'undefined') {
                             console.error('❌ Sous-menu Dessin non trouvé dans le DOM');
                             alert('Erreur: Le sous-menu Dessin n\'a pas été trouvé. Veuillez recharger la page.');
                         }
+                    } else if (tool === 'objets3d') {
+                        const objets3dMenu = document.getElementById('objets3dSubmenu');
+                        if (objets3dMenu) {
+                            objets3dMenu.classList.add('active');
+                            setMenuPos(objets3dMenu, true);
+                            objets3dMenu.style.setProperty('display', 'flex', 'important');
+                            objets3dMenu.style.setProperty('visibility', 'visible', 'important');
+                            objets3dMenu.style.setProperty('opacity', '1', 'important');
+                            objets3dMenu.style.setProperty('z-index', '2001', 'important');
+                            console.log('✅ Sous-menu Objets 3D ouvert');
+                        } else {
+                            console.warn('Sous-menu Objets 3D non trouvé');
+                        }
                     } else {
                         console.warn('selectTool: tool non reconnu:', tool);
                     }
@@ -331,7 +344,203 @@ if (typeof window.currentMedia === 'undefined') {
         }
     };
     
+    window.closeObjets3dSubmenu = function() {
+        const menu = document.getElementById('objets3dSubmenu');
+        if (menu) {
+            menu.classList.remove('active');
+            setMenuPos(menu, false);
+        }
+        const mainMenu = document.getElementById('toolsMenu');
+        if (mainMenu) {
+            setMenuPos(mainMenu, true);
+            mainMenu.style.display = 'flex';
+            mainMenu.style.visibility = 'visible';
+            mainMenu.style.opacity = '1';
+            mainMenu.style.zIndex = '2000';
+        }
+    };
+    
     console.log('Fonctions de fermeture définies globalement');
+    
+    // Dessine une forme 3D (cube, bille, hexagone 3D) avec rotation 3D - rotationX/rotationY en radians
+    function drawShape3d(shape3dType, x, y, w, h, useCtx, rotationX, rotationY) {
+        var c = useCtx || window.ctx || ctx;
+        if (!c) return;
+        var rx = rotationX || 0, ry = rotationY || 0;
+        var cx = x + w / 2, cy = y + h / 2;
+        var scale = (shape3dType === 'hexagon3d') ? (Math.min(w, h) / 4) : (Math.min(w, h) / 2.5);
+        function rotateX(px, py, pz) {
+            var cos = Math.cos(rx), sin = Math.sin(rx);
+            return { x: px, y: py * cos - pz * sin, z: py * sin + pz * cos };
+        }
+        function rotateY(px, py, pz) {
+            var cos = Math.cos(ry), sin = Math.sin(ry);
+            return { x: px * cos + pz * sin, y: py, z: -px * sin + pz * cos };
+        }
+        function project(px, py, pz) {
+            var r = rotateY(px, py, pz);
+            r = rotateX(r.x, r.y, r.z);
+            return { sx: cx + scale * r.x, sy: cy - scale * r.y, z: r.z };
+        }
+        c.save();
+        c.strokeStyle = '#FFD700';
+        c.lineWidth = 2;
+        if (shape3dType === 'cube') {
+            var v = [];
+            for (var iz = -1; iz <= 1; iz += 2) {
+                for (var iy = -1; iy <= 1; iy += 2) {
+                    for (var ix = -1; ix <= 1; ix += 2) {
+                        v.push(project(ix, iy, iz));
+                    }
+                }
+            }
+            var faces = [
+                { i: [0,1,3,2], z: 0 },   // z=-1
+                { i: [4,5,7,6], z: 0 },
+                { i: [0,1,5,4], z: 0 },
+                { i: [2,3,7,6], z: 0 },
+                { i: [0,2,6,4], z: 0 },
+                { i: [1,3,7,5], z: 0 }
+            ];
+            var fidx = [[0,1,3,2],[4,5,7,6],[0,1,5,4],[2,3,7,6],[0,2,6,4],[1,3,7,5]];
+            for (var f = 0; f < 6; f++) {
+                var idx = fidx[f];
+                var z = (v[idx[0]].z + v[idx[1]].z + v[idx[2]].z + v[idx[3]].z) / 4;
+                faces[f].z = z;
+                faces[f].i = idx;
+            }
+            faces.sort(function(a,b) { return a.z - b.z; });
+            var shades = [0.25, 0.35, 0.4, 0.45, 0.5, 0.55];
+            for (var f = 0; f < 6; f++) {
+                var idx = faces[f].i;
+                c.fillStyle = 'rgba(255, 215, 0, ' + shades[f] + ')';
+                c.beginPath();
+                c.moveTo(v[idx[0]].sx, v[idx[0]].sy);
+                for (var i = 1; i < 4; i++) c.lineTo(v[idx[i]].sx, v[idx[i]].sy);
+                c.closePath();
+                c.fill();
+                c.stroke();
+            }
+        } else if (shape3dType === 'sphere') {
+            var r = Math.min(w, h) / 2;
+            // Position du reflet (lumière) en fonction de la rotation 3D — effet marqué pour que la bille tourne visuellement
+            var gx = cx + r * 0.6 * Math.sin(ry);
+            var gy = cy - r * 0.6 * Math.sin(rx);
+            var grad = c.createRadialGradient(gx - r * 0.4, gy - r * 0.4, 0, cx, cy, r * 1.1);
+            grad.addColorStop(0, 'rgba(255, 255, 220, 0.95)');
+            grad.addColorStop(0.4, 'rgba(255, 230, 150, 0.6)');
+            grad.addColorStop(0.7, 'rgba(255, 215, 0, 0.4)');
+            grad.addColorStop(1, 'rgba(180, 140, 0, 0.5)');
+            c.fillStyle = grad;
+            c.beginPath();
+            c.arc(cx, cy, r, 0, 2 * Math.PI);
+            c.fill();
+            // Ombre côté opposé au reflet pour renforcer l'effet 3D
+            var sx = cx - r * 0.5 * Math.sin(ry);
+            var sy = cy + r * 0.5 * Math.sin(rx);
+            var shadowGrad = c.createRadialGradient(sx, sy, 0, cx, cy, r * 1.2);
+            shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+            shadowGrad.addColorStop(0.6, 'rgba(0, 0, 0, 0)');
+            shadowGrad.addColorStop(1, 'rgba(80, 60, 0, 0.35)');
+            c.fillStyle = shadowGrad;
+            c.beginPath();
+            c.arc(cx, cy, r, 0, 2 * Math.PI);
+            c.fill();
+            c.strokeStyle = '#FFD700';
+            c.stroke();
+        } else if (shape3dType === 'hexagon3d') {
+            // Même système de coordonnées normalisées que le cube (-1..1) pour que project() applique bien rotationX/rotationY
+            var rNorm = 1;
+            var d = 0.6;
+            var back = [], front = [];
+            for (var i = 0; i < 6; i++) {
+                var a = (Math.PI / 3) * i - Math.PI / 6;
+                var px = rNorm * Math.cos(a), py = rNorm * Math.sin(a);
+                back.push(project(px, py, -d));
+                front.push(project(px, py, d));
+            }
+            var backZ = (back[0].z + back[1].z + back[2].z) / 3;
+            var frontZ = (front[0].z + front[1].z + front[2].z) / 3;
+            if (backZ < frontZ) {
+                c.fillStyle = 'rgba(255, 215, 0, 0.25)';
+                c.beginPath();
+                c.moveTo(back[0].sx, back[0].sy);
+                for (i = 1; i < 6; i++) c.lineTo(back[i].sx, back[i].sy);
+                c.closePath();
+                c.fill();
+                c.stroke();
+                for (i = 0; i < 6; i++) {
+                    c.beginPath();
+                    c.moveTo(back[i].sx, back[i].sy);
+                    c.lineTo(front[i].sx, front[i].sy);
+                    c.stroke();
+                }
+            }
+            c.fillStyle = 'rgba(255, 215, 0, 0.5)';
+            c.beginPath();
+            c.moveTo(front[0].sx, front[0].sy);
+            for (i = 1; i < 6; i++) c.lineTo(front[i].sx, front[i].sy);
+            c.closePath();
+            c.fill();
+            c.stroke();
+            if (frontZ < backZ) {
+                c.fillStyle = 'rgba(255, 215, 0, 0.25)';
+                c.beginPath();
+                c.moveTo(back[0].sx, back[0].sy);
+                for (i = 1; i < 6; i++) c.lineTo(back[i].sx, back[i].sy);
+                c.closePath();
+                c.fill();
+                c.stroke();
+                for (i = 0; i < 6; i++) {
+                    c.beginPath();
+                    c.moveTo(back[i].sx, back[i].sy);
+                    c.lineTo(front[i].sx, front[i].sy);
+                    c.stroke();
+                }
+            }
+        }
+        c.restore();
+    }
+    
+    window.selectShape3d = function(shape3dType) {
+        try {
+            if (typeof window.closeObjets3dSubmenu === 'function') window.closeObjets3dSubmenu();
+            var imageElement = getMediaEl();
+            var currentCanvas = document.getElementById('editingCanvas');
+            if (!currentCanvas || !imageElement || !isMediaReady(imageElement)) {
+                alert('Vidéo ou canvas non prêt.');
+                return;
+            }
+            var cw = currentCanvas.width || imageElement.offsetWidth;
+            var ch = currentCanvas.height || imageElement.offsetHeight;
+            var size = (shape3dType === 'hexagon3d') ? 50 : 80; // hexagone 3D : 50x50
+            var nx = (cw / 2) - size / 2;
+            var ny = (ch / 2) - size / 2;
+            if (!window.addedElements) window.addedElements = [];
+            var id = 'shape3d_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            var el = {
+                type: 'shape3d',
+                id: id,
+                shape3dType: shape3dType,
+                x: nx,
+                y: ny,
+                width: size,
+                height: size,
+                rotationX: 0,
+                rotationY: 0,
+                addedAtTime: getCurrentMediaTime()
+            };
+            window.addedElements.push(el);
+            window.selectedElement = el;
+            if (typeof selectedElement !== 'undefined') selectedElement = el;
+            if (currentCanvas) {
+                currentCanvas.style.pointerEvents = 'auto';
+                currentCanvas.style.zIndex = '100';
+            }
+            if (typeof redrawCanvas === 'function') redrawCanvas();
+            if (typeof updateCanvasPointerEvents === 'function') updateCanvasPointerEvents();
+        } catch (err) { console.error('selectShape3d:', err); }
+    };
     
     // Définir drawShape AVANT selectShape pour qu'elle soit accessible
     window.drawShape = function(shapeType, x, y, width, height, elementId = null) {
@@ -701,6 +910,9 @@ let isMarkerMode = false;
 let isEraserMode = false;
 let isMoving = false;
 let isResizing = false;
+let isRotating = false;
+let initialRotationX = 0;
+let initialRotationY = 0;
 let selectedElement = null;
 // Rendre selectedElement accessible globalement
 window.selectedElement = selectedElement;
@@ -1307,6 +1519,11 @@ function drawElementToExportCtx(element, ctx, scaleX, scaleY) {
                 break;
         }
         ctx.restore();
+    } else if (element.type === 'shape3d') {
+        ctx.save();
+        var sx = element.x * scaleX, sy = element.y * scaleY, sw = element.width * scaleX, sh = element.height * scaleY;
+        if (typeof drawShape3d === 'function') drawShape3d(element.shape3dType, sx, sy, sw, sh, ctx, element.rotationX, element.rotationY);
+        ctx.restore();
     } else if (element.type === 'text') {
         ctx.save();
         var scaledX = element.x * scaleX, scaledY = element.y * scaleY, scaledFontSize = (element.fontSize || 24) * scaleX;
@@ -1490,6 +1707,7 @@ window.downloadModifiedImage = function() {
 };
 
 // Enregistrer la vidéo entière avec les annotations + bande-son (télécharge un fichier MP4)
+// Toutes les modifications (formes, lignes, texte, objets 3D) sont enregistrées ; chaque élément n'apparaît qu'à partir de l'instant où il a été ajouté (addedAtTime) et disparaît après suppression (removedAtTime).
 window.recordModifiedVideo = function() {
     const video = document.getElementById('editableVideo');
     const editingCanvas = document.getElementById('editingCanvas');
@@ -1507,6 +1725,9 @@ window.recordModifiedVideo = function() {
     }
 
     if (typeof window._recordVideoRafId !== 'undefined' && window._recordVideoRafId !== null) {
+        return;
+    }
+    if (typeof window._recordVideoTimeoutId !== 'undefined' && window._recordVideoTimeoutId !== null) {
         return;
     }
 
@@ -1547,7 +1768,7 @@ window.recordModifiedVideo = function() {
         console.warn('Audio non capturé:', e);
     }
 
-    const recorder = new MediaRecorder(combinedStream, { mimeType: mimeType, videoBitsPerSecond: 2500000, audioBitsPerSecond: 128000 });
+    const recorder = new MediaRecorder(combinedStream, { mimeType: mimeType, videoBitsPerSecond: 4000000, audioBitsPerSecond: 128000 });
     const chunks = [];
 
     recorder.ondataavailable = function(e) {
@@ -1559,6 +1780,10 @@ window.recordModifiedVideo = function() {
             cancelAnimationFrame(window._recordVideoRafId);
             window._recordVideoRafId = null;
         }
+        if (window._recordVideoTimeoutId != null) {
+            clearTimeout(window._recordVideoTimeoutId);
+            window._recordVideoTimeoutId = null;
+        }
         video.removeEventListener('ended', onVideoEnded);
         video.removeEventListener('pause', onVideoPause);
         if (recorder.state === 'recording') recorder.stop();
@@ -1567,7 +1792,9 @@ window.recordModifiedVideo = function() {
     }
 
     function onVideoEnded() { stopRecording(); }
-    function onVideoPause() { if (video.ended) return; stopRecording(); }
+    function onVideoPause() {
+        if (video.ended) return;
+    }
 
     function finishAndDownload(blob, extension, mimeForDownload) {
         var dateStr = new Date().toISOString().slice(0, 19).replace(/:/g, '-').replace('T', '_');
@@ -1635,26 +1862,40 @@ window.recordModifiedVideo = function() {
     video.addEventListener('pause', onVideoPause);
     video.currentTime = 0;
     video.muted = false;
-    video.play();
+    video.play().catch(function() {});
 
     recorder.start(200);
 
+    var targetFps = 30;
+    var frameDuration = 1 / targetFps;
+    var nextCaptureTime = 0;
+
     function drawFrame() {
-        if (video.ended || video.paused) return;
-        exportCtx.drawImage(video, 0, 0, w, h);
-        var scaleX = w / editingCanvas.width, scaleY = h / editingCanvas.height;
-        var currentTime = video.currentTime;
-        var elements = window.addedElements || [];
-        for (var i = 0; i < elements.length; i++) {
-            var el = elements[i];
-            if (el.addedAtTime !== undefined && el.addedAtTime > currentTime) continue;
-            if (el.removedAtTime !== undefined && el.removedAtTime <= currentTime) continue;
-            drawElementToExportCtx(el, exportCtx, scaleX, scaleY);
+        if (video.ended || video.paused) {
+            if (!video.ended) window._recordVideoRafId = requestAnimationFrame(drawFrame);
+            return;
         }
-        var badge = document.getElementById('recordProgressBadge');
-        if (badge && video.duration && isFinite(video.duration)) {
-            var pct = Math.min(100, Math.round((video.currentTime / video.duration) * 100));
-            badge.textContent = pct + '%';
+        var t = video.currentTime;
+        if (t >= nextCaptureTime) {
+            exportCtx.drawImage(video, 0, 0, w, h);
+            var scaleX = w / editingCanvas.width, scaleY = h / editingCanvas.height;
+            var currentTime = video.currentTime;
+            var elements = window.addedElements || [];
+            for (var i = 0; i < elements.length; i++) {
+                var el = elements[i];
+                var addedAt = el.addedAtTime !== undefined ? el.addedAtTime : 0;
+                var removedAt = el.removedAtTime;
+                if (currentTime < addedAt) continue;
+                if (removedAt !== undefined && currentTime >= removedAt) continue;
+                drawElementToExportCtx(el, exportCtx, scaleX, scaleY);
+            }
+            nextCaptureTime += frameDuration;
+            if (nextCaptureTime < t) nextCaptureTime = t + frameDuration;
+            var badge = document.getElementById('recordProgressBadge');
+            if (badge && video.duration && isFinite(video.duration)) {
+                var pct = Math.min(100, Math.round((video.currentTime / video.duration) * 100));
+                badge.textContent = pct + '%';
+            }
         }
         window._recordVideoRafId = requestAnimationFrame(drawFrame);
     }
@@ -1869,13 +2110,15 @@ function redrawCanvasImpl() {
                         window.drawShape(element.shapeType, element.x, element.y, element.width, element.height, element.id);
                     } else if (element.type === 'line' && typeof drawLine === 'function') {
                         drawLine(element.lineType || 'straight-arrow', element.x1, element.y1, element.x2, element.y2);
+                    } else if (element.type === 'shape3d' && typeof drawShape3d === 'function') {
+                        drawShape3d(element.shape3dType, element.x, element.y, element.width, element.height, currentCtx, element.rotationX, element.rotationY);
                     }
                 } catch (err) { console.error('Erreur dessin élément:', err); }
             });
         }
         
         const currentSelectedElement = window.selectedElement || selectedElement;
-        if (currentSelectedElement && (currentSelectedElement.type === 'shape' || currentSelectedElement.type === 'text' || currentSelectedElement.type === 'line') && typeof drawResizeHandles === 'function') {
+        if (currentSelectedElement && (currentSelectedElement.type === 'shape' || currentSelectedElement.type === 'shape3d' || currentSelectedElement.type === 'text' || currentSelectedElement.type === 'line') && typeof drawResizeHandles === 'function') {
             try { drawResizeHandles(currentSelectedElement); } catch (err) { console.error('Erreur poignées:', err); }
         }
     } catch (error) {
@@ -1914,6 +2157,17 @@ function drawResizeHandles(element) {
             {x: element.x + element.width/2, y: element.y + element.height}, // Milieu bas
             {x: element.x, y: element.y + element.height}, // Coin inférieur gauche
             {x: element.x, y: element.y + element.height/2} // Milieu gauche
+        );
+    } else if (element.type === 'shape3d') {
+        handles.push(
+            {x: element.x, y: element.y},
+            {x: element.x + element.width/2, y: element.y},
+            {x: element.x + element.width, y: element.y},
+            {x: element.x + element.width, y: element.y + element.height/2},
+            {x: element.x + element.width, y: element.y + element.height},
+            {x: element.x + element.width/2, y: element.y + element.height},
+            {x: element.x, y: element.y + element.height},
+            {x: element.x, y: element.y + element.height/2}
         );
     } else if (element.type === 'text') {
         const metrics = currentCtx.measureText(element.text);
@@ -1957,6 +2211,17 @@ function getResizeHandleAtPosition(x, y, element) {
             {x: element.x, y: element.y + element.height, type: 'sw'},
             {x: element.x, y: element.y + element.height/2, type: 'w'}
         );
+    } else if (element.type === 'shape3d') {
+        handles.push(
+            {x: element.x, y: element.y, type: 'nw'},
+            {x: element.x + element.width/2, y: element.y, type: 'n'},
+            {x: element.x + element.width, y: element.y, type: 'ne'},
+            {x: element.x + element.width, y: element.y + element.height/2, type: 'e'},
+            {x: element.x + element.width, y: element.y + element.height, type: 'se'},
+            {x: element.x + element.width/2, y: element.y + element.height, type: 's'},
+            {x: element.x, y: element.y + element.height, type: 'sw'},
+            {x: element.x, y: element.y + element.height/2, type: 'w'}
+        );
     } else if (element.type === 'text') {
         ctx.font = `bold ${element.fontSize}px Arial`;
         const metrics = ctx.measureText(element.text);
@@ -1969,6 +2234,17 @@ function getResizeHandleAtPosition(x, y, element) {
     } else if (element.type === 'line') {
         handles.push({ x: element.x1, y: element.y1, type: 'start' });
         handles.push({ x: element.x2, y: element.y2, type: 'end' });
+    } else if (element.type === 'shape3d') {
+        handles.push(
+            {x: element.x, y: element.y, type: 'nw'},
+            {x: element.x + element.width/2, y: element.y, type: 'n'},
+            {x: element.x + element.width, y: element.y, type: 'ne'},
+            {x: element.x + element.width, y: element.y + element.height/2, type: 'e'},
+            {x: element.x + element.width, y: element.y + element.height, type: 'se'},
+            {x: element.x + element.width/2, y: element.y + element.height, type: 's'},
+            {x: element.x, y: element.y + element.height, type: 'sw'},
+            {x: element.x, y: element.y + element.height/2, type: 'w'}
+        );
     }
     
     for (let handle of handles) {
@@ -2017,6 +2293,11 @@ function getElementAtPosition(x, y) {
                 y >= element.y && y <= element.y + element.height) {
                 return element;
             }
+        } else if (element.type === 'shape3d') {
+            if (x >= element.x && x <= element.x + element.width &&
+                y >= element.y && y <= element.y + element.height) {
+                return element;
+            }
         } else if (element.type === 'line') {
             const d = distanceToSegment(x, y, element.x1, element.y1, element.x2, element.y2);
             if (d <= 15) return element;
@@ -2046,8 +2327,8 @@ function setupCanvasEvents() {
         
         eventsSetup = true;
 
-    // Sur la page vidéo : transmettre les clics sur la barre de contrôle (Play, etc.) au lecteur et forcer l'affichage de la barre
-    // Ne pas transmettre si le clic est sur une ligne ou une forme (pour pouvoir les déplacer) et garder le contrôle pause/play
+    // Sur la page vidéo : transmettre les clics au lecteur pour pause/play (barre de contrôle ou zone vidéo vide)
+    // Ne pas transmettre si le clic est sur une annotation (ligne, forme, texte, objet 3D)
     (function() {
         var video = document.getElementById('editableVideo');
         if (!video) return;
@@ -2062,12 +2343,20 @@ function setupCanvasEvents() {
             var coords = getCanvasCoords(clientX, clientY);
             if (!coords) return false;
             var el = getElementAtPosition(coords.x, coords.y);
-            return !!(el && (el.type === 'line' || el.type === 'shape' || el.type === 'text'));
+            return !!(el && (el.type === 'line' || el.type === 'shape' || el.type === 'text' || el.type === 'shape3d'));
+        }
+        function isInAddMode() {
+            return !!(currentShape || currentLineType || isTextMode || isDrawMode || isMarkerMode || isEraserMode);
         }
         function showVideoControls(e) {
             video.focus();
             video.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, view: window, clientX: e.clientX, clientY: e.clientY }));
             video.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, view: window, clientX: e.clientX, clientY: e.clientY }));
+        }
+        function forwardClickToVideo(e) {
+            showVideoControls(e);
+            video.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window, clientX: e.clientX, clientY: e.clientY }));
+            if (video.paused) video.play(); else video.pause();
         }
         canvas.addEventListener('mousedown', function(e) {
             if (!isInControlBar(e.clientX, e.clientY)) return;
@@ -2075,13 +2364,20 @@ function setupCanvasEvents() {
             showVideoControls(e);
         }, true);
         canvas.addEventListener('click', function(e) {
-            if (!isInControlBar(e.clientX, e.clientY)) return;
-            if (clickIsOnElement(e.clientX, e.clientY)) return;
-            e.stopPropagation();
-            e.preventDefault();
-            showVideoControls(e);
-            video.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window, clientX: e.clientX, clientY: e.clientY }));
-            if (video.paused) video.play();
+            var onElement = clickIsOnElement(e.clientX, e.clientY);
+            var inControlBar = isInControlBar(e.clientX, e.clientY);
+            if (inControlBar && !onElement) {
+                e.stopPropagation();
+                e.preventDefault();
+                forwardClickToVideo(e);
+                return;
+            }
+            if (!inControlBar && !onElement && !isInAddMode()) {
+                e.stopPropagation();
+                e.preventDefault();
+                forwardClickToVideo(e);
+                return;
+            }
         }, true);
     })();
 
@@ -2157,15 +2453,50 @@ function setupCanvasEvents() {
         if (clickedElement && !isTextMode && !currentShape && !isDrawMode && !isMarkerMode && !currentLineType) {
             selectedElement = clickedElement;
             window.selectedElement = clickedElement;
-            isMoving = true;
-            if (clickedElement.type === 'line') {
-                initialLineMoveState = { x1: clickedElement.x1, y1: clickedElement.y1, x2: clickedElement.x2, y2: clickedElement.y2 };
+            if (clickedElement.type === 'shape3d' && (e.shiftKey || e.altKey || window.rotateNextShape3dDrag)) {
+                e.preventDefault();
+                e.stopPropagation();
+                isRotating = true;
+                if (window.rotateNextShape3dDrag) window.rotateNextShape3dDrag = false;
+                initialRotationX = clickedElement.rotationX || 0;
+                initialRotationY = clickedElement.rotationY || 0;
+                startX = x;
+                startY = y;
+                canvas.style.cursor = 'grab';
+                function onDocRotateMove(ev) {
+                    const c = getCanvasCoords(ev.clientX, ev.clientY);
+                    if (!c) return;
+                    const cur = window.selectedElement || selectedElement;
+                    if (!cur || cur.type !== 'shape3d') return;
+                    canvas.style.cursor = 'grabbing';
+                    const dx = c.x - startX, dy = c.y - startY;
+                    cur.rotationY = initialRotationY + dx * 0.012;
+                    cur.rotationX = initialRotationX - dy * 0.012;
+                    window.selectedElement = cur;
+                    selectedElement = cur;
+                    const arr = window.addedElements || [];
+                    const idx = arr.findIndex(function(el) { return el.id === cur.id; });
+                    if (idx !== -1) { arr[idx] = cur; window.addedElements = arr; }
+                    if (typeof redrawCanvas === 'function') redrawCanvas();
+                }
+                function onDocRotateEnd() {
+                    document.removeEventListener('mousemove', onDocRotateMove);
+                    isRotating = false;
+                    canvas.style.cursor = 'default';
+                    if (typeof redrawCanvas === 'function') redrawCanvas();
+                }
+                document.addEventListener('mousemove', onDocRotateMove);
+                document.addEventListener('mouseup', onDocRotateEnd, { once: true });
             } else {
-                offsetX = x - clickedElement.x;
-                offsetY = y - clickedElement.y;
+                isMoving = true;
+                if (clickedElement.type === 'line') {
+                    initialLineMoveState = { x1: clickedElement.x1, y1: clickedElement.y1, x2: clickedElement.x2, y2: clickedElement.y2 };
+                } else {
+                    offsetX = x - clickedElement.x;
+                    offsetY = y - clickedElement.y;
+                }
+                canvas.style.cursor = 'move';
             }
-            canvas.style.cursor = 'move';
-            // Différer pour éviter "Maximum call stack size exceeded" au clic sur une forme
             setTimeout(function() {
                 if (typeof redrawCanvas === 'function') redrawCanvas();
                 if (typeof updateCanvasPointerEvents === 'function') updateCanvasPointerEvents();
@@ -2235,7 +2566,7 @@ function setupCanvasEvents() {
             const dx = currentX - startX;
             const dy = currentY - startY;
             
-            if (currentSelectedForResize.type === 'shape') {
+            if (currentSelectedForResize.type === 'shape' || currentSelectedForResize.type === 'shape3d') {
                 switch(resizeHandle.type) {
                     case 'nw':
                         currentSelectedForResize.x = initialElementState.x + dx;
@@ -2319,6 +2650,26 @@ function setupCanvasEvents() {
             return;
         }
         
+        // Rotation 3D (objet 3D sélectionné + Maj enfoncée + glisser)
+        const currentSelectedForRotate = window.selectedElement || selectedElement;
+        if (isRotating && currentSelectedForRotate && currentSelectedForRotate.type === 'shape3d') {
+            canvas.style.cursor = 'grabbing';
+            const dx = currentX - startX;
+            const dy = currentY - startY;
+            currentSelectedForRotate.rotationY = (initialRotationY + dx * 0.012);
+            currentSelectedForRotate.rotationX = (initialRotationX - dy * 0.012);
+            window.selectedElement = currentSelectedForRotate;
+            selectedElement = currentSelectedForRotate;
+            const elementsArray = window.addedElements || [];
+            const elementIndex = elementsArray.findIndex(el => el.id === currentSelectedForRotate.id);
+            if (elementIndex !== -1) {
+                elementsArray[elementIndex] = currentSelectedForRotate;
+                window.addedElements = elementsArray;
+            }
+            redrawCanvas();
+            return;
+        }
+        
         // Déplacement
         const currentSelectedForMove = window.selectedElement || selectedElement;
         if (isMoving && currentSelectedForMove) {
@@ -2367,7 +2718,7 @@ function setupCanvasEvents() {
             // Vérifier si on survole un élément pour changer le curseur
             const hoveredElement = getElementAtPosition(currentX, currentY);
             if (hoveredElement && !isTextMode && !currentShape && !isDrawMode && !isMarkerMode && !isEraserMode && !currentLineType) {
-                canvas.style.cursor = 'move';
+                canvas.style.cursor = (hoveredElement.type === 'shape3d' ? 'grab' : 'move');
             } else if (isTextMode) {
                 canvas.style.cursor = 'text';
             } else if (currentShape || currentLineType || isDrawMode || isMarkerMode || isEraserMode) {
@@ -2448,6 +2799,14 @@ function setupCanvasEvents() {
             }, 0);
         }
         
+        if (isRotating) {
+            isRotating = false;
+            canvas.style.cursor = 'default';
+            setTimeout(function() {
+                if (typeof redrawCanvas === 'function') redrawCanvas();
+            }, 0);
+        }
+        
         if (isDrawing) {
             isDrawing = false;
         }
@@ -2463,6 +2822,10 @@ function setupCanvasEvents() {
         if (isMoving) {
             isMoving = false;
             initialLineMoveState = null;
+        }
+        
+        if (isRotating) {
+            isRotating = false;
         }
         
         if (isDrawing) {
@@ -2546,7 +2909,7 @@ function setupCanvasEvents() {
         
         const elementAtPosition = getElementAtPosition(x, y);
         
-        if (elementAtPosition && (elementAtPosition.type === 'shape' || elementAtPosition.type === 'text' || elementAtPosition.type === 'line')) {
+        if (elementAtPosition && (elementAtPosition.type === 'shape' || elementAtPosition.type === 'shape3d' || elementAtPosition.type === 'text' || elementAtPosition.type === 'line')) {
             selectedElement = elementAtPosition;
             window.selectedElement = elementAtPosition;
             setTimeout(function() {
@@ -2559,6 +2922,8 @@ function setupCanvasEvents() {
                 contextMenu.style.display = 'block';
                 contextMenu.style.left = e.clientX + 'px';
                 contextMenu.style.top = e.clientY + 'px';
+                const rotateBtn = document.getElementById('contextMenuRotateShape3d');
+                if (rotateBtn) rotateBtn.style.display = (elementAtPosition.type === 'shape3d') ? 'block' : 'none';
             }
         } else {
             // Masquer le menu si on clique ailleurs
@@ -2583,6 +2948,10 @@ function hideContextMenu() {
         contextMenu.style.display = 'none';
     }
 }
+
+window.enableRotateShape3d = function() {
+    window.rotateNextShape3dDrag = true;
+};
 
 function deleteSelectedElement() {
     const currentSelected = window.selectedElement || selectedElement;
