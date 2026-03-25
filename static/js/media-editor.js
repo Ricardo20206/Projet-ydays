@@ -513,7 +513,7 @@ if (typeof window.currentMedia === 'undefined') {
             }
             var cw = currentCanvas.width || imageElement.offsetWidth;
             var ch = currentCanvas.height || imageElement.offsetHeight;
-            var size = (shape3dType === 'hexagon3d') ? 50 : 80; // hexagone 3D : 50x50
+            var size = (shape3dType === 'hexagon3d') ? 70 : 80; // hexagone 3D : 70x70
             var nx = (cw / 2) - size / 2;
             var ny = (ch / 2) - size / 2;
             if (!window.addedElements) window.addedElements = [];
@@ -1707,7 +1707,9 @@ window.downloadModifiedImage = function() {
 };
 
 // Enregistrer la vidéo entière avec les annotations + bande-son (télécharge un fichier MP4)
-// Toutes les modifications (formes, lignes, texte, objets 3D) sont enregistrées ; chaque élément n'apparaît qu'à partir de l'instant où il a été ajouté (addedAtTime) et disparaît après suppression (removedAtTime).
+// - La vidéo est toujours relue depuis le début (currentTime = 0) pour enregistrer la vidéo entière.
+// - Chaque modification n'apparaît qu'à partir de l'instant où elle a été ajoutée (addedAtTime) et disparaît après suppression (removedAtTime).
+// - En cas de pause pendant l'enregistrement, aucune image n'est ajoutée pendant la pause : la durée du fichier enregistré reste égale à la durée d'origine de la vidéo.
 window.recordModifiedVideo = function() {
     const video = document.getElementById('editableVideo');
     const editingCanvas = document.getElementById('editingCanvas');
@@ -1871,8 +1873,11 @@ window.recordModifiedVideo = function() {
     var nextCaptureTime = 0;
 
     function drawFrame() {
-        if (video.ended || video.paused) {
-            if (!video.ended) window._recordVideoRafId = requestAnimationFrame(drawFrame);
+        if (video.ended) {
+            return;
+        }
+        if (video.paused) {
+            window._recordVideoRafId = requestAnimationFrame(drawFrame);
             return;
         }
         var t = video.currentTime;

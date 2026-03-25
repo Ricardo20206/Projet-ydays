@@ -105,7 +105,7 @@ L'application permet d'éditer vos images avec de nombreux outils. **Les objets 
 
 Sur la page **Vidéo**, les mêmes outils d’édition que sur l’image sont disponibles (formes, lignes, texte, dessin), plus des **objets 3D**. Les annotations sont dessinées sur un calque au-dessus de la vidéo.
 
-1. **Outils** : Cliquez sur « 🔧 Outils » puis choisissez Formes, Lignes, Dessin ou **Objets 3D** (Cube, Bille, Hexagone 3D). L’hexagone 3D est ajouté en **50×50** pixels ; le cube et la bille en 80×80.
+1. **Outils** : Cliquez sur « 🔧 Outils » puis choisissez Formes, Lignes, Dessin ou **Objets 3D** (Cube, Bille, Hexagone 3D). L’hexagone 3D est ajouté en **70×70** pixels ; le cube et la bille en 80×80.
 2. **Rotation des objets 3D** : Une fois un objet 3D placé, maintenez **Maj** (Shift) ou **Alt** puis glissez pour le faire tourner et l’observer sous tous les angles. Vous pouvez aussi faire un **clic droit** sur l’objet → « 🔄 Faire tourner », puis glisser pour tourner.
 3. **Contrôle vidéo (pause / play)** : Même avec la vidéo à 100 % et des annotations posées, vous pouvez toujours contrôler la lecture :
    - **Clic sur la barre de contrôle** (en bas) : affiche la barre et permet Play/Pause.
@@ -207,7 +207,7 @@ projet ydays/
 ### Page Vidéo (édition et enregistrement)
 - ✅ **Menu Outils** sur la page Vidéo (formes, lignes, dessin, **objets 3D**) comme sur la page Image
 - ✅ **Objets 3D** : Cube, Bille et Hexagone 3D ; rotation avec **Maj** ou **Alt** + glisser, ou clic droit → « Faire tourner »
-- ✅ **Taille par défaut** : hexagone 3D en 50×50, cube et bille en 80×80
+- ✅ **Taille par défaut** : hexagone 3D en 70×70, cube et bille en 80×80
 - ✅ **Enregistrement de la vidéo entière** : la vidéo est enregistrée du début à la fin ; l’enregistrement ne s’arrête qu’à la fin de la vidéo (pas à la pause)
 - ✅ **Toutes les modifications enregistrées avec timing** : formes, lignes, texte et objets 3D sont inclus ; chaque élément n’apparaît qu’à partir de l’instant où il a été ajouté et disparaît après suppression
 - ✅ **Lecture fluide** : capture synchronisée sur la timeline vidéo et débit adapté pour une lecture fluide du fichier exporté
@@ -326,7 +326,7 @@ Projet développé dans le cadre de YDays.
 ### Version 2.9
 - ✨ **Objets 3D sur la vidéo** : sous-menu « Objets 3D » dans le menu Outils (Cube, Bille, Hexagone 3D)
 - ✨ **Rotation 3D** : Maj ou Alt + glisser pour faire tourner un objet 3D ; ou clic droit → « Faire tourner » puis glisser
-- ✨ **Taille hexagone 3D** : ajout en 50×50 pixels par défaut (cube et bille en 80×80)
+- ✨ **Taille hexagone 3D** : ajout en 70×70 pixels par défaut (cube et bille en 80×80)
 - ✨ **Contrôle vidéo avec annotations** : à 100 %, pause/play possible en cliquant sur la barre de contrôle ou sur la zone vidéo vide (hors annotations)
 
 ### Version 2.8

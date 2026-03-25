@@ -349,26 +349,17 @@ document.addEventListener('DOMContentLoaded', function() {
         recognition.interimResults = true;
         
         recognition.onresult = function(event) {
-            let interimTranscript = '';
             let finalTranscript = '';
-            
             for (let i = event.resultIndex; i < event.results.length; i++) {
-                const transcript = event.results[i][0].transcript;
                 if (event.results[i].isFinal) {
-                    finalTranscript += transcript + ' ';
-                } else {
-                    interimTranscript += transcript;
+                    finalTranscript += event.results[i][0].transcript + ' ';
                 }
             }
-            
-            // Trouver le champ de recherche actif (global ou page de recherche)
+            if (!finalTranscript) return;
             const activeInput = document.getElementById('globalSearchInput') || document.getElementById('searchInput');
             if (activeInput) {
-                // Conserver le texte existant et ajouter la transcription
                 const currentText = activeInput.value.trim();
-                activeInput.value = currentText + (currentText ? ' ' : '') + finalTranscript + interimTranscript;
-                
-                // Déclencher l'événement input pour mettre à jour l'interface
+                activeInput.value = currentText + (currentText ? ' ' : '') + finalTranscript.trim();
                 activeInput.dispatchEvent(new Event('input', { bubbles: true }));
             }
         };
