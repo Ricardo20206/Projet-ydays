@@ -8,6 +8,9 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
+# URL de l'API externe (configurable via variable d'environnement pour Docker)
+API_BASE_URL = os.environ.get("API_BASE_URL", "http://localhost:5001")
+
 # Configuration Flask-Mail
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
@@ -135,18 +138,18 @@ def send_query_to_api():
                     data_to_send = {}
                     if query:
                         data_to_send['query'] = query
-                    response = requests.post('http://localhost:5001/process-video', files=files, data=data_to_send, timeout=300)
+                    response = requests.post(f'{API_BASE_URL}/process-video', files=files, data=data_to_send, timeout=300)
             else:
                 # Si le fichier n'existe pas, envoyer juste la requête texte
                 response = requests.post(
-                    'http://localhost:5001/process-query',
+                    f'{API_BASE_URL}/process-query',
                     json={"query": query},
                     timeout=30
                 )
         else:
             # Envoyer seulement la requête texte
             response = requests.post(
-                'http://localhost:5001/process-query',
+                f'{API_BASE_URL}/process-query',
                 json={"query": query},
                 timeout=30
             )
@@ -248,7 +251,7 @@ def send_to_api(filename):
             files = {'file': (filename, media_file, mime_type)}
             # Toujours envoyer le query, même s'il est vide, pour que l'API reçoive les deux paramètres
             data = {'query': query if query else ''}
-            response = requests.post('http://localhost:5001/process-video', files=files, data=data, timeout=300)
+            response = requests.post(f'{API_BASE_URL}/process-video', files=files, data=data, timeout=300)
         
         if response.status_code == 200:
             # Sauvegarder le fichier traité
@@ -325,4 +328,4 @@ def convert_webm_to_mp4():
         return (str(e), 500)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
