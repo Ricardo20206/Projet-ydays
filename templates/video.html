@@ -53,13 +53,13 @@
             <h3>Formes disponibles</h3>
         </div>
         <div class="shapes-submenu-content">
-            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('square'); } return false;" title="Carré"><div class="shape-preview square-preview"></div><span>Carré</span></button>
-            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('rounded-square'); } return false;" title="Carré arrondi"><div class="shape-preview rounded-square-preview"></div><span>Carré arrondi</span></button>
-            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('circle'); } return false;" title="Rond"><div class="shape-preview circle-preview"></div><span>Rond</span></button>
-            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('triangle'); } return false;" title="Triangle"><div class="shape-preview triangle-preview"></div><span>Triangle</span></button>
-            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('triangle-inverted'); } return false;" title="Triangle inversé"><div class="shape-preview triangle-inverted-preview"></div><span>Triangle inversé</span></button>
-            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('diamond'); } return false;" title="Losange"><div class="shape-preview diamond-preview"></div><span>Losange</span></button>
-            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('hexagon'); } return false;" title="Hexagone"><div class="shape-preview hexagon-preview"></div><span>Hexagone</span></button>
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('square'); } return false;" title="Carré"><div class="shape-preview square-preview"></div><span style="color: #FFD700;">Carré</span></button>
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('rounded-square'); } return false;" title="Carré arrondi"><div class="shape-preview rounded-square-preview"></div><span style="color: #FFD700;">Carré arrondi</span></button>
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('circle'); } return false;" title="Rond"><div class="shape-preview circle-preview"></div><span style="color: #FFD700;">Rond</span></button>
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('triangle'); } return false;" title="Triangle"><div class="shape-preview triangle-preview"></div><span style="color: #FFD700;">Triangle</span></button>
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('triangle-inverted'); } return false;" title="Triangle inversé"><div class="shape-preview triangle-inverted-preview"></div><span style="color: #FFD700;">Triangle inversé</span></button>
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('diamond'); } return false;" title="Losange"><div class="shape-preview diamond-preview"></div><span style="color: #FFD700;">Losange</span></button>
+            <button class="shape-btn" onclick="if(typeof window.selectShape === 'function') { window.selectShape('hexagon'); } return false;" title="Hexagone"><div class="shape-preview hexagon-preview"></div><span style="color: #FFD700;">Hexagone</span></button>
         </div>
     </div>
     
@@ -69,9 +69,9 @@
             <h3>Types de lignes</h3>
         </div>
         <div class="shapes-submenu-content">
-            <button class="shape-btn" onclick="selectLineType('straight-arrow')" title="Flèche"><div class="line-preview straight-arrow-preview"><svg width="50" height="50" viewBox="0 0 50 50"><line x1="10" y1="25" x2="40" y2="25" stroke="#6c5ce7" stroke-width="2"/><polygon points="40,25 35,20 35,30" fill="#6c5ce7"/></svg></div><span>Flèche</span></button>
-            <button class="shape-btn" onclick="selectLineType('curved')" title="Courbe"><div class="line-preview curved-preview"><svg width="50" height="50" viewBox="0 0 50 50"><path d="M 10 40 Q 25 10, 40 40" stroke="#6c5ce7" stroke-width="2" fill="none"/></svg></div><span>Courbe</span></button>
-            <button class="shape-btn" onclick="selectLineType('zigzag')" title="Zigzag"><div class="line-preview zigzag-preview"><svg width="50" height="50" viewBox="0 0 50 50"><path d="M 10 25 L 20 15 L 30 25 L 40 15" stroke="#6c5ce7" stroke-width="2" fill="none"/></svg></div><span>Ligne torsadée</span></button>
+            <button class="shape-btn" onclick="selectLineType('straight-arrow')" title="Flèche"><div class="line-preview straight-arrow-preview"><svg width="50" height="50" viewBox="0 0 50 50"><line x1="10" y1="25" x2="40" y2="25" stroke="#0066CC" stroke-width="2"/><polygon points="40,25 35,20 35,30" fill="#0066CC"/></svg></div><span style="color: #FFD700;">Flèche</span></button>
+            <button class="shape-btn" onclick="selectLineType('curved')" title="Courbe"><div class="line-preview curved-preview"><svg width="50" height="50" viewBox="0 0 50 50"><path d="M 10 40 Q 25 10, 40 40" stroke="#0066CC" stroke-width="2" fill="none"/></svg></div><span style="color: #FFD700;">Courbe</span></button>
+            <button class="shape-btn" onclick="selectLineType('zigzag')" title="Zigzag"><div class="line-preview zigzag-preview"><svg width="50" height="50" viewBox="0 0 50 50"><path d="M 10 25 L 20 15 L 30 25 L 40 15" stroke="#0066CC" stroke-width="2" fill="none"/></svg></div><span style="color: #FFD700;">Ligne torsadée</span></button>
         </div>
     </div>
     
@@ -132,15 +132,15 @@
             <p style="padding: 10px 15px; color: #666; margin: 0;">Choisissez un objet 3D à placer sur la vidéo.</p>
             <button class="shape-btn" onclick="if(typeof window.selectShape3d === 'function') { window.selectShape3d('cube'); } return false;" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px;">
                 <span style="font-size: 24px;">🧊</span>
-                <span>Cube</span>
+                <span style="color: #FFD700;">Cube</span>
             </button>
             <button class="shape-btn" onclick="if(typeof window.selectShape3d === 'function') { window.selectShape3d('sphere'); } return false;" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px;">
                 <span style="font-size: 24px;">🔵</span>
-                <span>Bille</span>
+                <span style="color: #FFD700;">Bille</span>
             </button>
             <button class="shape-btn" onclick="if(typeof window.selectShape3d === 'function') { window.selectShape3d('hexagon3d'); } return false;" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px;">
-                <span style="font-size: 24px;">⬡</span>
-                <span>Hexagone 3D</span>
+                <span style="font-size: 24px; color: #0066CC;">⬢</span>
+                <span style="color: #FFD700;">Hexagone 3D</span>
             </button>
             <p style="padding: 10px 15px; color: #888; font-size: 12px; margin: 8px 0 0 0; border-top: 1px solid #eee;">Maintenez <kbd>Maj</kbd> ou <kbd>Alt</kbd> + glisser pour faire tourner l’objet. Ou clic droit → « Faire tourner », puis glisser.</p>
         </div>

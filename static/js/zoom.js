@@ -59,6 +59,17 @@ document.addEventListener('DOMContentLoaded', function() {
         zoomResetBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             applyZoom(1);
+            
+            // Si c'est une vidéo, on la réinitialise aussi
+            if (media && media.tagName === 'VIDEO') {
+                try {
+                    media.currentTime = 0;
+                    // Reprendre la lecture (sans forcer si le navigateur bloque l'autoplay)
+                    media.play().catch(function() {});
+                } catch (err) {
+                    console.warn('Reset video failed:', err);
+                }
+            }
         });
         
         // Zoom avec la molette de souris

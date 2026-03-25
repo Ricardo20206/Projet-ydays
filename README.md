@@ -222,6 +222,7 @@ projet ydays/
 - ✅ **Bouton "ENVOYER"** visible dans toutes les barres de recherche pour envoyer les médias à l'API
 - ✅ **Microphone** : reconnaissance vocale avec transcription en temps réel dans la barre de recherche
 - ✅ **Page d'accueil** avec titre "BIENVENUE SUR CHÂTEAU GOLD" en or et gras
+- ✅ **Titre d’accueil** : police augmentée pour que le titre soit plus grand que le sous-titre
 - ✅ **Navigation colorée** : liens en couleur selon la page active (bleu pour Vidéo, vert pour Image, rouge pour Information, orange pour Contact, jaune pour Accueil)
 - ✅ **Mise en page optimisée** : tous les éléments visibles sans défilement lors du chargement d'un média
 - ✅ Interface responsive (desktop et mobile)
@@ -317,6 +318,9 @@ Ce projet est fourni tel quel, sans garantie.
 Projet développé dans le cadre de YDays.
 
 ## 🔄 Changelog
+
+### Version 2.11
+- ✨ **Page d'accueil** : taille de police du titre augmentée (titre > sous-titre)
 
 ### Version 2.10
 - ✨ **Vidéo entière enregistrée** : l’enregistrement ne s’arrête qu’à la fin de la vidéo (plus à la pause), pour obtenir systématiquement la vidéo complète
