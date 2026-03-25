@@ -6,6 +6,8 @@ import subprocess
 import tempfile
 from werkzeug.utils import secure_filename
 
+API_BASE_URL = os.environ.get("API_BASE_URL", "http://api:5001")
+
 app = Flask(__name__)
 
 # Configuration Flask-Mail
