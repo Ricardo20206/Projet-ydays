@@ -1,7 +1,13 @@
 <header>
     <nav class="navbar">
         <div class="logo-container">
-            <div class="logo-square">G</div>
+            <div class="logo-square">
+                {% if title == 'Accueil' %}
+                    <span class="logo-gold">GOLD</span> <span class="logo-fx">FX</span>
+                {% else %}
+                    G
+                {% endif %}
+            </div>
         </div>
         <ul class="nav-links">
             <li><a href="/">Accueil</a></li>
