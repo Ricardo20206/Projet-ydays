@@ -1,59 +1,75 @@
 {% extends "base.html" %}
 
+{% set hide_search = True %}
+
 {% block content %}
 <script>
-    window.currentMedia = {
-        video: null,
-        image: null
-    };
+    window.currentMedia = { video: null, image: null };
 </script>
-<div class="page-content">
-    <h1 style="color: #2a2a2a; margin-bottom: 30px;">📧 Contact</h1>
-    
-    <div class="info-section">
-        <h2>Nous contacter</h2>
-        <p>Pour toute question, suggestion ou problème technique, n'hésitez pas à nous contacter.</p>
-        
-        <form action="/contact" method="POST" style="margin-top: 30px;">
-            <div style="margin-bottom: 20px;">
-                <label for="name" style="display: block; margin-bottom: 5px; color: #2a2a2a; font-weight: 500;">Nom :</label>
-                <input type="text" id="name" name="name" required 
-                       style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;">
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-                <label for="email" style="display: block; margin-bottom: 5px; color: #2a2a2a; font-weight: 500;">Email :</label>
-                <input type="email" id="email" name="email" required 
-                       style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;">
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-                <label for="message" style="display: block; margin-bottom: 5px; color: #2a2a2a; font-weight: 500;">Message :</label>
-                <textarea id="message" name="message" rows="6" required 
-                          style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; resize: vertical;"></textarea>
-            </div>
-            
-            <button type="submit" class="send-btn">📤 Envoyer le message</button>
-        </form>
-        
-        {% if message_sent %}
-        <div class="status-message status-success" style="margin-top: 20px;">
-            Votre message a été envoyé avec succès !
+<div class="lp-wrapper">
+
+    <!-- HERO -->
+    <section class="lp-hero lp-hero-short">
+        <div class="lp-hero-bg"></div>
+        <div class="lp-hero-inner">
+            <span class="lp-badge"><i data-lucide="mail"></i> Nous écrire</span>
+            <h1 class="lp-hero-title">Contactez-<span class="lp-accent">nous</span></h1>
+            <p class="lp-hero-sub">Une question, une suggestion ou un problème technique ? On vous répond rapidement.</p>
         </div>
-        {% endif %}
-        
-        {% if error_message %}
-        <div class="status-message status-error" style="margin-top: 20px;">
-            ❌ {{ error_message }}
+    </section>
+
+    <!-- FORM + INFO -->
+    <section class="lp-contact-section">
+        <div class="lp-section-inner lp-contact-grid">
+
+            <!-- Formulaire -->
+            <div class="lp-contact-form-card">
+                <h2 class="lp-card-title"><i data-lucide="send"></i> Envoyer un message</h2>
+                <form action="/contact" method="POST">
+                    <div class="lp-field">
+                        <label for="name">Nom</label>
+                        <input type="text" id="name" name="name" placeholder="Votre nom" required>
+                    </div>
+                    <div class="lp-field">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" placeholder="votre@email.com" required>
+                    </div>
+                    <div class="lp-field">
+                        <label for="message">Message</label>
+                        <textarea id="message" name="message" rows="6" placeholder="Votre message..." required></textarea>
+                    </div>
+                    <button type="submit" class="lp-btn lp-btn-primary" style="width:100%; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px;"><i data-lucide="send"></i> Envoyer</button>
+                </form>
+
+                {% if message_sent %}
+                <div class="lp-alert lp-alert-success"><i data-lucide="check-circle"></i> Votre message a été envoyé avec succès !</div>
+                {% endif %}
+                {% if error_message %}
+                <div class="lp-alert lp-alert-error"><i data-lucide="alert-circle"></i> {{ error_message }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Infos -->
+            <div class="lp-contact-info">
+                <div class="lp-info-card">
+                    <div class="lp-feat-icon"><i data-lucide="mail"></i></div>
+                    <h3>Email</h3>
+                    <p>contact@projet-ydays.com</p>
+                </div>
+                <div class="lp-info-card">
+                    <div class="lp-feat-icon"><i data-lucide="layers"></i></div>
+                    <h3>Projet</h3>
+                    <p>YDays &mdash; Application de gestion de médias avec IA</p>
+                </div>
+                <div class="lp-info-card">
+                    <div class="lp-feat-icon"><i data-lucide="rocket"></i></div>
+                    <h3>Version</h3>
+                    <p>2.11 &mdash; Dernière mise à jour</p>
+                </div>
+            </div>
+
         </div>
-        {% endif %}
-    </div>
-    
-    <div class="info-section" style="margin-top: 30px;">
-        <h2>Informations de contact</h2>
-        <p><strong>Email :</strong> contact@projet-ydays.com</p>
-        <p><strong>Projet :</strong> YDays</p>
-        <p><strong>Version :</strong> 1.0</p>
-    </div>
+    </section>
+
 </div>
 {% endblock %}

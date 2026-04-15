@@ -1,266 +1,246 @@
-/* Styles pour le Gestionnaire de Prompts */
-
 /* ============================================
-   BOUTON PROMPT
+   ASSISTANT IA PANEL — charte sombre dorée
    ============================================ */
-.prompt-btn {
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
-}
 
+.prompt-btn {
+    transition: all 0.25s ease;
+    box-shadow: 0 0 0 1px rgba(255, 107, 53, 0.3);
+}
 .prompt-btn:hover {
-    background: #E55A2F !important;
-    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.5);
+    background: #e55a2f !important;
+    box-shadow: 0 4px 20px rgba(255, 107, 53, 0.4) !important;
     transform: translateY(-2px);
 }
+.prompt-btn:active { transform: translateY(0); }
 
-.prompt-btn:active {
-    transform: translateY(0);
-}
-
-/* ============================================
-   PANEL PRINCIPAL
-   ============================================ */
+/* Panel principal */
 .prompt-panel {
-    border-radius: 0;
-    overflow-y: auto;
+    background: #111 !important;
+    border-left: 1px solid #2a2a2a;
     overflow-x: hidden;
-    z-index: 1000;
-}
-
-/* Masquer la scrollbar sur tous les navigateurs */
-.prompt-panel {
-    /* Firefox */
     scrollbar-width: none;
 }
+.prompt-panel::-webkit-scrollbar { display: none; }
 
-/* Chrome/Safari/Edge */
-.prompt-panel::-webkit-scrollbar {
-    display: none;
+/* Header du panel */
+.prompt-panel > div:first-child {
+    background: linear-gradient(135deg, #1a1a1a, #0d0d0d) !important;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.2) !important;
+}
+.prompt-panel > div:first-child h2 {
+    color: #FFD700 !important;
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.3px;
+}
+.prompt-panel > div:first-child button {
+    background: rgba(255, 215, 0, 0.1) !important;
+    border: 1px solid rgba(255, 215, 0, 0.2) !important;
+    color: #FFD700 !important;
+    border-radius: 6px !important;
+    font-size: 16px !important;
+    transition: background 0.2s;
+}
+.prompt-panel > div:first-child button:hover {
+    background: rgba(255, 215, 0, 0.2) !important;
 }
 
-.prompt-panel.open {
-    right: 0;
-}
-
-@keyframes slideInRight {
-    from {
-        right: -500px;
-        opacity: 0;
-    }
-    to {
-        right: 0;
-        opacity: 1;
-    }
-}
-
-@keyframes slideOutRight {
-    from {
-        right: 0;
-        opacity: 1;
-    }
-    to {
-        right: -500px;
-        opacity: 0;
-    }
-}
-
-.prompt-overlay {
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
+/* Sections */
 .prompt-section {
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eee;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #1e1e1e;
 }
-
 .prompt-section:last-child {
     border-bottom: none;
     padding-bottom: 0;
 }
-
 .prompt-section h3 {
-    color: #2a2a2a;
-    font-size: 14px;
-    font-weight: 600;
+    color: #FFD700 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
     margin: 0 0 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
-/* Styling pour le textarea */
+/* Résumé éléments */
+#elementsSummary {
+    background: #1a1a1a !important;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 12px;
+    color: #888 !important;
+    font-family: 'Courier New', monospace;
+    line-height: 1.6;
+}
+
+/* Textarea intention */
 #userIntention {
     width: 100%;
-    padding: 10px;
-    border: 2px solid #ddd;
-    border-radius: 5px;
-    font-family: 'Segoe UI', Tahoma, Geneva, sans-serif;
+    padding: 10px 14px;
+    background: #1a1a1a !important;
+    border: 1px solid #2a2a2a !important;
+    border-radius: 8px;
+    color: #fff !important;
+    font-family: Arial, sans-serif;
     font-size: 13px;
     resize: vertical;
     box-sizing: border-box;
-    transition: border-color 0.3s;
+    transition: border-color 0.25s;
 }
-
 #userIntention:focus {
     outline: none;
-    border-color: #FF6B35;
-    box-shadow: 0 0 5px rgba(255, 107, 53, 0.3);
+    border-color: rgba(255, 215, 0, 0.5) !important;
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.06);
 }
+#userIntention::placeholder { color: #444 !important; }
 
-#userIntention::placeholder {
-    color: #999;
-}
-
-/* Preview box */
+/* Preview prompt */
 #promptPreview {
-    background: #f9f9f9;
+    background: #1a1a1a !important;
+    border: 1px solid #2a2a2a;
+    border-left: 3px solid #FFD700 !important;
+    border-radius: 8px;
     padding: 12px;
-    border-radius: 5px;
-    border-left: 4px solid #FF6B35;
-    font-size: 12px;
-    color: #666;
+    font-size: 11px;
+    color: #888 !important;
     max-height: 150px;
     overflow-y: auto;
     font-family: 'Courier New', monospace;
     white-space: pre-wrap;
     word-wrap: break-word;
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
-#elementsSummary {
-    background: #f5f5f5;
-    padding: 12px;
-    border-radius: 5px;
-    font-size: 13px;
-    color: #555;
-    font-family: 'Courier New', monospace;
-    line-height: 1.6;
+/* Bouton copier prompt */
+#promptPreview + button {
+    margin-top: 8px;
+    width: 100%;
+    padding: 9px;
+    background: #1a1a1a !important;
+    border: 1px solid rgba(255, 215, 0, 0.25) !important;
+    color: #FFD700 !important;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+#promptPreview + button:hover {
+    background: rgba(255, 215, 0, 0.1) !important;
+    border-color: rgba(255, 215, 0, 0.5) !important;
+}
+
+/* Boutons export JSON */
+.prompt-section div[style*="display: flex"] button {
+    background: #1a1a1a !important;
+    border: 1px solid #2a2a2a !important;
+    color: #ccc !important;
+    border-radius: 7px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    padding: 9px !important;
+    transition: all 0.2s;
+}
+.prompt-section div[style*="display: flex"] button:hover {
+    border-color: rgba(255, 215, 0, 0.4) !important;
+    color: #FFD700 !important;
+    background: rgba(255, 215, 0, 0.06) !important;
+}
+
+/* Footer — bouton Envoyer à l'API */
+.prompt-panel > div:last-child {
+    background: #0d0d0d !important;
+    border-top: 1px solid #1e1e1e !important;
+}
+.prompt-panel > div:last-child button {
+    background: linear-gradient(135deg, #FFD700, #ff9500) !important;
+    color: #0d0d0d !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.3px;
+    transition: all 0.25s !important;
+}
+.prompt-panel > div:last-child button:hover {
+    filter: brightness(1.08);
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3) !important;
+    transform: translateY(-1px) scale(1.01) !important;
 }
 
 /* JSON Modal */
 #jsonModal {
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    background: #111 !important;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8) !important;
 }
-
 #jsonModal h2 {
-    color: #2a2a2a;
+    color: #FFD700 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
 }
-
 #jsonContent {
+    background: #1a1a1a !important;
+    border: 1px solid #2a2a2a !important;
+    color: #aaa !important;
+    border-radius: 8px;
     font-family: 'Courier New', monospace;
     font-size: 11px;
-    background: #f5f5f5;
-    color: #1a1a1a;
-    padding: 10px;
-    border-radius: 5px;
+}
+#jsonContent::-webkit-scrollbar { width: 6px; }
+#jsonContent::-webkit-scrollbar-track { background: #1a1a1a; }
+#jsonContent::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+#jsonContent::-webkit-scrollbar-thumb:hover { background: #555; }
+
+/* Boutons modal JSON */
+#jsonModal > div:last-child button:first-child {
+    background: linear-gradient(135deg, #FFD700, #ff9500) !important;
+    color: #0d0d0d !important;
+    border: none !important;
+    border-radius: 7px !important;
+    font-weight: 700 !important;
+}
+#jsonModal > div:last-child button:last-child {
+    background: #1a1a1a !important;
+    color: #888 !important;
+    border: 1px solid #2a2a2a !important;
+    border-radius: 7px !important;
+}
+#jsonModal > div:last-child button:last-child:hover {
+    border-color: #444 !important;
+    color: #ccc !important;
 }
 
-#jsonContent::-webkit-scrollbar {
-    width: 8px;
-}
+/* Overlay */
+.prompt-overlay { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-#jsonContent::-webkit-scrollbar-track {
-    background: #e0e0e0;
-    border-radius: 10px;
-}
-
-#jsonContent::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 10px;
-}
-
-#jsonContent::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}
-
-/* Scrollbar pour le panel */
-.prompt-panel::-webkit-scrollbar {
-    width: 8px;
-}
-
-.prompt-panel::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-.prompt-panel::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-}
-
-.prompt-panel::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .prompt-panel {
-        width: 100% !important;
-        right: -100% !important;
-    }
-
-    .prompt-panel.open {
-        right: 0 !important;
-    }
-}
-
-/* Animations de boutons */
-button[onclick*="sendToAPI"] {
-    position: relative;
-    overflow: hidden;
-}
-
-button[onclick*="sendToAPI"]::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
-}
-
-button[onclick*="sendToAPI"]:active::after {
-    width: 300px;
-    height: 300px;
-}
-
-/* État de chargement */
-.prompt-btn.loading {
-    position: relative;
-    color: transparent;
-}
-
+/* Loading state */
+.prompt-btn.loading { position: relative; color: transparent; }
 .prompt-btn.loading::after {
     content: '';
     position: absolute;
-    width: 16px;
-    height: 16px;
-    top: 50%;
-    left: 50%;
-    margin-left: -8px;
-    margin-top: -8px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
+    width: 16px; height: 16px;
+    top: 50%; left: 50%;
+    margin: -8px 0 0 -8px;
+    border: 2px solid rgba(255,255,255,0.2);
     border-top-color: white;
-    animation: spin 1s linear infinite;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+/* Responsive */
+@media (max-width: 768px) {
+    .prompt-panel { width: 100% !important; right: -100% !important; }
 }

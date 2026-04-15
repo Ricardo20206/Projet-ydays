@@ -1,53 +1,133 @@
 {% extends "base.html" %}
 
+{% set hide_search = True %}
+
 {% block content %}
 <script>
-    window.currentMedia = {
-        video: null,
-        image: null
-    };
+    window.currentMedia = { video: null, image: null };
 </script>
-<div class="page-content">
-    <h1 style="color: #2a2a2a; margin-bottom: 30px;">ℹ️ Informations</h1>
-    
-    <div class="info-section">
-        <h2>À propos de l'application</h2>
-        <p>
-            Cette application Flask vous permet de gérer et traiter vos médias (vidéos et images) 
-            de manière simple et efficace. Vous pouvez uploader, visualiser, et envoyer vos fichiers 
-            à une API de traitement pour obtenir des résultats optimisés.
-        </p>
-    </div>
-    
-    <div class="info-section">
-        <h2>Fonctionnalités</h2>
-        <p><strong>Gestion des vidéos :</strong> Upload, visualisation et traitement de vidéos</p>
-        <p><strong>🖼️ Gestion des images :</strong> Upload, visualisation et traitement d'images</p>
-        <p><strong>🔍 Recherche :</strong> Barre de recherche pour trouver rapidement vos médias</p>
-        <p><strong>Traitement API :</strong> Envoi de vos médias à une API externe pour traitement</p>
-    </div>
-    
-    <div class="info-section">
-        <h2>Formats supportés</h2>
-        <p><strong>Vidéos :</strong> MP4, AVI, MOV, MKV, WEBM</p>
-        <p><strong>Images :</strong> JPG, JPEG, PNG, GIF, BMP, WEBP, SVG</p>
-    </div>
-    
-    <div class="info-section">
-        <h2>Comment utiliser</h2>
-        <p>1. Sélectionnez une page dans le menu (Vidéo ou Image)</p>
-        <p>2. Cliquez sur "Charger" et sélectionnez votre fichier</p>
-        <p>3. Visualisez votre média dans la zone d'affichage</p>
-        <p>4. Optionnellement, envoyez-le à l'API de traitement</p>
-        <p>5. Téléchargez le résultat traité</p>
-    </div>
-    
-    <div class="info-section">
-        <h2>Technologies utilisées</h2>
-        <p>• Flask - Framework web Python</p>
-        <p>• HTML5 / CSS3 - Interface utilisateur</p>
-        <p>• JavaScript - Interactivité</p>
-        <p>• API REST - Traitement externe</p>
-    </div>
+<div class="lp-wrapper">
+
+    <!-- HERO -->
+    <section class="lp-hero lp-hero-short">
+        <div class="lp-hero-bg"></div>
+        <div class="lp-hero-inner">
+            <span class="lp-badge"><i data-lucide="info"></i> Documentation</span>
+            <h1 class="lp-hero-title">À propos de <span class="lp-accent">l'application</span></h1>
+            <p class="lp-hero-sub">Tout ce que vous devez savoir sur les fonctionnalités, les formats supportés et les technologies utilisées.</p>
+        </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="lp-features">
+        <div class="lp-section-inner">
+            <p class="lp-section-label">Présentation</p>
+            <h2 class="lp-section-title">Qu'est-ce que c'est ?</h2>
+            <div class="lp-feat-card" style="max-width:800px; margin:0 auto; text-align:left;">
+                <p style="color:#aaa; line-height:1.8; font-size:1em;">
+                    Cette application Flask vous permet de gérer et traiter vos médias (vidéos et images) de manière simple et efficace.
+                    Uploadez, visualisez, annotez avec des outils professionnels (formes, lignes, texte, objets 3D, dessin)
+                    et envoyez vos fichiers à une API de traitement IA pour obtenir des résultats optimisés.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section style="background:#0d0d0d;">
+        <div class="lp-section-inner">
+            <p class="lp-section-label">Fonctionnalités</p>
+            <h2 class="lp-section-title">Ce que vous pouvez faire</h2>
+            <div class="lp-features-grid">
+                <div class="lp-feat-card">
+                    <div class="lp-feat-icon"><i data-lucide="video"></i></div>
+                    <h3>Gestion des vidéos</h3>
+                    <p>Upload, visualisation, annotation et enregistrement de vidéos avec annotations en MP4 (FFmpeg) ou WebM.</p>
+                </div>
+                <div class="lp-feat-card">
+                    <div class="lp-feat-icon"><i data-lucide="image"></i></div>
+                    <h3>Gestion des images</h3>
+                    <p>Upload, visualisation, édition complète et envoi à l'API. Sauvegarde locale de l'image modifiée.</p>
+                </div>
+                <div class="lp-feat-card">
+                    <div class="lp-feat-icon"><i data-lucide="mic"></i></div>
+                    <h3>Recherche vocale</h3>
+                    <p>Barre de recherche globale avec reconnaissance vocale en temps réel sur toutes les pages.</p>
+                </div>
+                <div class="lp-feat-card">
+                    <div class="lp-feat-icon"><i data-lucide="cpu"></i></div>
+                    <h3>Traitement API</h3>
+                    <p>Envoi de vos médias annotés à une API externe. Traitement simultané image + texte.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FORMATS -->
+    <section class="lp-features">
+        <div class="lp-section-inner">
+            <p class="lp-section-label">Compatibilité</p>
+            <h2 class="lp-section-title">Formats supportés</h2>
+            <div class="lp-tools-grid" style="max-width:800px; margin:0 auto;">
+                <div class="lp-tool-item"><span class="lp-tool-icon"><i data-lucide="video"></i></span><span>MP4</span></div>
+                <div class="lp-tool-item"><span class="lp-tool-icon"><i data-lucide="film"></i></span><span>AVI</span></div>
+                <div class="lp-tool-item"><span class="lp-tool-icon"><i data-lucide="film"></i></span><span>MOV</span></div>
+                <div class="lp-tool-item"><span class="lp-tool-icon"><i data-lucide="film"></i></span><span>MKV / WebM</span></div>
+                <div class="lp-tool-item"><span class="lp-tool-icon"><i data-lucide="image"></i></span><span>JPG / PNG</span></div>
+                <div class="lp-tool-item"><span class="lp-tool-icon"><i data-lucide="image"></i></span><span>GIF / BMP</span></div>
+                <div class="lp-tool-item"><span class="lp-tool-icon"><i data-lucide="image"></i></span><span>WebP / SVG</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW TO USE -->
+    <section style="background:#0d0d0d;">
+        <div class="lp-section-inner">
+            <p class="lp-section-label">Guide</p>
+            <h2 class="lp-section-title">Comment utiliser</h2>
+            <div class="lp-steps">
+                <div class="lp-step">
+                    <div class="lp-step-num">01</div>
+                    <div class="lp-step-body">
+                        <h3>Choisir une page</h3>
+                        <p>Sélectionnez <em>Vidéo</em> ou <em>Image</em> dans le menu de navigation.</p>
+                    </div>
+                </div>
+                <div class="lp-step-arrow">→</div>
+                <div class="lp-step">
+                    <div class="lp-step-num">02</div>
+                    <div class="lp-step-body">
+                        <h3>Charger un fichier</h3>
+                        <p>Cliquez sur "Charger" ou glissez-déposez votre fichier dans la zone dédiée.</p>
+                    </div>
+                </div>
+                <div class="lp-step-arrow">→</div>
+                <div class="lp-step">
+                    <div class="lp-step-num">03</div>
+                    <div class="lp-step-body">
+                        <h3>Annoter &amp; exporter</h3>
+                        <p>Utilisez les outils d'édition, puis téléchargez ou envoyez à l'API.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TECH -->
+    <section class="lp-features">
+        <div class="lp-section-inner">
+            <p class="lp-section-label">Stack</p>
+            <h2 class="lp-section-title">Technologies utilisées</h2>
+            <div class="lp-tools-grid" style="max-width:700px; margin:0 auto;">
+                <div class="lp-tool-item"><span class="lp-tool-icon"><i data-lucide="code-2"></i></span><span>Flask / Python</span></div>
+                <div class="lp-tool-item"><span class="lp-tool-icon"><i data-lucide="layout"></i></span><span>HTML5 / CSS3</span></div>
+                <div class="lp-tool-item"><span class="lp-tool-icon"><i data-lucide="zap"></i></span><span>JavaScript</span></div>
+                <div class="lp-tool-item"><span class="lp-tool-icon"><i data-lucide="plug"></i></span><span>API REST</span></div>
+                <div class="lp-tool-item"><span class="lp-tool-icon"><i data-lucide="clapperboard"></i></span><span>FFmpeg</span></div>
+                <div class="lp-tool-item"><span class="lp-tool-icon"><i data-lucide="mic"></i></span><span>Web Speech API</span></div>
+            </div>
+        </div>
+    </section>
+
 </div>
 {% endblock %}

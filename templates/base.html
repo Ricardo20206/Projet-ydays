@@ -5,9 +5,10 @@
     <title>{{ title }}</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body {% if title == 'Accueil' %}class="home-page"{% elif title == 'Vidéo' %}class="video-page"{% elif title == 'Image' %}class="image-page"{% elif title == 'Information' %}class="information-page"{% elif title == 'Contact' %}class="contact-page"{% endif %}
+<body {% if title == 'Accueil' %}class="home-page"{% elif title == 'Vidéo' %}class="video-page"{% elif title == 'Image' %}class="image-page"{% elif title == 'Information' %}class="information-page dark-page"{% elif title == 'Contact' %}class="contact-page dark-page"{% endif %}
       data-video="{{ video|default('')|tojson|e }}"
       data-image="{{ image|default('')|tojson|e }}">
 
@@ -62,5 +63,6 @@
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     <script src="{{ url_for('static', filename='js/zoom.js') }}"></script>
+    <script>lucide.createIcons();</script>
 </body>
 </html>

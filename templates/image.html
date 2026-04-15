@@ -690,11 +690,11 @@
     console.log('selectShape défini globalement:', typeof window.selectShape);
 </script>
 <div class="page-content">
-    <h1 style="color: #2a2a2a; margin-bottom: 15px;">🖼️ Gestion des Images</h1>
+    <h1 style="color: #2a2a2a; margin-bottom: 15px;">Gestion des Images</h1>
     
     <form class="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
         <input type="file" name="file" accept="image/*" required>
-        <button type="submit">📤 Charger une image</button>
+        <button type="submit"><i data-lucide="upload-cloud" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;"></i> Charger une image</button>
     </form>
     
     {% if image %}
@@ -705,9 +705,9 @@
     
     <!-- Boutons pour accéder au menu Outils et sauvegarder l'image -->
     <div style="margin-top: 10px; text-align: center; position: relative; z-index: 10001 !important; pointer-events: auto !important; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-        <button class="tools-btn" id="toolsBtn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.toggleToolsMenu === 'function') { window.toggleToolsMenu(); } else { alert('toggleToolsMenu non trouvé'); } return false;" style="pointer-events: auto !important; position: relative !important; z-index: 10002 !important; isolation: isolate !important; cursor: pointer !important; background: #6c5ce7 !important; color: white !important; padding: 10px 20px !important; border: none !important; border-radius: 5px !important; font-size: 16px !important; font-weight: bold !important;">🔧 Outils</button>
-        <button class="prompt-btn" id="promptBtn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.togglePromptPanel === 'function') { window.togglePromptPanel(); } else { alert('togglePromptPanel non trouvé'); } return false;" style="pointer-events: auto !important; position: relative !important; z-index: 10002 !important; isolation: isolate !important; cursor: pointer !important; background: #FF6B35 !important; color: white !important; padding: 10px 20px !important; border: none !important; border-radius: 5px !important; font-size: 16px !important; font-weight: bold !important;">✨ Assistant IA</button>
-        <button class="tools-btn" id="saveBtn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.downloadModifiedImage === 'function') { window.downloadModifiedImage(); } else { alert('downloadModifiedImage non trouvé'); } return false;" style="pointer-events: auto !important; position: relative !important; z-index: 10002 !important; isolation: isolate !important; cursor: pointer !important; background: #27ae60 !important; color: white !important; padding: 10px 20px !important; border: none !important; border-radius: 5px !important; font-size: 16px !important; font-weight: bold !important;">💾 Sauvegarder l'image modifiée</button>
+        <button class="tools-btn" id="toolsBtn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.toggleToolsMenu === 'function') { window.toggleToolsMenu(); } else { alert('toggleToolsMenu non trouvé'); } return false;" style="pointer-events: auto !important; position: relative !important; z-index: 10002 !important; isolation: isolate !important; cursor: pointer !important; background: #6c5ce7 !important; color: white !important; padding: 10px 20px !important; border: none !important; border-radius: 5px !important; font-size: 16px !important; font-weight: bold !important;"><i data-lucide="wrench" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;"></i> Outils</button>
+        <button class="prompt-btn" id="promptBtn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.togglePromptPanel === 'function') { window.togglePromptPanel(); } else { alert('togglePromptPanel non trouvé'); } return false;" style="pointer-events: auto !important; position: relative !important; z-index: 10002 !important; isolation: isolate !important; cursor: pointer !important; background: #FF6B35 !important; color: white !important; padding: 10px 20px !important; border: none !important; border-radius: 5px !important; font-size: 16px !important; font-weight: bold !important;"><i data-lucide="sparkles" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;"></i> Assistant IA</button>
+        <button class="tools-btn" id="saveBtn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.downloadModifiedImage === 'function') { window.downloadModifiedImage(); } else { alert('downloadModifiedImage non trouvé'); } return false;" style="pointer-events: auto !important; position: relative !important; z-index: 10002 !important; isolation: isolate !important; cursor: pointer !important; background: #27ae60 !important; color: white !important; padding: 10px 20px !important; border: none !important; border-radius: 5px !important; font-size: 16px !important; font-weight: bold !important;"><i data-lucide="save" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;"></i> Sauvegarder l'image modifiée</button>
     </div>
     
     <!-- Menu déroulant des outils -->
@@ -717,9 +717,9 @@
             <button class="tools-close-btn" onclick="window.toggleToolsMenu();">×</button>
         </div>
         <div class="tools-menu-content">
-            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); try { if(typeof window.selectTool === 'function') { window.selectTool('formes'); } else { console.error('selectTool non trouvé'); alert('Erreur: selectTool non trouvé. Veuillez recharger la page.'); } } catch(e) { console.error('Erreur lors du clic sur Formes:', e); alert('Erreur: ' + e.message); } return false;" style="pointer-events: auto !important; z-index: 2003 !important; position: relative !important;">📐 Formes</button>
-            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); try { if(typeof window.selectTool === 'function') { window.selectTool('lignes'); } else { console.error('selectTool non trouvé'); alert('Erreur: selectTool non trouvé. Veuillez recharger la page.'); } } catch(e) { console.error('Erreur lors du clic sur Lignes:', e); alert('Erreur: ' + e.message); } return false;" style="pointer-events: auto !important; z-index: 2003 !important; position: relative !important;">📏 Lignes</button>
-            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); try { if(typeof window.selectTool === 'function') { window.selectTool('dessin'); } else { console.error('selectTool non trouvé'); alert('Erreur: selectTool non trouvé. Veuillez recharger la page.'); } } catch(e) { console.error('Erreur lors du clic sur Dessin:', e); alert('Erreur: ' + e.message); } return false;" style="pointer-events: auto !important; z-index: 2003 !important; position: relative !important;">🖌️ Dessin</button>
+            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); try { if(typeof window.selectTool === 'function') { window.selectTool('formes'); } else { console.error('selectTool non trouvé'); alert('Erreur: selectTool non trouvé. Veuillez recharger la page.'); } } catch(e) { console.error('Erreur lors du clic sur Formes:', e); alert('Erreur: ' + e.message); } return false;" style="pointer-events: auto !important; z-index: 2003 !important; position: relative !important;"><i data-lucide="shapes" style="width:15px;height:15px;vertical-align:middle;margin-right:6px;"></i> Formes</button>
+            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); try { if(typeof window.selectTool === 'function') { window.selectTool('lignes'); } else { console.error('selectTool non trouvé'); alert('Erreur: selectTool non trouvé. Veuillez recharger la page.'); } } catch(e) { console.error('Erreur lors du clic sur Lignes:', e); alert('Erreur: ' + e.message); } return false;" style="pointer-events: auto !important; z-index: 2003 !important; position: relative !important;"><i data-lucide="minus" style="width:15px;height:15px;vertical-align:middle;margin-right:6px;"></i> Lignes</button>
+            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); try { if(typeof window.selectTool === 'function') { window.selectTool('dessin'); } else { console.error('selectTool non trouvé'); alert('Erreur: selectTool non trouvé. Veuillez recharger la page.'); } } catch(e) { console.error('Erreur lors du clic sur Dessin:', e); alert('Erreur: ' + e.message); } return false;" style="pointer-events: auto !important; z-index: 2003 !important; position: relative !important;"><i data-lucide="brush" style="width:15px;height:15px;vertical-align:middle;margin-right:6px;"></i> Dessin</button>
         </div>
     </div>
     
@@ -858,15 +858,9 @@
                            style="width: 100%; margin-bottom: 10px;">
                     <span id="brushSizeValue" style="display: block; text-align: center; margin-bottom: 15px;">5px</span>
                     <div style="display: flex; gap: 10px; margin-top: 15px; flex-direction: column;">
-                        <button class="tool-btn" onclick="activateMarkerMode()" style="flex: 1; background: #6c5ce7; width: 100%;">
-                            🖍️ Feutre
-                        </button>
-                        <button class="tool-btn" onclick="activateEraserMode()" style="flex: 1; background: #e74c3c; width: 100%; margin-top: 10px;">
-                            🧹 Gomme
-                        </button>
-                        <button class="tool-btn" onclick="deactivateDrawingTools()" style="flex: 1; background: #95a5a6; width: 100%; margin-top: 10px;">
-                            ✋ Désactiver
-                        </button>
+                        <button class="tool-btn" onclick="activateMarkerMode()" style="flex: 1; background: #6c5ce7; width: 100%;"><i data-lucide="pen-line" style="width:14px;height:14px;vertical-align:middle;margin-right:5px;"></i> Feutre</button>
+                        <button class="tool-btn" onclick="activateEraserMode()" style="flex: 1; background: #e74c3c; width: 100%; margin-top: 10px;"><i data-lucide="eraser" style="width:14px;height:14px;vertical-align:middle;margin-right:5px;"></i> Gomme</button>
+                        <button class="tool-btn" onclick="deactivateDrawingTools()" style="flex: 1; background: #95a5a6; width: 100%; margin-top: 10px;"><i data-lucide="hand" style="width:14px;height:14px;vertical-align:middle;margin-right:5px;"></i> Désactiver</button>
                     </div>
                 </div>
             </div>
@@ -878,14 +872,12 @@
     
     <!-- Menu contextuel pour supprimer les éléments -->
     <div class="context-menu" id="contextMenu">
-        <button class="context-menu-item" onclick="deleteSelectedElement()">
-            🗑️ Supprimer
-        </button>
+        <button class="context-menu-item" onclick="deleteSelectedElement()"><i data-lucide="trash-2" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i> Supprimer</button>
     </div>
     
     {% if processed_image %}
     <div class="info-section" style="margin-top: 15px;">
-        <h4>✅ Image traitée disponible :</h4>
+        <h4><i data-lucide="check-circle" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;stroke:#27ae60;"></i> Image traitée disponible :</h4>
         <div class="media-container">
             <img src="{{ url_for('serve_image', filename=processed_image) }}" alt="Image traitée">
         </div>
