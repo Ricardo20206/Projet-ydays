@@ -51,15 +51,34 @@ header {
 .logo-square {
     width: 50px;
     height: 50px;
-    background: #FFD700;
+    background: #1a1a1a;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 28px;
     font-weight: bold;
-    color: #1a1a1a;
-    box-shadow: 0 2px 5px rgba(255, 215, 0, 0.3);
+    color: #FFD700;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Logo "GOLD FX" sur la page d'accueil */
+body.home-page .logo-square {
+    width: auto;
+    height: 56px;
+    padding: 0 16px;
+    gap: 6px;
+    font-size: 20px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+body.home-page .logo-square .logo-gold {
+    color: #FFD700;
+}
+
+body.home-page .logo-square .logo-fx {
+    color: #ffffff;
 }
 
 .nav-links {
@@ -70,7 +89,7 @@ header {
 }
 
 .nav-links a {
-    color: white;
+    color: #FFD700;
     text-decoration: none;
     font-size: 16px;
     font-weight: 500;
@@ -84,65 +103,10 @@ header {
     background: rgba(255, 215, 0, 0.1);
 }
 
-/* Style pour les liens de navigation sur la page d'accueil */
-body.home-page .nav-links a {
-    color: #FFD700;
-    font-weight: bold;
-}
-
-body.home-page .nav-links a:hover {
-    color: #FFD700;
-    background: rgba(255, 215, 0, 0.2);
-}
-
 /* Page d'accueil : toutes les écritures en Arial */
 body.home-page,
 body.home-page * {
     font-family: Arial, sans-serif !important;
-}
-
-/* Page Vidéo - liens en bleu et gras */
-body.video-page .nav-links a {
-    color: #0066CC;
-    font-weight: bold;
-}
-
-body.video-page .nav-links a:hover {
-    color: #0066CC;
-    background: rgba(0, 102, 204, 0.2);
-}
-
-/* Page Image - liens en vert et gras */
-body.image-page .nav-links a {
-    color: #00AA00;
-    font-weight: bold;
-}
-
-body.image-page .nav-links a:hover {
-    color: #00AA00;
-    background: rgba(0, 170, 0, 0.2);
-}
-
-/* Page Information - liens en rouge et gras */
-body.information-page .nav-links a {
-    color: #CC0000;
-    font-weight: bold;
-}
-
-body.information-page .nav-links a:hover {
-    color: #CC0000;
-    background: rgba(204, 0, 0, 0.2);
-}
-
-/* Page Contact - liens en orange et gras */
-body.contact-page .nav-links a {
-    color: #FF6600;
-    font-weight: bold;
-}
-
-body.contact-page .nav-links a:hover {
-    color: #FF6600;
-    background: rgba(255, 102, 0, 0.2);
 }
 
 /* Main content */
@@ -416,6 +380,7 @@ button.delete-btn:hover {
 
 button.send-btn {
     background: #27ae60;
+    color: #FFD700;
 }
 
 button.send-btn:hover {
@@ -428,19 +393,6 @@ button.send-btn:hover {
     font-size: 1.1em;
     font-style: italic;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-/* Couleurs du bouton ENVOYER selon la page */
-body.video-page .btn-gold-text {
-    color: #4a90e2;
-}
-
-body.information-page .btn-gold-text {
-    color: #e74c3c;
-}
-
-body.contact-page .btn-gold-text {
-    color: #ff8c00;
 }
 
 /* Formulaires */
@@ -563,6 +515,18 @@ footer {
     max-width: 1200px;
     margin: 0 auto;
     padding: 10px 20px;
+}
+
+/* Accueil : centrer le message au milieu de la page */
+body.home-page main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body.home-page .page-content {
+    padding: 0 20px;
 }
 
 .page-content h1 {

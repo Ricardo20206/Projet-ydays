@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         if (response.ok) {
                             if (apiStatusGlobal) {
-                                apiStatusGlobal.innerHTML = `<div class="status-message status-success">✅ ${data.response || 'Requête traitée avec succès'}</div>`;
+                                apiStatusGlobal.innerHTML = `<div class="status-message status-success"> ${data.response || 'Requête traitée avec succès'}</div>`;
                             }
                             // Rediriger vers la page de recherche après un court délai
                             setTimeout(() => {
@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     if (apiStatusGlobal) {
                         const mediaType = isVideo ? 'vidéo' : 'image';
-                        let successMessage = `✅ ${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)}`;
+                        let successMessage = ` ${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)}`;
                         if (isImagePage) {
                             successMessage += ' modifiée';
                         }
