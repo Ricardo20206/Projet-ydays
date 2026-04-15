@@ -47,7 +47,7 @@
     </div>
     
     <!-- Menu déroulant des outils : s'ouvre depuis la gauche avec Formes, Lignes, Dessin -->
-    <div class="tools-menu tools-menu-left" id="toolsMenu" style="position: fixed !important; top: 0 !important; left: -400px !important; right: auto !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2000 !important; display: none !important; flex-direction: column !important; visibility: visible !important; opacity: 1 !important; box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3); transition: left 0.4s ease-in-out;">
+    <div class="tools-menu tools-menu-left" id="toolsMenu" style="position: fixed !important; top: 0 !important; left: -100vw !important; right: auto !important; width: min(92vw, 350px) !important; height: 100vh !important; background: white !important; z-index: 2000 !important; display: none !important; flex-direction: column !important; visibility: visible !important; opacity: 1 !important; box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3); transition: left 0.4s ease-in-out;">
         <div class="tools-menu-header">
             <h3>Outils d'édition</h3>
             <button class="tools-close-btn" onclick="window.toggleToolsMenu();">×</button>
@@ -60,7 +60,7 @@
         </div>
     </div>
     
-    <div class="shapes-submenu tools-menu-left" id="shapesSubmenu" style="position: fixed !important; top: 0 !important; left: -400px !important; right: auto !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3) !important; transition: left 0.4s ease-in-out;">
+    <div class="shapes-submenu tools-menu-left" id="shapesSubmenu" style="position: fixed !important; top: 0 !important; left: -100vw !important; right: auto !important; width: min(92vw, 350px) !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3) !important; transition: left 0.4s ease-in-out;">
         <div class="shapes-submenu-header">
             <button class="shapes-back-btn" onclick="window.closeShapesSubmenu(); return false;">← Retour</button>
             <h3>Formes disponibles</h3>
@@ -76,7 +76,7 @@
         </div>
     </div>
     
-    <div class="shapes-submenu tools-menu-left" id="linesSubmenu" style="position: fixed !important; top: 0 !important; left: -400px !important; right: auto !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3) !important; transition: left 0.4s ease-in-out;">
+    <div class="shapes-submenu tools-menu-left" id="linesSubmenu" style="position: fixed !important; top: 0 !important; left: -100vw !important; right: auto !important; width: min(92vw, 350px) !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3) !important; transition: left 0.4s ease-in-out;">
         <div class="shapes-submenu-header">
             <button class="shapes-back-btn" onclick="window.closeLinesSubmenu(); return false;">← Retour</button>
             <h3>Types de lignes</h3>
@@ -88,7 +88,7 @@
         </div>
     </div>
     
-    <div class="shapes-submenu tools-menu-left" id="textSubmenu" style="position: fixed !important; top: 0 !important; left: -400px !important; right: auto !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3) !important; transition: left 0.4s ease-in-out;">
+    <div class="shapes-submenu tools-menu-left" id="textSubmenu" style="position: fixed !important; top: 0 !important; left: -100vw !important; right: auto !important; width: min(92vw, 350px) !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3) !important; transition: left 0.4s ease-in-out;">
         <div class="shapes-submenu-header">
             <button class="shapes-back-btn" onclick="window.closeTextSubmenu(); return false;">← Retour</button>
             <h3>Ajouter du texte</h3>
@@ -105,7 +105,7 @@
         </div>
     </div>
     
-    <div class="shapes-submenu tools-menu-left" id="drawSubmenu" style="position: fixed !important; top: 0 !important; left: -400px !important; right: auto !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3) !important; transition: left 0.4s ease-in-out;">
+    <div class="shapes-submenu tools-menu-left" id="drawSubmenu" style="position: fixed !important; top: 0 !important; left: -100vw !important; right: auto !important; width: min(92vw, 350px) !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3) !important; transition: left 0.4s ease-in-out;">
         <div class="shapes-submenu-header">
             <button class="shapes-back-btn" onclick="if(typeof window.closeDrawSubmenu === 'function') { window.closeDrawSubmenu(); } return false;">← Retour</button>
             <h3>Palette de couleurs</h3>
@@ -136,7 +136,7 @@
     </div>
     
     <!-- Sous-menu Objets 3D -->
-    <div class="shapes-submenu tools-menu-left" id="objets3dSubmenu" style="position: fixed !important; top: 0 !important; left: -400px !important; right: auto !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3) !important; transition: left 0.4s ease-in-out;">
+    <div class="shapes-submenu tools-menu-left" id="objets3dSubmenu" style="position: fixed !important; top: 0 !important; left: -100vw !important; right: auto !important; width: min(92vw, 350px) !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3) !important; transition: left 0.4s ease-in-out;">
         <div class="shapes-submenu-header">
             <button class="shapes-back-btn" onclick="if(typeof window.closeObjets3dSubmenu === 'function') { window.closeObjets3dSubmenu(); } return false;">← Retour</button>
             <h3>Objets 3D</h3>
@@ -144,7 +144,7 @@
         <div class="shapes-submenu-content">
             <p style="padding: 10px 15px; color: #666; margin: 0;">Choisissez un objet 3D à placer sur la vidéo.</p>
             <button class="shape-btn" onclick="console.log('🖱️ Clic Cube'); if(typeof window.selectShape3d === 'function') { window.selectShape3d('cube'); } else { console.error('selectShape3d non disponible!'); } return false;" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px;">
-                <span style="font-size: 24px;"></span>
+                <span style="font-size: 24px; color: #0066CC;">🧊</span>
                 <span style="color: #FFD700;">Cube</span>
             </button>
             <button class="shape-btn" onclick="console.log('🖱️ Clic Sphere'); if(typeof window.selectShape3d === 'function') { window.selectShape3d('sphere'); } else { console.error('selectShape3d non disponible!'); } return false;" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px;">
