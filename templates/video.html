@@ -608,43 +608,127 @@ window.closeJSONModal = function() {
 };
 
 window.sendToAPIHandler = async function() {
-    if (!window.addedElements || window.addedElements.length === 0) {
-        alert('⚠️ Aucun élément à traiter!');
+    const userIntent = document.getElementById('userIntention')?.value || '';
+
+    if (!userIntent.trim()) {
+        alert('⚠️ Veuillez décrire ce que vous voulez faire dans le champ "Ce que vous voulez faire?"');
         return;
     }
 
-    const mediaEl = document.getElementById('editableImage') || document.getElementById('editableVideo');
-    let mediaInfo = { width: 1280, height: 720, type: 'video' };
-    
-    if (mediaEl) {
-        if (mediaEl.tagName === 'IMG') {
-            mediaInfo = {
-                type: 'image',
-                width: mediaEl.naturalWidth || 1280,
-                height: mediaEl.naturalHeight || 720
-            };
-        } else if (mediaEl.tagName === 'VIDEO') {
+    // Récupérer le nom de la vidéo chargée
+    const videoFilename = window.currentMedia?.video || null;
+
+    // Construire le prompt : inclure la description des éléments si présents
+    let fullPrompt = userIntent;
+    if (window.addedElements && window.addedElements.length > 0 && window.PromptGenerator) {
+        const mediaEl = document.getElementById('editableVideo');
+        let mediaInfo = { width: 1280, height: 720, type: 'video' };
+        if (mediaEl) {
             mediaInfo = {
                 type: 'video',
                 width: mediaEl.videoWidth || 1280,
                 height: mediaEl.videoHeight || 720
             };
         }
+        const elementsData = window.PromptGenerator.generateElementsDescription(window.addedElements, mediaInfo, userIntent);
+        if (elementsData.description) {
+            fullPrompt = userIntent + '\n\nÉléments placés sur la vidéo:\n' + elementsData.description;
+        }
     }
 
-    const userIntent = document.getElementById('userIntention')?.value || '';
-    
-    try {
-        const response = await window.APIIntegration.processElements(
-            window.addedElements || [],
-            userIntent,
-            null,
-            mediaInfo
-        );
+    // Si une vidéo est chargée, utiliser Omni-Video (transformation)
+    if (videoFilename) {
+        const statusEl = document.getElementById('elementsSummary');
+        if (statusEl) statusEl.textContent = '⏳ Envoi à Kling AI en cours...';
 
-        alert('✅ Requête envoyée à l\'API!\\nConsultez la console pour les détails.');
-    } catch (error) {
-        console.error('Erreur:', error);
+        try {
+            // Étape 1 : Créer la tâche Omni-Video
+            const resp = await fetch('/kling/omni-video', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prompt: fullPrompt,
+                    filename: videoFilename,
+                    mode: 'pro',
+                    refer_type: 'base'
+                })
+            });
+            const data = await resp.json();
+
+            if (!resp.ok || data.error) {
+                alert('❌ Erreur: ' + (data.error || data.message || 'Erreur inconnue'));
+                if (statusEl) statusEl.textContent = '❌ Erreur lors de l\'envoi';
+                return;
+            }
+
+            const taskId = data.data?.task_id;
+            if (!taskId) {
+                alert('❌ Pas de task_id reçu. Réponse: ' + JSON.stringify(data));
+                return;
+            }
+
+            if (statusEl) statusEl.textContent = '⏳ Tâche créée (ID: ' + taskId + '). Traitement en cours...';
+            alert('✅ Tâche envoyée à Kling AI!\n\nTask ID: ' + taskId + '\n\nLe traitement peut prendre quelques minutes.\nCliquez OK pour lancer le suivi automatique.');
+
+            // Étape 2 : Polling du statut
+            window._klingPolling = setInterval(async () => {
+                try {
+                    const statusResp = await fetch('/kling/omni-video-status/' + taskId);
+                    const statusData = await statusResp.json();
+                    const taskStatus = statusData.data?.task_status;
+
+                    if (statusEl) statusEl.textContent = '⏳ Statut: ' + (taskStatus || 'inconnu') + '...';
+
+                    if (taskStatus === 'succeed') {
+                        clearInterval(window._klingPolling);
+                        const localVideo = statusData.local_video;
+                        const resultUrl = statusData.data?.task_result?.videos?.[0]?.url;
+
+                        if (localVideo) {
+                            if (statusEl) statusEl.textContent = '✅ Vidéo générée avec succès!';
+                            alert('✅ Vidéo générée par Kling AI!\nRedirection en cours...');
+                            window.location.href = '/video?video=' + videoFilename + '&processed=' + localVideo;
+                        } else if (resultUrl) {
+                            if (statusEl) statusEl.textContent = '✅ Terminé! URL: ' + resultUrl;
+                            alert('✅ Vidéo prête!\nURL: ' + resultUrl);
+                        }
+                    } else if (taskStatus === 'failed') {
+                        clearInterval(window._klingPolling);
+                        const failMsg = statusData.data?.task_status_msg || 'Raison inconnue';
+                        if (statusEl) statusEl.textContent = '❌ Échec: ' + failMsg;
+                        alert('❌ La génération a échoué: ' + failMsg);
+                    }
+                } catch (pollErr) {
+                    console.error('Erreur polling:', pollErr);
+                }
+            }, 10000); // Vérifier toutes les 10 secondes
+
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert('❌ Erreur de connexion: ' + error.message);
+        }
+    } else {
+        // Pas de vidéo : text-to-video
+        try {
+            const resp = await fetch('/kling/generate-video', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prompt: fullPrompt,
+                    duration: '5',
+                    aspect_ratio: '16:9',
+                    mode: 'pro'
+                })
+            });
+            const data = await resp.json();
+            if (resp.ok && data.data?.task_id) {
+                alert('✅ Génération text-to-video lancée!\nTask ID: ' + data.data.task_id);
+            } else {
+                alert('❌ Erreur: ' + (data.error || data.message || JSON.stringify(data)));
+            }
+        } catch (error) {
+            alert('❌ Erreur: ' + error.message);
+        }
     }
 };
 
