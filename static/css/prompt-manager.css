@@ -23,7 +23,6 @@
    ============================================ */
 .prompt-panel {
     border-radius: 0;
-    animation: slideInRight 0.4s ease-in-out;
     overflow-y: auto;
     overflow-x: hidden;
     z-index: 1000;
