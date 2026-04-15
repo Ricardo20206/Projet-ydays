@@ -92,10 +92,26 @@ header {
     color: #FFD700;
     text-decoration: none;
     font-size: 16px;
-    font-weight: 500;
+    font-weight: 700;
+    font-family: Arial, sans-serif;
+    font-style: normal;
     transition: color 0.3s;
     padding: 8px 12px;
     border-radius: 5px;
+}
+
+/* Accueil : liens du header en gras */
+body.home-page .nav-links a {
+    font-weight: 700;
+}
+
+/* Même taille de liens du header sur toutes les pages */
+body.home-page .nav-links a,
+body.video-page .nav-links a,
+body.image-page .nav-links a,
+body.information-page .nav-links a,
+body.contact-page .nav-links a {
+    font-size: 16px;
 }
 
 .nav-links a:hover {
@@ -474,24 +490,51 @@ footer {
 @media (max-width: 768px) {
     .navbar {
         flex-direction: column;
-        gap: 15px;
+        gap: 10px;
+        align-items: center;
     }
     
     .nav-links {
         flex-wrap: wrap;
         justify-content: center;
-        gap: 15px;
+        gap: 8px;
+    }
+
+    .nav-links a {
+        font-size: 14px;
+        padding: 6px 8px;
+    }
+
+    .logo-square {
+        height: 46px;
+        padding: 0 12px;
+        font-size: 16px;
+    }
+
+    .page-content {
+        padding: 8px 12px;
+    }
+
+    main {
+        padding: 10px 8px;
     }
     
     .media-container {
         border-color: #ff8c00;
-        padding: 10px;
-        min-height: 300px;
+        padding: 8px;
+        min-height: 220px;
+        max-height: calc(100vh - 300px);
+    }
+
+    .media-container video,
+    .media-container img {
+        max-width: 100%;
+        max-height: calc(100vh - 340px);
     }
     
     .welcome-title {
-        font-size: 3.5em;
-        margin: 30px 0;
+        font-size: clamp(2.2rem, 10vw, 3.5rem);
+        margin: 20px 0;
         letter-spacing: 1px;
     }
     
@@ -500,12 +543,63 @@ footer {
         padding: 15px 20px;
     }
     
-    main {
-        padding: 20px 10px;
-    }
-    
     .search-bar {
-        padding: 12px 20px;
+        width: 100%;
+        max-width: 100%;
+        padding: 10px 12px;
+        gap: 10px;
+    }
+
+    .shapes-submenu-content {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 14px;
+    }
+
+    .shape-btn {
+        flex-direction: row;
+        justify-content: flex-start;
+        text-align: left;
+        padding: 12px;
+    }
+
+    .tools-menu-header h3,
+    .shapes-submenu-header h3 {
+        font-size: 1.05em;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-square {
+        height: 42px;
+        padding: 0 10px;
+        font-size: 14px;
+        gap: 4px;
+    }
+
+    .nav-links {
+        gap: 4px;
+    }
+
+    .nav-links a {
+        font-size: 13px;
+        padding: 5px 6px;
+    }
+
+    .media-container {
+        min-height: 180px;
+        max-height: calc(100vh - 260px);
+    }
+
+    .media-container video,
+    .media-container img {
+        max-height: calc(100vh - 300px);
+    }
+
+    .tools-btn,
+    .delete-btn,
+    .prompt-btn {
+        width: 100%;
     }
 }
 

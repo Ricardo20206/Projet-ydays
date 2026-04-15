@@ -711,7 +711,7 @@
     </div>
     
     <!-- Menu déroulant des outils -->
-    <div class="tools-menu" id="toolsMenu" style="position: fixed !important; top: 0 !important; right: -400px !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2000 !important; display: none !important; flex-direction: column !important; visibility: hidden !important; opacity: 0 !important; box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3); transition: right 0.4s ease-in-out;">
+    <div class="tools-menu" id="toolsMenu" style="position: fixed !important; top: 0 !important; right: -100vw !important; width: min(92vw, 350px) !important; height: 100vh !important; background: white !important; z-index: 2000 !important; display: none !important; flex-direction: column !important; visibility: hidden !important; opacity: 0 !important; box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3); transition: right 0.4s ease-in-out;">
         <div class="tools-menu-header">
             <h3>Outils d'édition</h3>
             <button class="tools-close-btn" onclick="window.toggleToolsMenu();">×</button>
@@ -724,7 +724,7 @@
     </div>
     
     <!-- Sous-menu des formes -->
-    <div class="shapes-submenu" id="shapesSubmenu" style="position: fixed !important; top: 0 !important; right: -400px !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; visibility: visible !important; opacity: 1 !important; box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3) !important;">
+    <div class="shapes-submenu" id="shapesSubmenu" style="position: fixed !important; top: 0 !important; right: -100vw !important; width: min(92vw, 350px) !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; visibility: visible !important; opacity: 1 !important; box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3) !important;">
         <div class="shapes-submenu-header">
             <button class="shapes-back-btn" onclick="window.closeShapesSubmenu(); return false;" style="pointer-events: auto !important; z-index: 2002 !important; position: relative;">← Retour</button>
             <h3>Formes disponibles</h3>
@@ -762,7 +762,7 @@
     </div>
     
     <!-- Sous-menu des lignes -->
-    <div class="shapes-submenu" id="linesSubmenu" style="position: fixed !important; top: 0 !important; right: -400px !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; visibility: visible !important; opacity: 1 !important;">
+    <div class="shapes-submenu" id="linesSubmenu" style="position: fixed !important; top: 0 !important; right: -100vw !important; width: min(92vw, 350px) !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; visibility: visible !important; opacity: 1 !important;">
         <div class="shapes-submenu-header">
             <button class="shapes-back-btn" onclick="window.closeLinesSubmenu(); return false;" style="pointer-events: auto !important; z-index: 2002 !important; position: relative;">← Retour</button>
             <h3>Types de lignes</h3>
@@ -797,7 +797,7 @@
     </div>
     
     <!-- Sous-menu du texte -->
-    <div class="shapes-submenu" id="textSubmenu" style="position: fixed !important; top: 0 !important; right: -400px !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; visibility: visible !important; opacity: 1 !important; box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3) !important;">
+    <div class="shapes-submenu" id="textSubmenu" style="position: fixed !important; top: 0 !important; right: -100vw !important; width: min(92vw, 350px) !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; visibility: visible !important; opacity: 1 !important; box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3) !important;">
         <div class="shapes-submenu-header">
             <button class="shapes-back-btn" onclick="window.closeTextSubmenu(); return false;" style="pointer-events: auto !important; z-index: 2002 !important; position: relative;">← Retour</button>
             <h3>Ajouter du texte</h3>
@@ -822,7 +822,7 @@
     </div>
     
     <!-- Sous-menu du dessin -->
-    <div class="shapes-submenu" id="drawSubmenu" style="position: fixed !important; top: 0 !important; right: -400px !important; width: 350px !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; visibility: visible !important; opacity: 1 !important; box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3) !important;">
+    <div class="shapes-submenu" id="drawSubmenu" style="position: fixed !important; top: 0 !important; right: -100vw !important; width: min(92vw, 350px) !important; height: 100vh !important; background: white !important; z-index: 2001 !important; display: flex !important; flex-direction: column !important; visibility: visible !important; opacity: 1 !important; box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3) !important;">
         <div class="shapes-submenu-header">
             <button class="shapes-back-btn" onclick="try { if(typeof window.closeDrawSubmenu === 'function') { window.closeDrawSubmenu(); } else { console.error('closeDrawSubmenu non trouvé'); alert('Erreur: fonction non trouvée'); } } catch(e) { console.error('Erreur:', e); alert('Erreur: ' + e.message); } return false;" style="pointer-events: auto !important; z-index: 2002 !important; position: relative !important; cursor: pointer !important;">← Retour</button>
             <h3>Palette de couleurs</h3>
