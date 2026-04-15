@@ -27,7 +27,7 @@
     
     <form class="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
         <input type="file" name="file" accept="video/*" required>
-        <button type="submit">📤 Charger une vidéo</button>
+        <button type="submit"><i data-lucide="upload-cloud" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;"></i> Charger une vidéo</button>
     </form>
     
     {% if video %}
@@ -41,9 +41,9 @@
     </div>
     
     <div style="margin-top: 10px; text-align: center; position: relative; z-index: 10001 !important; pointer-events: auto !important; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; align-items: center;">
-        <button class="tools-btn" id="toolsBtn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.toggleToolsMenu === 'function') { window.toggleToolsMenu(); } else { alert('toggleToolsMenu non trouvé'); } return false;" style="pointer-events: auto !important; position: relative !important; z-index: 10002 !important; cursor: pointer !important; background: #6c5ce7 !important; color: white !important; padding: 10px 20px !important; border: none !important; border-radius: 5px !important; font-size: 16px !important; font-weight: bold !important;">🔧 Outils</button>
-        <button class="prompt-btn" id="promptBtn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.togglePromptPanel === 'function') { window.togglePromptPanel(); } else { alert('togglePromptPanel non trouvé'); } return false;" style="pointer-events: auto !important; position: relative !important; z-index: 10002 !important; isolation: isolate !important; cursor: pointer !important; background: #FF6B35 !important; color: white !important; padding: 10px 20px !important; border: none !important; border-radius: 5px !important; font-size: 16px !important; font-weight: bold !important;">✨ Assistant IA</button>
-        <button class="delete-btn" onclick="deleteFile('{{ video }}')">🗑 Supprimer la vidéo</button>
+        <button class="delete-btn" onclick="deleteFile('{{ video }}')"><i data-lucide="trash-2" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;"></i> Supprimer la vidéo</button>
+        <button class="tools-btn" id="toolsBtn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.toggleToolsMenu === 'function') { window.toggleToolsMenu(); } else { alert('toggleToolsMenu non trouvé'); } return false;" style="pointer-events: auto !important; position: relative !important; z-index: 10002 !important; cursor: pointer !important; background: #6c5ce7 !important; color: white !important; padding: 10px 20px !important; border: none !important; border-radius: 5px !important; font-size: 16px !important; font-weight: bold !important;"><i data-lucide="wrench" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;"></i> Outils</button>
+        <button class="prompt-btn" id="promptBtn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.togglePromptPanel === 'function') { window.togglePromptPanel(); } else { alert('togglePromptPanel non trouvé'); } return false;" style="pointer-events: auto !important; position: relative !important; z-index: 10002 !important; isolation: isolate !important; cursor: pointer !important; background: #FF6B35 !important; color: white !important; padding: 10px 20px !important; border: none !important; border-radius: 5px !important; font-size: 16px !important; font-weight: bold !important;"><i data-lucide="sparkles" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;"></i> Assistant IA</button>
     </div>
     
     <!-- Menu déroulant des outils : s'ouvre depuis la gauche avec Formes, Lignes, Dessin -->
@@ -53,10 +53,10 @@
             <button class="tools-close-btn" onclick="window.toggleToolsMenu();">×</button>
         </div>
         <div class="tools-menu-content">
-            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.selectTool === 'function') { window.selectTool('formes'); } return false;">📐 Formes</button>
-            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.selectTool === 'function') { window.selectTool('lignes'); } return false;">📏 Lignes</button>
-            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.selectTool === 'function') { window.selectTool('dessin'); } return false;">🖌️ Dessin</button>
-            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.selectTool === 'function') { window.selectTool('objets3d'); } return false;">Objets 3D</button>
+            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.selectTool === 'function') { window.selectTool('formes'); } return false;"><i data-lucide="shapes" style="width:15px;height:15px;vertical-align:middle;margin-right:6px;"></i> Formes</button>
+            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.selectTool === 'function') { window.selectTool('lignes'); } return false;"><i data-lucide="minus" style="width:15px;height:15px;vertical-align:middle;margin-right:6px;"></i> Lignes</button>
+            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.selectTool === 'function') { window.selectTool('dessin'); } return false;"><i data-lucide="brush" style="width:15px;height:15px;vertical-align:middle;margin-right:6px;"></i> Dessin</button>
+            <button class="tool-btn" onclick="event.stopPropagation(); event.preventDefault(); if(typeof window.selectTool === 'function') { window.selectTool('objets3d'); } return false;"><i data-lucide="box" style="width:15px;height:15px;vertical-align:middle;margin-right:6px;"></i> Objets 3D</button>
         </div>
     </div>
     
@@ -128,9 +128,9 @@
                 <label style="display: block; margin-bottom: 10px; font-weight: 500;">Épaisseur :</label>
                 <input type="range" id="brushSizeSlider" min="1" max="20" value="5" style="width: 100%; margin-bottom: 10px;">
                 <span id="brushSizeValue" style="display: block; text-align: center; margin-bottom: 15px;">5px</span>
-                <button class="tool-btn" onclick="activateMarkerMode()" style="width: 100%; background: #6c5ce7;">🖍️ Feutre</button>
-                <button class="tool-btn" onclick="activateEraserMode()" style="width: 100%; margin-top: 10px; background: #e74c3c;">🧹 Gomme</button>
-                <button class="tool-btn" onclick="deactivateDrawingTools()" style="width: 100%; margin-top: 10px; background: #95a5a6;">✋ Désactiver</button>
+                <button class="tool-btn" onclick="activateMarkerMode()" style="width: 100%; background: #6c5ce7;"><i data-lucide="pen-line" style="width:14px;height:14px;vertical-align:middle;margin-right:5px;"></i> Feutre</button>
+                <button class="tool-btn" onclick="activateEraserMode()" style="width: 100%; margin-top: 10px; background: #e74c3c;"><i data-lucide="eraser" style="width:14px;height:14px;vertical-align:middle;margin-right:5px;"></i> Gomme</button>
+                <button class="tool-btn" onclick="deactivateDrawingTools()" style="width: 100%; margin-top: 10px; background: #95a5a6;"><i data-lucide="hand" style="width:14px;height:14px;vertical-align:middle;margin-right:5px;"></i> Désactiver</button>
             </div>
         </div>
     </div>
@@ -161,9 +161,9 @@
     
     <div class="tools-overlay" id="toolsOverlay" onclick="window.toggleToolsMenu();"></div>
     <div class="context-menu" id="contextMenu">
-        <button class="context-menu-item" id="contextMenuRotateShape3d" style="display: none;" onclick="if(typeof window.enableRotateShape3d === 'function') window.enableRotateShape3d(); if(typeof hideContextMenu === 'function') hideContextMenu();">🔄 Faire tourner</button>
-        <button class="context-menu-item" id="contextMenuMotionTracking" onclick="if(typeof window.toggleMotionTracking === 'function') window.toggleMotionTracking(); if(typeof hideContextMenu === 'function') hideContextMenu();">Motion Tracking</button>
-        <button class="context-menu-item" onclick="deleteSelectedElement()">Supprimer</button>
+        <button class="context-menu-item" id="contextMenuRotateShape3d" style="display: none;" onclick="if(typeof window.enableRotateShape3d === 'function') window.enableRotateShape3d(); if(typeof hideContextMenu === 'function') hideContextMenu();"><i data-lucide="rotate-cw" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i> Faire tourner</button>
+        <button class="context-menu-item" id="contextMenuMotionTracking" onclick="if(typeof window.toggleMotionTracking === 'function') window.toggleMotionTracking(); if(typeof hideContextMenu === 'function') hideContextMenu();"><i data-lucide="crosshair" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i> Motion Tracking</button>
+        <button class="context-menu-item" onclick="deleteSelectedElement()"><i data-lucide="trash-2" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i> Supprimer</button>
     </div>
     
     {% if processed_video %}

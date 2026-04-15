@@ -1,9 +1,163 @@
 {% extends "base.html" %}
 
-{% set hide_search = False %}
+{% set hide_search = True %}
 
 {% block content %}
-<div class="page-content">
-    <h1 class="welcome-title">BIENVENUE SUR GOLD FX</h1>
+<div class="lp-wrapper">
+
+    <!-- HERO -->
+    <section class="lp-hero">
+        <video class="lp-hero-video" autoplay muted loop playsinline>
+            <source src="{{ url_for('static', filename='img/video_fond2.mp4') }}" type="video/mp4">
+        </video>
+        <div class="lp-hero-bg"></div>
+        <div class="lp-hero-inner">
+            <span class="lp-badge"><i data-lucide="sparkles" class="lp-badge-icon"></i> Propulsé par l'IA</span>
+            <h1 class="lp-hero-title">Gérez, éditez et analysez<br>vos <span class="lp-accent">vidéos & images</span><br>avec l'IA</h1>
+            <p class="lp-hero-sub">Uploadez vos médias, annotez-les avec des outils professionnels, enregistrez des vidéos avec annotations et envoyez-les à votre API de traitement en un clic.</p>
+            <div class="lp-hero-ctas">
+                <a href="{{ url_for('video_page') }}" class="lp-btn lp-btn-primary"><i data-lucide="play-circle"></i> Commencer avec les Vidéos</a>
+                <a href="{{ url_for('image_page') }}" class="lp-btn lp-btn-outline"><i data-lucide="image"></i> Commencer avec les Images</a>
+            </div>
+            <div class="lp-hero-stats">
+                <div class="lp-stat"><strong>5+</strong><span>Formats vidéo</span></div>
+                <div class="lp-stat-sep"></div>
+                <div class="lp-stat"><strong>7+</strong><span>Formats image</span></div>
+                <div class="lp-stat-sep"></div>
+                <div class="lp-stat"><strong>3D</strong><span>Objets animés</span></div>
+                <div class="lp-stat-sep"></div>
+                <div class="lp-stat"><strong>IA</strong><span>API intégrée</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="lp-features">
+        <div class="lp-section-inner">
+            <p class="lp-section-label">Fonctionnalités</p>
+            <h2 class="lp-section-title">Tout ce dont vous avez besoin</h2>
+            <div class="lp-features-grid">
+                <div class="lp-feat-card">
+                    <div class="lp-feat-icon"><i data-lucide="upload-cloud"></i></div>
+                    <h3>Upload Multi-formats</h3>
+                    <p>MP4, AVI, MOV, MKV, WebM pour les vidéos. JPG, PNG, GIF, BMP, WebP, SVG pour les images. Drag & drop supporté.</p>
+                </div>
+                <div class="lp-feat-card">
+                    <div class="lp-feat-icon"><i data-lucide="pen-tool"></i></div>
+                    <h3>Édition Avancée</h3>
+                    <p>7 formes, 3 types de lignes, texte, dessin au feutre avec gomme. Tous les objets restent fixés à votre média.</p>
+                </div>
+                <div class="lp-feat-card">
+                    <div class="lp-feat-icon"><i data-lucide="box"></i></div>
+                    <h3>Objets 3D</h3>
+                    <p>Ajoutez des cubes, billes et hexagones 3D sur vos vidéos. Rotation interactive avec Maj + glisser.</p>
+                </div>
+                <div class="lp-feat-card">
+                    <div class="lp-feat-icon"><i data-lucide="video"></i></div>
+                    <h3>Enregistrement Vidéo</h3>
+                    <p>Exportez la vidéo entière avec toutes vos annotations. Conversion automatique en MP4 avec bande-son via FFmpeg.</p>
+                </div>
+                <div class="lp-feat-card">
+                    <div class="lp-feat-icon"><i data-lucide="cpu"></i></div>
+                    <h3>API IA Intégrée</h3>
+                    <p>Envoyez vos médias annotés à votre API externe en un clic. Traitement simultané de l'image et du texte.</p>
+                </div>
+                <div class="lp-feat-card">
+                    <div class="lp-feat-icon"><i data-lucide="mic"></i></div>
+                    <h3>Reconnaissance Vocale</h3>
+                    <p>Dictez vos requêtes directement dans la barre de recherche. Transcription en temps réel dans tous les navigateurs modernes.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="lp-how">
+        <div class="lp-section-inner">
+            <p class="lp-section-label">Processus</p>
+            <h2 class="lp-section-title">Comment ça marche</h2>
+            <div class="lp-steps">
+                <div class="lp-step">
+                    <div class="lp-step-num">01</div>
+                    <div class="lp-step-body">
+                        <h3>Uploadez votre média</h3>
+                        <p>Glissez-déposez ou sélectionnez votre vidéo ou image. Tous les formats courants sont acceptés.</p>
+                    </div>
+                </div>
+                <div class="lp-step-arrow">→</div>
+                <div class="lp-step">
+                    <div class="lp-step-num">02</div>
+                    <div class="lp-step-body">
+                        <h3>Annotez & éditez</h3>
+                        <p>Ajoutez formes, texte, dessins et objets 3D directement sur votre média avec les outils intégrés.</p>
+                    </div>
+                </div>
+                <div class="lp-step-arrow">→</div>
+                <div class="lp-step">
+                    <div class="lp-step-num">03</div>
+                    <div class="lp-step-body">
+                        <h3>Exportez & envoyez</h3>
+                        <p>Téléchargez votre média modifié ou envoyez-le à l'API IA pour traitement avancé.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TOOLS SHOWCASE -->
+    <section class="lp-tools">
+        <div class="lp-section-inner">
+            <p class="lp-section-label">Outils</p>
+            <h2 class="lp-section-title">Des outils pensés pour vous</h2>
+            <div class="lp-tools-grid">
+                <div class="lp-tool-item">
+                    <span class="lp-tool-icon"><i data-lucide="shapes"></i></span>
+                    <span>Formes (7 types)</span>
+                </div>
+                <div class="lp-tool-item">
+                    <span class="lp-tool-icon"><i data-lucide="arrow-right"></i></span>
+                    <span>Lignes & Flèches</span>
+                </div>
+                <div class="lp-tool-item">
+                    <span class="lp-tool-icon"><i data-lucide="type"></i></span>
+                    <span>Texte libre</span>
+                </div>
+                <div class="lp-tool-item">
+                    <span class="lp-tool-icon"><i data-lucide="brush"></i></span>
+                    <span>Dessin feutre</span>
+                </div>
+                <div class="lp-tool-item">
+                    <span class="lp-tool-icon"><i data-lucide="eraser"></i></span>
+                    <span>Gomme</span>
+                </div>
+                <div class="lp-tool-item">
+                    <span class="lp-tool-icon"><i data-lucide="zoom-in"></i></span>
+                    <span>Zoom interactif</span>
+                </div>
+                <div class="lp-tool-item">
+                    <span class="lp-tool-icon"><i data-lucide="save"></i></span>
+                    <span>Sauvegarde locale</span>
+                </div>
+                <div class="lp-tool-item">
+                    <span class="lp-tool-icon"><i data-lucide="box"></i></span>
+                    <span>Objets 3D</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA FINAL -->
+    <section class="lp-cta">
+        <div class="lp-cta-inner">
+            <h2>Prêt à transformer vos médias ?</h2>
+            <p>Commencez gratuitement, sans installation complexe.</p>
+            <div class="lp-hero-ctas">
+                <a href="{{ url_for('video_page') }}" class="lp-btn lp-btn-primary"><i data-lucide="play-circle"></i> Aller aux Vidéos</a>
+                <a href="{{ url_for('image_page') }}" class="lp-btn lp-btn-outline lp-btn-outline-light"><i data-lucide="image"></i> Aller aux Images</a>
+            </div>
+        </div>
+    </section>
+
 </div>
 {% endblock %}
+
