@@ -62,8 +62,8 @@ header {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
-/* Logo "GOLD FX" sur la page d'accueil */
-body.home-page .logo-square {
+/* Logo "GOLD FX" sur toutes les pages */
+.logo-square {
     width: auto;
     height: 56px;
     padding: 0 16px;
@@ -73,11 +73,11 @@ body.home-page .logo-square {
     white-space: nowrap;
 }
 
-body.home-page .logo-square .logo-gold {
+.logo-square .logo-gold {
     color: #FFD700;
 }
 
-body.home-page .logo-square .logo-fx {
+.logo-square .logo-fx {
     color: #ffffff;
 }
 
