@@ -92,7 +92,9 @@ header {
     color: #FFD700;
     text-decoration: none;
     font-size: 16px;
-    font-weight: 500;
+    font-weight: 700;
+    font-family: Arial, sans-serif;
+    font-style: normal;
     transition: color 0.3s;
     padding: 8px 12px;
     border-radius: 5px;
