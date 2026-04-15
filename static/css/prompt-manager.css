@@ -1,0 +1,267 @@
+/* Styles pour le Gestionnaire de Prompts */
+
+/* ============================================
+   BOUTON PROMPT
+   ============================================ */
+.prompt-btn {
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+}
+
+.prompt-btn:hover {
+    background: #E55A2F !important;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.5);
+    transform: translateY(-2px);
+}
+
+.prompt-btn:active {
+    transform: translateY(0);
+}
+
+/* ============================================
+   PANEL PRINCIPAL
+   ============================================ */
+.prompt-panel {
+    border-radius: 0;
+    animation: slideInRight 0.4s ease-in-out;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 1000;
+}
+
+/* Masquer la scrollbar sur tous les navigateurs */
+.prompt-panel {
+    /* Firefox */
+    scrollbar-width: none;
+}
+
+/* Chrome/Safari/Edge */
+.prompt-panel::-webkit-scrollbar {
+    display: none;
+}
+
+.prompt-panel.open {
+    right: 0;
+}
+
+@keyframes slideInRight {
+    from {
+        right: -500px;
+        opacity: 0;
+    }
+    to {
+        right: 0;
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        right: 0;
+        opacity: 1;
+    }
+    to {
+        right: -500px;
+        opacity: 0;
+    }
+}
+
+.prompt-overlay {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.prompt-section {
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.prompt-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.prompt-section h3 {
+    color: #2a2a2a;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 10px 0;
+}
+
+/* Styling pour le textarea */
+#userIntention {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-family: 'Segoe UI', Tahoma, Geneva, sans-serif;
+    font-size: 13px;
+    resize: vertical;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+#userIntention:focus {
+    outline: none;
+    border-color: #FF6B35;
+    box-shadow: 0 0 5px rgba(255, 107, 53, 0.3);
+}
+
+#userIntention::placeholder {
+    color: #999;
+}
+
+/* Preview box */
+#promptPreview {
+    background: #f9f9f9;
+    padding: 12px;
+    border-radius: 5px;
+    border-left: 4px solid #FF6B35;
+    font-size: 12px;
+    color: #666;
+    max-height: 150px;
+    overflow-y: auto;
+    font-family: 'Courier New', monospace;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+#elementsSummary {
+    background: #f5f5f5;
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 13px;
+    color: #555;
+    font-family: 'Courier New', monospace;
+    line-height: 1.6;
+}
+
+/* JSON Modal */
+#jsonModal {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+#jsonModal h2 {
+    color: #2a2a2a;
+}
+
+#jsonContent {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    background: #f5f5f5;
+    color: #1a1a1a;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#jsonContent::-webkit-scrollbar {
+    width: 8px;
+}
+
+#jsonContent::-webkit-scrollbar-track {
+    background: #e0e0e0;
+    border-radius: 10px;
+}
+
+#jsonContent::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+#jsonContent::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Scrollbar pour le panel */
+.prompt-panel::-webkit-scrollbar {
+    width: 8px;
+}
+
+.prompt-panel::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.prompt-panel::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.prompt-panel::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .prompt-panel {
+        width: 100% !important;
+        right: -100% !important;
+    }
+
+    .prompt-panel.open {
+        right: 0 !important;
+    }
+}
+
+/* Animations de boutons */
+button[onclick*="sendToAPI"] {
+    position: relative;
+    overflow: hidden;
+}
+
+button[onclick*="sendToAPI"]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+button[onclick*="sendToAPI"]:active::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* État de chargement */
+.prompt-btn.loading {
+    position: relative;
+    color: transparent;
+}
+
+.prompt-btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

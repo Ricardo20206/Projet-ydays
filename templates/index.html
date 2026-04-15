@@ -33,7 +33,7 @@
 </style>
 
 <div class="video-container">
-    <h2>📹 Charger une vidéo ou une image</h2>
+    <h2>Charger une vidéo ou une image</h2>
 
     <form action="/upload" method="POST" enctype="multipart/form-data">
         <input type="file" name="file" accept="video/*,image/*" required>
@@ -65,14 +65,14 @@
         
         {% if processed_video %}
         <div style="margin-top: 20px; padding: 15px; background: #2a2a2a; border-radius: 5px;">
-            <h4>✅ Vidéo traitée disponible :</h4>
+            <h4>✓ Vidéo traitée disponible :</h4>
             <video controls style="width: 2400px; max-width: 90%; max-height: 600px; display: block; margin: 10px auto;">
                 <source src="{{ url_for('serve_video', filename=processed_video) }}">
             </video>
             <br>
             <div style="text-align: center; margin-top: 10px;">
                 <a href="{{ url_for('serve_video', filename=processed_video) }}" download style="color: #4CAF50; text-decoration: none; display: inline-block;">
-                    📥 Télécharger la vidéo traitée
+                    Télécharger la vidéo traitée
                 </a>
             </div>
         </div>
@@ -99,12 +99,12 @@
         
         {% if processed_image %}
         <div style="margin-top: 20px; padding: 15px; background: #2a2a2a; border-radius: 5px;">
-            <h4>✅ Image traitée disponible :</h4>
+            <h4>Image traitée disponible :</h4>
             <img src="{{ url_for('serve_image', filename=processed_image) }}" alt="Image traitée" style="width: 2400px; max-width: 90%; max-height: 600px; display: block; margin: 10px auto; object-fit: contain;">
             <br>
             <div style="text-align: center; margin-top: 10px;">
                 <a href="{{ url_for('serve_image', filename=processed_image) }}" download style="color: #4CAF50; text-decoration: none; display: inline-block;">
-                    📥 Télécharger l'image traitée
+                    Télécharger l'image traitée
                 </a>
             </div>
         </div>
@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (response.ok) {
                     const mediaType = isVideo ? 'vidéo' : 'image';
-                    statusDiv.innerHTML = `<p style="color: #4CAF50;">✅ ${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)} envoyée et traitée avec succès !</p>`;
+                    statusDiv.innerHTML = `<p style="color: #4CAF50;"> ${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)} envoyée et traitée avec succès !</p>`;
                     // Recharger la page pour afficher le média traité
                     setTimeout(() => {
                         if (isVideo) {
