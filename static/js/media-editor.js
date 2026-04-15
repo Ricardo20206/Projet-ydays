@@ -188,7 +188,7 @@ if (typeof window.currentMedia === 'undefined') {
                             shapesMenu.style.setProperty('visibility', 'visible', 'important');
                             shapesMenu.style.setProperty('opacity', '1', 'important');
                             shapesMenu.style.setProperty('z-index', '2001', 'important');
-                            console.log('✅ Sous-menu Formes ouvert');
+                            console.log('Sous-menu Formes ouvert');
                         } else {
                             console.error('❌ Sous-menu Formes non trouvé dans le DOM');
                             alert('Erreur: Le sous-menu Formes n\'a pas été trouvé. Veuillez recharger la page.');
@@ -202,7 +202,7 @@ if (typeof window.currentMedia === 'undefined') {
                             linesMenu.style.setProperty('visibility', 'visible', 'important');
                             linesMenu.style.setProperty('opacity', '1', 'important');
                             linesMenu.style.setProperty('z-index', '2001', 'important');
-                            console.log('✅ Sous-menu Lignes ouvert');
+                            console.log('Sous-menu Lignes ouvert');
                         } else {
                             console.error('❌ Sous-menu Lignes non trouvé dans le DOM');
                             alert('Erreur: Le sous-menu Lignes n\'a pas été trouvé. Veuillez recharger la page.');
@@ -216,7 +216,7 @@ if (typeof window.currentMedia === 'undefined') {
                             drawMenu.style.setProperty('visibility', 'visible', 'important');
                             drawMenu.style.setProperty('opacity', '1', 'important');
                             drawMenu.style.setProperty('z-index', '2001', 'important');
-                            console.log('✅ Sous-menu Dessin ouvert');
+                            console.log('Sous-menu Dessin ouvert');
                         } else {
                             console.error('❌ Sous-menu Dessin non trouvé dans le DOM');
                             alert('Erreur: Le sous-menu Dessin n\'a pas été trouvé. Veuillez recharger la page.');
@@ -230,7 +230,7 @@ if (typeof window.currentMedia === 'undefined') {
                             objets3dMenu.style.setProperty('visibility', 'visible', 'important');
                             objets3dMenu.style.setProperty('opacity', '1', 'important');
                             objets3dMenu.style.setProperty('z-index', '2001', 'important');
-                            console.log('✅ Sous-menu Objets 3D ouvert');
+                            console.log('Sous-menu Objets 3D ouvert');
                         } else {
                             console.warn('Sous-menu Objets 3D non trouvé');
                         }
@@ -504,6 +504,7 @@ if (typeof window.currentMedia === 'undefined') {
     
     window.selectShape3d = function(shape3dType) {
         try {
+            console.log('🎬 selectShape3d appelée avec type:', shape3dType);
             if (typeof window.closeObjets3dSubmenu === 'function') window.closeObjets3dSubmenu();
             var imageElement = getMediaEl();
             var currentCanvas = document.getElementById('editingCanvas');
@@ -530,7 +531,10 @@ if (typeof window.currentMedia === 'undefined') {
                 rotationY: 0,
                 addedAtTime: getCurrentMediaTime()
             };
+            console.log('📦 Élément créé:', el);
             window.addedElements.push(el);
+            console.log('Élément ajouté à window.addedElements. Total:', window.addedElements.length);
+            console.log('window.addedElements contient maintenant:', window.addedElements);
             window.selectedElement = el;
             if (typeof selectedElement !== 'undefined') selectedElement = el;
             if (currentCanvas) {
@@ -696,7 +700,7 @@ if (typeof window.currentMedia === 'undefined') {
                 console.warn('drawShape appelé sans elementId - l\'élément devrait être ajouté avant');
             }
             
-            console.log('✅ Forme dessinée avec succès:', {id, x, y, width, height});
+            console.log('Forme dessinée avec succès:', {id, x, y, width, height});
             return { id, x, y, width, height };
             
         } catch (error) {
@@ -852,7 +856,7 @@ if (typeof window.currentMedia === 'undefined') {
                     try {
                         if (typeof redrawCanvas === 'function') redrawCanvas();
                         if (typeof updateCanvasPointerEvents === 'function') updateCanvasPointerEvents();
-                        console.log('✅ Forme créée - vous pouvez la déplacer (glisser-déposer) et l\'agrandir/réduire (poignées ou molette)');
+                        console.log('Forme créée - vous pouvez la déplacer (glisser-déposer) et l\'agrandir/réduire (poignées ou molette)');
                     } catch (err) {
                         console.warn('Erreur lors du redessin après ajout de forme:', err);
                     }
@@ -1253,7 +1257,7 @@ window.selectLine = function(lineType) {
         }
         redrawCanvas();
         updateCanvasPointerEvents();
-        console.log('✅ Ligne ajoutée:', newElement);
+        console.log('Ligne ajoutée:', newElement);
     } catch (error) {
         console.error('Erreur selectLine:', error);
         alert('Erreur: ' + error.message);
@@ -1814,9 +1818,9 @@ window.recordModifiedVideo = function() {
         if (recordBtn) {
             recordBtn.disabled = false;
             recordBtn.style.opacity = '1';
-            recordBtn.textContent = '🎬 Enregistrer la vidéo avec annotations';
+            recordBtn.textContent = 'Télécharger vidéo (propre)';
         }
-        alert('Vidéo avec annotations et bande-son enregistrée (.' + extension + '). Vous pouvez la lire avec le lecteur Windows ou VLC.');
+        alert('Vidéo originale téléchargée (sans annotations) en format ' + extension.toUpperCase() + '.\n\nLes éléments géométriques ajoutés restent en local et seront envoyés à l\'IA comme métadonnées JSON.\n\nVous pouvez la lire avec le lecteur Windows ou VLC.');
     }
 
     recorder.onstop = function() {
@@ -1842,17 +1846,17 @@ window.recordModifiedVideo = function() {
                 if (recordBtnRef) {
                     recordBtnRef.disabled = false;
                     recordBtnRef.style.opacity = '1';
-                    recordBtnRef.textContent = '🎬 Enregistrer la vidéo avec annotations';
+                    recordBtnRef.textContent = 'Télécharger vidéo (propre)';
                 }
                 finishAndDownload(blob, 'webm', mimeType);
-                alert('La vidéo a été enregistrée en WebM (avec le son). La conversion en MP4 n\'a pas été possible sur le serveur. Vous pouvez convertir le fichier avec VLC ou un outil en ligne.');
+                alert('La vidéo a été téléchargée en WebM (avec le son). La conversion en MP4 n\'a pas été possible sur le serveur. Vous pouvez convertir le fichier avec VLC ou un outil en ligne.');
             });
     };
 
     if (recordBtn) {
         recordBtn.disabled = true;
         recordBtn.style.opacity = '0.6';
-        recordBtn.textContent = '⏳ Enregistrement en cours...';
+        recordBtn.textContent = '⏳ Traitement en cours...';
     }
     var progressBadge = document.getElementById('recordProgressBadge');
     if (progressBadge) {
@@ -1885,15 +1889,12 @@ window.recordModifiedVideo = function() {
             exportCtx.drawImage(video, 0, 0, w, h);
             var scaleX = w / editingCanvas.width, scaleY = h / editingCanvas.height;
             var currentTime = video.currentTime;
-            var elements = window.addedElements || [];
-            for (var i = 0; i < elements.length; i++) {
-                var el = elements[i];
-                var addedAt = el.addedAtTime !== undefined ? el.addedAtTime : 0;
-                var removedAt = el.removedAtTime;
-                if (currentTime < addedAt) continue;
-                if (removedAt !== undefined && currentTime >= removedAt) continue;
-                drawElementToExportCtx(el, exportCtx, scaleX, scaleY);
-            }
+            
+            // ❌ NE PAS DESSINER LES ÉLÉMENTS SUR LA VIDÉO
+            // Les annotations des éléments restent en local pour l'édition
+            // Seule la vidéo originale est enregistrée/envoyée à l'IA
+            // (Les métadonnées des éléments seront envoyées séparément en JSON)
+            
             nextCaptureTime += frameDuration;
             if (nextCaptureTime < t) nextCaptureTime = t + frameDuration;
             var badge = document.getElementById('recordProgressBadge');
@@ -2958,6 +2959,27 @@ window.enableRotateShape3d = function() {
     window.rotateNextShape3dDrag = true;
 };
 
+window.toggleMotionTracking = function() {
+    const currentSelected = window.selectedElement || selectedElement;
+    if (!currentSelected) {
+        alert('Aucun élément sélectionné');
+        return;
+    }
+    
+    // Basculer la propriété motionTracking
+    currentSelected.motionTracking = !currentSelected.motionTracking;
+    
+    // Log
+    const status = currentSelected.motionTracking ? 'ACTIVÉ' : 'DÉSACTIVÉ';
+    console.log('Motion Tracking', status, 'pour', currentSelected.id);
+    
+    // Visual feedback
+    alert(`Motion Tracking ${currentSelected.motionTracking ? 'ACTIVÉ' : 'DÉSACTIVÉ'} pour cet élément\n\nL'objet restera fixe à sa position et suivra les mouvements de la vidéo.`);
+    
+    // Redessiner pour montrer l'état
+    redrawCanvas();
+};
+
 function deleteSelectedElement() {
     const currentSelected = window.selectedElement || selectedElement;
     if (currentSelected) {
@@ -3223,6 +3245,6 @@ window.testDrawShape = function() {
     ctx.fillRect(centerX - size/2, centerY - size/2, size, size);
     ctx.strokeRect(centerX - size/2, centerY - size/2, size, size);
     
-    console.log('✅ Carré de test dessiné au centre:', {centerX, centerY, size});
+    console.log('Carré de test dessiné au centre:', {centerX, centerY, size});
     console.log('Si vous voyez un carré jaune au centre, le canvas fonctionne!');
 };

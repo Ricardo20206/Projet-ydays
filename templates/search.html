@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     if (apiStatusSearch) {
                         const mediaType = isVideo ? 'vidéo' : 'image';
-                        apiStatusSearch.innerHTML = `<div class="status-message status-success">✅ ${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)} envoyée et traitée avec succès !</div>`;
+                        apiStatusSearch.innerHTML = `<div class="status-message status-success"> ${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)} envoyée et traitée avec succès !</div>`;
                     }
                     
                     setTimeout(() => {
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.status === 'success') {
                 searchResults.innerHTML = `
                     <div class="status-message status-success" style="margin-bottom: 20px;">
-                        ✅ ${data.response || 'Requête traitée avec succès'}
+                        ${data.response || 'Requête traitée avec succès'}
                     </div>
                     <p><strong>Requête :</strong> "${data.query}"</p>
                     <p><strong>Timestamp :</strong> ${data.timestamp || 'N/A'}</p>
