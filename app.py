@@ -1,15 +1,41 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify, send_file, abort
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify, send_file, abort, flash, session
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
 import os
 import requests
 import subprocess
 import tempfile
+import json
 from werkzeug.utils import secure_filename
+from werkzeug.security import check_password_hash
+from functools import wraps
 
 load_dotenv()
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+
+# Fichier JSON pour stocker les utilisateurs
+USERS_FILE = 'users.json'
+
+def load_users():
+    if os.path.exists(USERS_FILE):
+        with open(USERS_FILE, 'r') as f:
+            return json.load(f)
+    return {}
+
+def save_users(users):
+    with open(USERS_FILE, 'w') as f:
+        json.dump(users, f, indent=2)
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'username' not in session:
+            flash('Veuillez vous connecter pour accéder à cette page.', 'error')
+            return redirect(url_for('login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # URL de l'API externe (configurable via variable d'environnement pour Docker)
 API_BASE_URL = os.environ.get("API_BASE_URL", "http://localhost:5001")
@@ -45,7 +71,17 @@ def is_image(filename):
 def is_video(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_VIDEO_EXTENSIONS
 
+@app.context_processor
+def inject_user():
+    """Injecte les informations utilisateur dans tous les templates"""
+    if 'username' in session:
+        users = load_users()
+        user_email = users.get(session['username'], {}).get('email', 'Non renseigné')
+        return {'user_email': user_email}
+    return {'user_email': ''}
+
 @app.route("/")
+@login_required
 def index():
     video = request.args.get('video')
     image = request.args.get('image')
@@ -54,22 +90,26 @@ def index():
     return render_template("home.html", title="Accueil", video=video, image=image, processed_video=processed_video, processed_image=processed_image)
 
 @app.route("/video")
+@login_required
 def video_page():
     video = request.args.get('video')
     processed_video = request.args.get('processed')
     return render_template("video.html", title="Vidéo", video=video, image=None, processed_video=processed_video)
 
 @app.route("/image")
+@login_required
 def image_page():
     image = request.args.get('image')
     processed_image = request.args.get('processed_image')
     return render_template("image.html", title="Image", video=None, image=image, processed_image=processed_image)
 
 @app.route("/information")
+@login_required
 def information():
     return render_template("information.html", title="Information")
 
 @app.route("/contact", methods=["GET", "POST"])
+@login_required
 def contact():
     message_sent = False
     error_message = None
@@ -106,6 +146,7 @@ Message:
     return render_template("contact.html", title="Contact", message_sent=message_sent, error_message=error_message)
 
 @app.route("/search")
+@login_required
 def search():
     query = request.args.get('q', '')
     # Ici vous pouvez implémenter la recherche dans vos fichiers
@@ -171,6 +212,7 @@ def send_query_to_api():
         return jsonify({"error": str(e)}), 500
 
 @app.route("/upload", methods=["POST"])
+@login_required
 def upload_file():
     file = request.files.get("file")
     if not file or not allowed_file(file.filename):
@@ -333,6 +375,58 @@ def convert_webm_to_mp4():
     except Exception as e:
         return (str(e), 500)
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if 'username' in session:
+        return redirect(url_for('index'))
+    
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+        
+        users = load_users()
+        if username in users and check_password_hash(users[username]['password'], password):
+            session['username'] = username
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('index'))
+        
+        flash('Identifiants incorrects', 'error')
+    
+    return render_template("login.html", title="Connexion")
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if 'username' in session:
+        return redirect(url_for('index'))
+    
+    if request.method == "POST":
+        username = request.form.get("username")
+        email = request.form.get("email")
+        password = request.form.get("password")
+        
+        users = load_users()
+        
+        if username in users:
+            flash('Ce nom d\'utilisateur existe déjà', 'error')
+        elif any(u['email'] == email for u in users.values()):
+            flash('Cet email est déjà utilisé', 'error')
+        else:
+            from werkzeug.security import generate_password_hash
+            users[username] = {
+                'email': email,
+                'password': generate_password_hash(password)
+            }
+            save_users(users)
+            flash('Compte créé avec succès ! Vous pouvez maintenant vous connecter.', 'success')
+            return redirect(url_for('login'))
+    
+    return render_template("register.html", title="Inscription")
+
+@app.route("/logout")
+@login_required
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('login'))
 # ============================================
 # ROUTES KLING AI API
 # ============================================

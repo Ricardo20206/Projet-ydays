@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Château Gold</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background: #0d0d0d;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        .auth-split-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        /* Partie gauche - Formulaire */
+        .auth-left {
+            flex: 0 0 42%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            background: #fff;
+            position: relative;
+            z-index: 2;
+        }
+        .auth-left::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(13, 13, 13, 0.15));
+            pointer-events: none;
+        }
+        .auth-form-wrapper {
+            width: 100%;
+            max-width: 420px;
+        }
+        .auth-logo-top {
+            margin-bottom: 50px;
+            text-align: center;
+        }
+        .auth-logo-square {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #0d0d0d;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 16px;
+            padding: 10px 18px;
+        }
+        .auth-logo-text {
+            font-size: 1.5em;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+        .logo-gold { color: #FFD700; }
+        .logo-fx { color: #fff; }
+        .auth-title {
+            color: #1a1a1a;
+            font-size: 2em;
+            margin-bottom: 12px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            text-align: center;
+        }
+        .auth-subtitle {
+            color: #666;
+            font-size: 0.95em;
+            margin-bottom: 40px;
+            line-height: 1.5;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 24px;
+        }
+        .form-group label {
+            display: block;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            background: #fff;
+            color: #333;
+            font-size: 15px;
+            transition: all 0.25s;
+            box-sizing: border-box;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        }
+        .form-group input::placeholder {
+            color: #aaa;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #FFD700, #ff9500);
+            color: #0d0d0d;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.25s;
+            letter-spacing: 0.3px;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(255, 215, 0, 0.35);
+            filter: brightness(1.05);
+        }
+        .auth-link {
+            text-align: center;
+            margin-top: 28px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .auth-link a {
+            color: #FFD700;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .auth-link a:hover {
+            color: #ff9500;
+            text-decoration: underline;
+        }
+        .alert {
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        .alert-error {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            color: #e74c3c;
+        }
+        .alert-success {
+            background: rgba(39, 174, 96, 0.1);
+            border: 1px solid rgba(39, 174, 96, 0.3);
+            color: #2ecc71;
+        }
+        /* Partie droite - Image/Visuel */
+        .auth-right {
+            flex: 1;
+            background: linear-gradient(135deg, #1a1200 0%, #0d0d0d 50%, #0d0020 100%);
+            background-image: 
+                radial-gradient(ellipse 80% 60% at 50% 30%, rgba(255,215,0,0.15) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(108,92,231,0.2) 0%, transparent 60%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+        .auth-right::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100px;
+            height: 100%;
+            background: linear-gradient(to left, rgba(13, 13, 13, 0), rgba(255, 255, 255, 0.08));
+            pointer-events: none;
+            z-index: 1;
+        }
+        .auth-right-content {
+            text-align: center;
+            color: #fff;
+            z-index: 2;
+            max-width: 500px;
+        }
+        .auth-right-icon {
+            font-size: 5em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        .auth-right-title {
+            font-size: 2.2em;
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            background: linear-gradient(90deg, #FFD700, #ff9500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .auth-right-text {
+            font-size: 1.1em;
+            color: #aaa;
+            line-height: 1.7;
+        }
+        .auth-right-pattern {
+            position: absolute;
+            inset: 0;
+            opacity: 0.03;
+            background-image: repeating-linear-gradient(45deg, #FFD700 0, #FFD700 1px, transparent 0, transparent 50%);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+        /* Responsive */
+        @media (max-width: 968px) {
+            .auth-split-container {
+                flex-direction: column;
+            }
+            .auth-right {
+                min-height: 300px;
+                padding: 40px 20px;
+            }
+            .auth-right-icon {
+                font-size: 3em;
+            }
+            .auth-right-title {
+                font-size: 1.6em;
+            }
+            .auth-left {
+                padding: 40px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-split-container">
+        <!-- Partie gauche : Formulaire -->
+        <div class="auth-left">
+            <div class="auth-form-wrapper">
+                <div class="auth-logo-top">
+                    <div class="auth-logo-square">
+                        <span class="auth-logo-text">
+                            <span class="logo-gold">GOLD</span> <span class="logo-fx">FX</span>
+                        </span>
+                    </div>
+                </div>
+                
+                <h1 class="auth-title">Bienvenue !</h1>
+                <p class="auth-subtitle">Connectez-vous pour accéder à votre espace de création vidéo et image.</p>
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <form method="POST">
+                    <div class="form-group">
+                        <label for="username">Nom d'utilisateur</label>
+                        <input type="text" id="username" name="username" placeholder="Entrez votre nom d'utilisateur" required autofocus>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Mot de passe</label>
+                        <input type="password" id="password" name="password" placeholder="Entrez votre mot de passe" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">Se connecter</button>
+                </form>
+                
+                <div class="auth-link">
+                    Pas encore de compte ? <a href="{{ url_for('register') }}">Créer un compte</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Partie droite : Visuel -->
+        <div class="auth-right">
+            <div class="auth-right-pattern"></div>
+            <div class="auth-right-content">
+                <div class="auth-right-icon">🎬</div>
+                <h2 class="auth-right-title">Créez des contenus exceptionnels</h2>
+                <p class="auth-right-text">
+                    Éditez vos vidéos et images avec des outils professionnels. 
+                    Ajoutez des formes, du texte, des objets 3D et bien plus encore.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
