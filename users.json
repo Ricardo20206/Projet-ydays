@@ -1,0 +1,6 @@
+{
+  "admin": {
+    "email": "men@gmail.com",
+    "password": "scrypt:32768:8:1$48hxrKjXb3lLdykX$a44dcae54a2345ee54c5813a1e4b60a2e34d32536438737bb0e771d94479e22722d9c460c1111754728b30144c916a725c0a98139a731518d29b177587cdf1a5"
+  }
+}

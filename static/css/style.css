@@ -46,6 +46,7 @@ header {
     display: flex;
     align-items: center;
     gap: 15px;
+    border: none;
 }
 
 .logo-square {
@@ -59,7 +60,7 @@ header {
     font-size: 28px;
     font-weight: bold;
     color: #FFD700;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); */
 }
 
 /* Logo "GOLD FX" sur toutes les pages */
@@ -95,9 +96,10 @@ header {
     font-weight: 700;
     font-family: Arial, sans-serif;
     font-style: normal;
-    transition: color 0.3s;
+    transition: all 0.3s;
     padding: 8px 12px;
     border-radius: 5px;
+    display: inline-block;
 }
 
 /* Accueil : liens du header en gras */
@@ -116,7 +118,7 @@ body.contact-page .nav-links a {
 
 .nav-links a:hover {
     color: #FFD700;
-    background: rgba(255, 215, 0, 0.1);
+    background: transparent;
     transform: translateY(-2px);
     filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
 }
@@ -873,19 +875,20 @@ body.home-page .page-content {
 }
 
 .shape-preview {
-    width: 50px;
-    height: 50px;
-    background: #0066CC; /* bleu foncé (plein) */
-    border: none;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #FFD700, #ff9500);
+    border: 2px solid rgba(255, 215, 0, 0.3);
     border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
 }
 
 .square-preview {
-    border-radius: 0;
+    border-radius: 4px;
 }
 
 .rounded-square-preview {
-    border-radius: 10px;
+    border-radius: 12px;
 }
 
 .circle-preview {
@@ -893,38 +896,42 @@ body.home-page .page-content {
 }
 
 .triangle-preview {
-    width: 50px;
-    height: 50px;
-    background: #0066CC; /* bleu foncé */
+    width: 0;
+    height: 0;
+    background: transparent;
     border: none;
-    border-radius: 4px;
-    /* Triangle pointant vers le haut */
-    clip-path: polygon(50% 5%, 5% 95%, 95% 95%);
+    border-left: 30px solid transparent;
+    border-right: 30px solid transparent;
+    border-bottom: 52px solid #FFD700;
+    box-shadow: none;
 }
 
 .triangle-inverted-preview {
-    width: 50px;
-    height: 50px;
-    background: #0066CC; /* bleu foncé */
+    width: 0;
+    height: 0;
+    background: transparent;
     border: none;
-    border-radius: 4px;
-    /* Triangle pointant vers le bas */
-    clip-path: polygon(5% 5%, 95% 5%, 50% 95%);
+    border-left: 30px solid transparent;
+    border-right: 30px solid transparent;
+    border-top: 52px solid #FFD700;
+    box-shadow: none;
 }
 
 .diamond-preview {
+    width: 42px;
+    height: 42px;
     transform: rotate(45deg);
-    border-radius: 0;
+    border-radius: 4px;
 }
 
 .hexagon-preview {
-    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+    clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
 }
 
 /* Prévisualisations des lignes */
 .line-preview {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -933,6 +940,19 @@ body.home-page .page-content {
 .line-preview svg {
     width: 100%;
     height: 100%;
+}
+
+.line-preview svg path,
+.line-preview svg line,
+.line-preview svg polyline {
+    stroke: #FFD700;
+    stroke-width: 3;
+    fill: none;
+}
+
+.line-preview svg polygon {
+    fill: #FFD700;
+    stroke: none;
 }
 
 /* Palette de couleurs */
