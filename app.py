@@ -5,28 +5,17 @@ import os
 import requests
 import subprocess
 import tempfile
-import json
 from werkzeug.utils import secure_filename
-from werkzeug.security import check_password_hash
 from functools import wraps
+import database
 
 load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 
-# Fichier JSON pour stocker les utilisateurs
-USERS_FILE = 'users.json'
-
-def load_users():
-    if os.path.exists(USERS_FILE):
-        with open(USERS_FILE, 'r') as f:
-            return json.load(f)
-    return {}
-
-def save_users(users):
-    with open(USERS_FILE, 'w') as f:
-        json.dump(users, f, indent=2)
+# Initialiser la base de données
+database.init_db()
 
 def login_required(f):
     @wraps(f)
@@ -75,8 +64,8 @@ def is_video(filename):
 def inject_user():
     """Injecte les informations utilisateur dans tous les templates"""
     if 'username' in session:
-        users = load_users()
-        user_email = users.get(session['username'], {}).get('email', 'Non renseigné')
+        user = database.get_user(session['username'])
+        user_email = user['email'] if user else 'Non renseigné'
         return {'user_email': user_email}
     return {'user_email': ''}
 
@@ -384,8 +373,7 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
         
-        users = load_users()
-        if username in users and check_password_hash(users[username]['password'], password):
+        if database.verify_user(username, password):
             session['username'] = username
             next_page = request.args.get('next')
             return redirect(next_page or url_for('index'))
@@ -404,21 +392,16 @@ def register():
         email = request.form.get("email")
         password = request.form.get("password")
         
-        users = load_users()
-        
-        if username in users:
+        if database.get_user(username):
             flash('Ce nom d\'utilisateur existe déjà', 'error')
-        elif any(u['email'] == email for u in users.values()):
+        elif database.get_user_by_email(email):
             flash('Cet email est déjà utilisé', 'error')
         else:
-            from werkzeug.security import generate_password_hash
-            users[username] = {
-                'email': email,
-                'password': generate_password_hash(password)
-            }
-            save_users(users)
-            flash('Compte créé avec succès ! Vous pouvez maintenant vous connecter.', 'success')
-            return redirect(url_for('login'))
+            if database.create_user(username, email, password):
+                flash('Compte créé avec succès ! Vous pouvez maintenant vous connecter.', 'success')
+                return redirect(url_for('login'))
+            else:
+                flash('Erreur lors de la création du compte', 'error')
     
     return render_template("register.html", title="Inscription")
 

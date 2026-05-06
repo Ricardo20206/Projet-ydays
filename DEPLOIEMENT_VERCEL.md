@@ -79,8 +79,10 @@ Dans le dashboard Vercel, allez dans **Settings > Environment Variables** et ajo
 3. **Timeout de 10 secondes** (plan gratuit) : Les requêtes longues seront interrompues
    - Solution : Passez au plan Pro ou utilisez des workers asynchrones
 
-4. **Pas de base de données** : Le fichier `users.json` sera réinitialisé
-   - Solution : Utilisez une base de données externe (PostgreSQL, MongoDB, etc.)
+4. **Base de données SQLite dans /tmp** : La base de données utilisateurs est stockée dans `/tmp` qui est réinitialisé périodiquement
+   - ✅ **Solution implémentée** : L'application utilise maintenant SQLite dans `/tmp` (accessible en écriture)
+   - ⚠️ Les utilisateurs seront perdus lors des redémarrages du serveur
+   - Solution permanente : Utilisez une base de données externe (PostgreSQL, MongoDB, etc.)
 
 ## Solutions recommandées pour la production
 
