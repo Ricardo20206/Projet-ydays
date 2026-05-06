@@ -1,46 +1,51 @@
-# Fichiers volumineux (>100MB)
-*.mp4
-*.avi
-*.mov
-*.mkv
-*.webm
-
-# Fichiers d'images volumineux
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.bmp
-*.webp
-*.svg
-
-# Dossiers de médias
-videos/
-images/
-uploads/
-api_uploads/
-responses/
-
-# Environnement Python
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
 env/
 venv/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
 
-# Fichiers système
-.DS_Store
-Thumbs.db
+# Flask
+instance/
+.webassets-cache
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.vscode/
+.idea/
 *.swp
 *.swo
 *~
 
-# IDE
-.vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace
+# OS
+.DS_Store
+Thumbs.db
 
-.env
+# Logs
+*.log
+
+# Uploads (ne pas pousser les fichiers uploadés)
+videos/*
+!videos/.gitkeep
+images/*
+!images/.gitkeep
+uploads/*
+!uploads/.gitkeep
+api_uploads/*
+!api_uploads/.gitkeep
+
+# User data
+users.json
+
+# Vercel
+.vercel
