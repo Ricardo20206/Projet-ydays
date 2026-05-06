@@ -42,8 +42,15 @@ app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME', 'noreply@pro
 
 mail = Mail(app)
 
-VIDEO_FOLDER = "videos"
-IMAGE_FOLDER = "images"
+# Utiliser /tmp sur Vercel (accessible en écriture)
+# En local, utiliser les dossiers videos/ et images/
+if os.environ.get('VERCEL'):
+    VIDEO_FOLDER = "/tmp/videos"
+    IMAGE_FOLDER = "/tmp/images"
+else:
+    VIDEO_FOLDER = "videos"
+    IMAGE_FOLDER = "images"
+
 os.makedirs(VIDEO_FOLDER, exist_ok=True)
 os.makedirs(IMAGE_FOLDER, exist_ok=True)
 

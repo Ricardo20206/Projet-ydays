@@ -50,6 +50,9 @@ Dans le dashboard Vercel, allez dans **Settings > Environment Variables** et ajo
   python -c "import secrets; print(secrets.token_hex(32))"
   ```
 
+- `VERCEL` : Définie automatiquement par Vercel (ne pas ajouter manuellement)
+  - Permet à l'application de détecter qu'elle tourne sur Vercel et d'utiliser `/tmp`
+
 ### Variables optionnelles (Email)
 
 - `MAIL_USERNAME` : Votre email Gmail
@@ -70,8 +73,10 @@ Dans le dashboard Vercel, allez dans **Settings > Environment Variables** et ajo
 
 ⚠️ **Important** : Vercel a des limitations pour les applications Flask :
 
-1. **Pas de stockage persistant** : Les fichiers uploadés (images/vidéos) seront perdus après chaque déploiement
-   - Solution : Utilisez un service de stockage cloud (AWS S3, Cloudinary, etc.)
+1. **Stockage temporaire uniquement** : Les fichiers sont stockés dans `/tmp` qui est vidé périodiquement
+   - ✅ **Solution implémentée** : L'application utilise automatiquement `/tmp` sur Vercel
+   - ⚠️ Les fichiers uploadés seront perdus après quelques heures ou lors des redémarrages
+   - Solution permanente : Utilisez un service de stockage cloud (AWS S3, Cloudinary, etc.)
 
 2. **Pas de FFmpeg** : La conversion WebM → MP4 ne fonctionnera pas
    - Solution : Utilisez un service externe de conversion vidéo
@@ -80,7 +85,7 @@ Dans le dashboard Vercel, allez dans **Settings > Environment Variables** et ajo
    - Solution : Passez au plan Pro ou utilisez des workers asynchrones
 
 4. **Base de données SQLite dans /tmp** : La base de données utilisateurs est stockée dans `/tmp` qui est réinitialisé périodiquement
-   - ✅ **Solution implémentée** : L'application utilise maintenant SQLite dans `/tmp` (accessible en écriture)
+   - ✅ **Solution implémentée** : L'application utilise SQLite dans `/tmp` (accessible en écriture)
    - ⚠️ Les utilisateurs seront perdus lors des redémarrages du serveur
    - Solution permanente : Utilisez une base de données externe (PostgreSQL, MongoDB, etc.)
 
@@ -117,9 +122,14 @@ projet ydays/
 ├── .env.example          # Exemple de variables d'environnement
 ├── static/               # Fichiers statiques (CSS, JS, images)
 ├── templates/            # Templates HTML
-├── videos/               # ⚠️ Non persistant sur Vercel
-├── images/               # ⚠️ Non persistant sur Vercel
-└── users.json            # ⚠️ Non persistant sur Vercel
+├── database.py           # Gestion SQLite des utilisateurs
+├── videos/               # ⚠️ Utilisé en local uniquement
+├── images/               # ⚠️ Utilisé en local uniquement
+└── /tmp/                 # ✅ Utilisé sur Vercel (temporaire)
+    ├── videos/
+    ├── images/
+    ├── api_uploads/
+    └── users.db
 ```
 
 ## Commandes utiles

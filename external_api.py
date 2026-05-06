@@ -4,7 +4,12 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = "api_uploads"
+# Utiliser /tmp sur Vercel (accessible en écriture)
+if os.environ.get('VERCEL'):
+    UPLOAD_FOLDER = "/tmp/api_uploads"
+else:
+    UPLOAD_FOLDER = "api_uploads"
+
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route("/process-video", methods=["POST"])
