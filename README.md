@@ -18,6 +18,7 @@ Ce projet est une application Flask complète qui permet de :
 - Python 3.7 ou supérieur
 - pip (gestionnaire de paquets Python)
 - **FFmpeg** (optionnel) : pour exporter la vidéo avec annotations en MP4 avec bande-son. Sans FFmpeg, l’enregistrement est téléchargé en WebM.
+- **Docker + Docker Compose** (optionnel) : pour lancer l’application sans installer Python/FFmpeg localement.
 
 ### Étapes d'installation
 
@@ -44,6 +45,32 @@ python -m venv env
 ```bash
 pip install -r requirements.txt
 ```
+
+### Lancer avec Docker (recommandé)
+
+Le projet inclut :
+- `docker-compose.yml` (2 services : `web` sur 5000 et `api` sur 5001)
+- `Dockerfile.web` (inclut **FFmpeg** dans l’image)
+- `Dockerfile.api`
+
+1. (Optionnel) Créer un fichier `.env` à la racine pour l’envoi d’emails (page Contact) :
+
+```bash
+MAIL_USERNAME=...
+MAIL_PASSWORD=...
+```
+
+2. Démarrer l’application :
+
+```bash
+docker compose up --build
+```
+
+3. Accéder à l’app :
+- **Web** : `http://localhost:5000`
+- **API externe** : `http://localhost:5001`
+
+Les dossiers `images/`, `videos/` et `uploads/` sont montés en volumes dans le conteneur `web` (les fichiers restent sur votre machine).
 
 ## 🎯 Utilisation
 
@@ -208,6 +235,8 @@ projet ydays/
 - ✅ **Menu Outils** sur la page Vidéo (formes, lignes, dessin, **objets 3D**) comme sur la page Image
 - ✅ **Objets 3D** : Cube, Bille et Hexagone 3D ; rotation avec **Maj** ou **Alt** + glisser, ou clic droit → « Faire tourner »
 - ✅ **Taille par défaut** : hexagone 3D en 70×70, cube et bille en 80×80
+- ✅ **Style des menus Formes/Lignes/Objets 3D** : prévisualisations en bleu foncé et noms en jaune pour une interface cohérente
+- ✅ **Zoom vidéo** : le bouton ⟲ réinitialise le zoom et remet la vidéo à 0 (reprise de lecture)
 - ✅ **Enregistrement de la vidéo entière** : la vidéo est enregistrée du début à la fin ; l’enregistrement ne s’arrête qu’à la fin de la vidéo (pas à la pause)
 - ✅ **Toutes les modifications enregistrées avec timing** : formes, lignes, texte et objets 3D sont inclus ; chaque élément n’apparaît qu’à partir de l’instant où il a été ajouté et disparaît après suppression
 - ✅ **Lecture fluide** : capture synchronisée sur la timeline vidéo et débit adapté pour une lecture fluide du fichier exporté
@@ -217,13 +246,14 @@ projet ydays/
 
 ### Interface utilisateur
 - ✅ Design moderne avec fond doré et motifs
-- ✅ Header avec logo "G" et navigation
+- ✅ Header avec logo **GOLD FX** et navigation (sur toutes les pages)
 - ✅ **Barre de recherche globale** disponible sur toutes les pages
 - ✅ **Bouton "ENVOYER"** visible dans toutes les barres de recherche pour envoyer les médias à l'API
-- ✅ **Microphone** : reconnaissance vocale avec transcription en temps réel dans la barre de recherche
-- ✅ **Page d'accueil** avec titre "BIENVENUE SUR CHÂTEAU GOLD" en or et gras
-- ✅ **Titre d’accueil** : police augmentée pour que le titre soit plus grand que le sous-titre
-- ✅ **Navigation colorée** : liens en couleur selon la page active (bleu pour Vidéo, vert pour Image, rouge pour Information, orange pour Contact, jaune pour Accueil)
+- ✅ **Microphone** : reconnaissance vocale avec transcription en temps réel dans la barre de recherche (sans duplication des mots dictés)
+- ✅ **Page d'accueil** : titre « BIENVENUE SUR GOLD FX » centré au milieu de la page
+- ✅ **Logo (toutes pages)** : « GOLD FX » avec **fond noir**, **GOLD** en or et **FX** en blanc
+- ✅ **Bouton ENVOYER** : fond vert + texte jaune (sur toutes les pages)
+- ✅ **Navigation (header)** : liens en jaune (sur toutes les pages)
 - ✅ **Mise en page optimisée** : tous les éléments visibles sans défilement lors du chargement d'un média
 - ✅ Interface responsive (desktop et mobile)
 - ✅ Zone média avec bordure bleue (orange sur mobile)
@@ -271,7 +301,7 @@ projet ydays/
 ## 🎨 Design
 
 L'application dispose d'un design moderne et professionnel :
-- Header sombre avec logo "G" dans un carré jaune
+- Header sombre avec logo **GOLD FX** sur fond noir
 - Fond avec motifs dorés subtils
 - Zone média avec coins arrondis et bordures colorées
 - Barre de recherche intégrée avec icônes
@@ -318,6 +348,16 @@ Ce projet est fourni tel quel, sans garantie.
 Projet développé dans le cadre de YDays.
 
 ## 🔄 Changelog
+
+### Version 2.13
+- ✨ **Menus vidéo harmonisés** : noms des formes/lignes/objets 3D en jaune, prévisualisations en bleu foncé
+- ✨ **Zoom vidéo** : bouton ⟲ de réinitialisation qui remet aussi la vidéo à 0 et relance la lecture
+- ✨ **Reconnaissance vocale** : correction de la duplication des mots dictés (ex. “bonjour bonjour”)
+
+### Version 2.12
+- ✨ **Accueil** : titre « BIENVENUE SUR GOLD FX » centré, suppression du sous-titre
+- ✨ **Logo global** : remplacement du “G” par « GOLD FX » sur toutes les pages (fond noir, GOLD or, FX blanc)
+- ✨ **UI globale** : bouton ENVOYER fond vert + texte jaune sur toutes les pages, liens de navigation du header en jaune sur toutes les pages
 
 ### Version 2.11
 - ✨ **Page d'accueil** : taille de police du titre augmentée (titre > sous-titre)
