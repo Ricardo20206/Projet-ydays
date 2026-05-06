@@ -1,15 +1,21 @@
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify, send_file, abort
 from flask_mail import Mail, Message
+from dotenv import load_dotenv
 import os
 import requests
 import subprocess
 import tempfile
 from werkzeug.utils import secure_filename
 
+load_dotenv()
+
 app = Flask(__name__)
 
 # URL de l'API externe (configurable via variable d'environnement pour Docker)
 API_BASE_URL = os.environ.get("API_BASE_URL", "http://localhost:5001")
+
+# Import du client Kling API
+import kling_api
 
 # Configuration Flask-Mail
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -326,6 +332,175 @@ def convert_webm_to_mp4():
                 os.unlink(path_out)
     except Exception as e:
         return (str(e), 500)
+
+# ============================================
+# ROUTES KLING AI API
+# ============================================
+
+@app.route("/kling/test")
+def kling_test_connection():
+    """Teste la connexion à l'API Kling sans consommer de crédits."""
+    result = kling_api.test_connection()
+    status_code = 200 if result["ok"] else 502
+    return jsonify(result), status_code
+
+
+@app.route("/kling/generate-image", methods=["POST"])
+def kling_generate_image():
+    """Génère une image via Kling AI."""
+    try:
+        data = request.get_json()
+        prompt = data.get("prompt", "")
+        if not prompt:
+            return jsonify({"error": "Le prompt est requis"}), 400
+
+        negative_prompt = data.get("negative_prompt", "")
+        aspect_ratio = data.get("aspect_ratio", "16:9")
+        n = data.get("n", 1)
+
+        result = kling_api.generate_image(prompt, negative_prompt=negative_prompt, n=n, aspect_ratio=aspect_ratio)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/kling/image-status/<task_id>")
+def kling_image_status(task_id):
+    """Vérifie le statut d'une tâche de génération d'image."""
+    try:
+        result = kling_api.get_image_task(task_id)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/kling/generate-video", methods=["POST"])
+def kling_generate_video():
+    """Génère une vidéo à partir d'un prompt via Kling AI."""
+    try:
+        data = request.get_json()
+        prompt = data.get("prompt", "")
+        if not prompt:
+            return jsonify({"error": "Le prompt est requis"}), 400
+
+        duration = data.get("duration", "5")
+        aspect_ratio = data.get("aspect_ratio", "16:9")
+        mode = data.get("mode", "std")
+
+        result = kling_api.generate_video(prompt, duration=duration, aspect_ratio=aspect_ratio, mode=mode)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/kling/video-status/<task_id>")
+def kling_video_status(task_id):
+    """Vérifie le statut d'une tâche de génération vidéo."""
+    try:
+        result = kling_api.get_video_task(task_id)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/kling/image-to-video", methods=["POST"])
+def kling_image_to_video():
+    """Génère une vidéo à partir d'une image via Kling AI."""
+    try:
+        data = request.get_json()
+        image_url = data.get("image_url", "")
+        if not image_url:
+            return jsonify({"error": "L'URL de l'image est requise"}), 400
+
+        prompt = data.get("prompt", "")
+        duration = data.get("duration", "5")
+        mode = data.get("mode", "std")
+
+        result = kling_api.image_to_video(image_url, prompt=prompt, duration=duration, mode=mode)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/kling/image-to-video-status/<task_id>")
+def kling_image_to_video_status(task_id):
+    """Vérifie le statut d'une tâche image-to-video."""
+    try:
+        result = kling_api.get_image2video_task(task_id)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# URL publique de l'app (ngrok, déploiement...) pour que Kling puisse accéder aux vidéos
+PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "")
+
+
+@app.route("/kling/omni-video", methods=["POST"])
+def kling_omni_video():
+    """Envoie une vidéo + prompt à Kling Omni-Video pour transformation.
+    Le frontend envoie : { prompt, filename, mode, refer_type }
+    """
+    try:
+        data = request.get_json()
+        prompt = data.get("prompt", "")
+        filename = data.get("filename", "")
+        mode = data.get("mode", "pro")
+        refer_type = data.get("refer_type", "base")
+        duration = data.get("duration", "5")
+        aspect_ratio = data.get("aspect_ratio", None)
+
+        if not prompt:
+            return jsonify({"error": "Le prompt est requis"}), 400
+
+        video_url = None
+        if filename:
+            if not PUBLIC_BASE_URL:
+                return jsonify({
+                    "error": "PUBLIC_BASE_URL non configurée. Lancez ngrok (ngrok http 5000) et ajoutez PUBLIC_BASE_URL=https://xxxx.ngrok.io dans le .env"
+                }), 400
+            # Construire l'URL publique de la vidéo
+            video_url = f"{PUBLIC_BASE_URL}/videos/{filename}"
+
+        result = kling_api.omni_video(
+            prompt=prompt,
+            video_url=video_url,
+            duration=duration,
+            mode=mode,
+            refer_type=refer_type,
+            aspect_ratio=aspect_ratio
+        )
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/kling/omni-video-status/<task_id>")
+def kling_omni_video_status(task_id):
+    """Vérifie le statut d'une tâche Omni-Video et télécharge la vidéo si prête."""
+    try:
+        result = kling_api.get_omni_video_task(task_id)
+
+        # Si la tâche est terminée, télécharger la vidéo résultante
+        task_data = result.get("data", {})
+        if task_data.get("task_status") == "succeed":
+            videos = task_data.get("task_result", {}).get("videos", [])
+            if videos:
+                video_result_url = videos[0].get("url", "")
+                if video_result_url:
+                    # Télécharger la vidéo depuis Kling et la sauvegarder
+                    video_resp = requests.get(video_result_url, timeout=300)
+                    if video_resp.status_code == 200:
+                        output_filename = f"kling_{task_id}.mp4"
+                        output_path = os.path.join(VIDEO_FOLDER, output_filename)
+                        with open(output_path, 'wb') as f:
+                            f.write(video_resp.content)
+                        result["local_video"] = output_filename
+
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
