@@ -10,10 +10,12 @@ services:
       API_BASE_URL: http://api:5001
       MAIL_USERNAME: ${MAIL_USERNAME:-}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
     volumes:
       - ./images:/app/images
       - ./videos:/app/videos
       - ./uploads:/app/uploads
+      - ./users.json:/app/users.json
     depends_on:
       - api
 

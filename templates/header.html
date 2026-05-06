@@ -15,6 +15,115 @@
             <li><a href="/image">Image</a></li>
             <li><a href="/information">Information</a></li>
             <li><a href="/contact">Contact</a></li>
+            <li class="user-dropdown">
+                <span class="user-profile-btn">
+                    <span data-lucide="user"></span>
+                </span>
+                <div class="dropdown-menu">
+                    <div class="dropdown-header">Profil</div>
+                    <div class="dropdown-item-info">
+                        <strong>Utilisateur:</strong> {{ session.username }}
+                    </div>
+                    <div class="dropdown-item-info">
+                        <strong>Email:</strong> {{ user_email }}
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <a href="/logout" class="dropdown-item-logout">Déconnexion</a>
+                </div>
+            </li>
         </ul>
     </nav>
 </header>
+
+<style>
+.user-dropdown {
+    position: relative;
+}
+.user-profile-btn {
+    color: #FFD700;
+    border: none;
+    padding: 8px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+}
+.user-profile-btn svg {
+    color: #FFD700;
+    stroke: #FFD700;
+    width: 24px;
+    height: 24px;
+}
+.user-profile-btn:hover {
+    transform: translateY(-2px);
+    background: transparent;
+}
+.user-profile-btn:hover svg {
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+}
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    min-width: 250px;
+    z-index: 1000;
+    overflow: hidden;
+    animation: slideDown 0.3s ease;
+}
+.user-dropdown:hover .dropdown-menu {
+    display: block;
+}
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.dropdown-header {
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #FFD700, #ff9500);
+    color: #0d0d0d;
+    font-weight: 700;
+    font-size: 14px;
+}
+.dropdown-item-info {
+    padding: 10px 16px;
+    color: #333;
+    font-size: 13px;
+    background: #f8f8f8;
+}
+.dropdown-item-info strong {
+    color: #FFD700;
+    display: block;
+    margin-bottom: 4px;
+}
+.dropdown-divider {
+    height: 1px;
+    background: #e0e0e0;
+    margin: 8px 0;
+}
+.dropdown-item-logout {
+    display: block;
+    padding: 12px 16px;
+    color: #ff6b6b;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.2s;
+    margin: 8px 0;
+}
+.dropdown-item-logout:hover {
+    background: #fff5f5;
+}
+</style>

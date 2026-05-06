@@ -44,3 +44,5 @@ Thumbs.db
 *.sublime-workspace
 
 .env
+
+user.json
