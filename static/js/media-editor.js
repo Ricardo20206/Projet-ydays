@@ -596,9 +596,13 @@ if (typeof window.currentMedia === 'undefined') {
             // Sauvegarder l'état du contexte
             currentCtx.save();
             
+            // Forcer un rendu visible des formes même après des modes de dessin/effacement
+            currentCtx.globalCompositeOperation = 'source-over';
+            currentCtx.globalAlpha = 1;
+            currentCtx.setLineDash([]);
             // Toutes les formes en jaune (or) - couleur jaune vif
             currentCtx.strokeStyle = '#FFD700';
-            currentCtx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+            currentCtx.fillStyle = 'rgba(255, 215, 0, 0.55)';
             currentCtx.lineWidth = 3;
             
             switch(shapeType) {
@@ -766,12 +770,6 @@ if (typeof window.currentMedia === 'undefined') {
                 window.canvas = currentCanvas;
                 window.ctx = currentCtx;
                 
-                // Taille du canvas
-                if (currentCanvas.width === 0 || currentCanvas.height === 0) {
-                    currentCanvas.width = window.innerWidth || 1920;
-                    currentCanvas.height = window.innerHeight || 1080;
-                }
-                
                 // Styles du canvas - modifications minimales
                 currentCanvas.style.display = 'block';
                 currentCanvas.style.visibility = 'visible';
@@ -793,6 +791,21 @@ if (typeof window.currentMedia === 'undefined') {
                     window.isSelectingShape = false;
                     alert('Veuillez attendre que l\'image soit complètement chargée.');
                     return;
+                }
+
+                // Toujours aligner la taille du canvas sur le média affiché.
+                // Sinon une forme peut être créée hors champ (invisible) si le canvas
+                // a temporairement la taille de la fenêtre.
+                const mediaW = imageElement.offsetWidth || currentCanvas.width;
+                const mediaH = imageElement.offsetHeight || currentCanvas.height;
+                if (mediaW > 0 && mediaH > 0) {
+                    if (currentCanvas.width !== mediaW || currentCanvas.height !== mediaH) {
+                        currentCanvas.width = mediaW;
+                        currentCanvas.height = mediaH;
+                    }
+                } else if (currentCanvas.width === 0 || currentCanvas.height === 0) {
+                    currentCanvas.width = window.innerWidth || 1920;
+                    currentCanvas.height = window.innerHeight || 1080;
                 }
                 
                 // Position au centre du canvas (espace image) pour que la forme défile avec l'image
@@ -1451,7 +1464,7 @@ function drawElementToExportCtx(element, ctx, scaleX, scaleY) {
         var scaledX = element.x * scaleX, scaledY = element.y * scaleY, scaledWidth = element.width * scaleX, scaledHeight = element.height * scaleY;
         var shapeType = element.shapeType;
         ctx.strokeStyle = '#FFD700';
-        ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+        ctx.fillStyle = 'rgba(255, 215, 0, 0.55)';
         ctx.lineWidth = 3;
         switch(shapeType) {
             case 'square':
@@ -2106,6 +2119,8 @@ function redrawCanvasImpl() {
         currentCtx.clearRect(0, 0, currentCanvas.width, currentCanvas.height);
         
         const elements = window.addedElements || addedElements || [];
+        const currentSelectedElement = window.selectedElement || selectedElement;
+        let selectedElementDrawn = false;
         if (elements && Array.isArray(elements) && elements.length > 0) {
             elements.forEach((element) => {
                 if (!element || element.removedAtTime !== undefined) return;
@@ -2114,16 +2129,58 @@ function redrawCanvasImpl() {
                         drawTextOnCanvas(element.text, element.x, element.y, element.id);
                     } else if (element.type === 'shape' && typeof window.drawShape === 'function') {
                         window.drawShape(element.shapeType, element.x, element.y, element.width, element.height, element.id);
+                        if (currentSelectedElement && element.id === currentSelectedElement.id) selectedElementDrawn = true;
                     } else if (element.type === 'line' && typeof drawLine === 'function') {
                         drawLine(element.lineType || 'straight-arrow', element.x1, element.y1, element.x2, element.y2);
+                        if (currentSelectedElement && element.id === currentSelectedElement.id) selectedElementDrawn = true;
                     } else if (element.type === 'shape3d' && typeof drawShape3d === 'function') {
                         drawShape3d(element.shape3dType, element.x, element.y, element.width, element.height, currentCtx, element.rotationX, element.rotationY);
+                        if (currentSelectedElement && element.id === currentSelectedElement.id) selectedElementDrawn = true;
                     }
                 } catch (err) { console.error('Erreur dessin élément:', err); }
             });
         }
         
-        const currentSelectedElement = window.selectedElement || selectedElement;
+        // Sécurité: si l'élément sélectionné n'a pas été dessiné via la boucle principale,
+        // le dessiner explicitement avant les poignées.
+        if (currentSelectedElement && !selectedElementDrawn && currentSelectedElement.removedAtTime === undefined) {
+            try {
+                if (currentSelectedElement.type === 'shape' && typeof window.drawShape === 'function') {
+                    window.drawShape(
+                        currentSelectedElement.shapeType,
+                        currentSelectedElement.x,
+                        currentSelectedElement.y,
+                        currentSelectedElement.width,
+                        currentSelectedElement.height,
+                        currentSelectedElement.id
+                    );
+                } else if (currentSelectedElement.type === 'line' && typeof drawLine === 'function') {
+                    drawLine(
+                        currentSelectedElement.lineType || 'straight-arrow',
+                        currentSelectedElement.x1,
+                        currentSelectedElement.y1,
+                        currentSelectedElement.x2,
+                        currentSelectedElement.y2
+                    );
+                } else if (currentSelectedElement.type === 'shape3d' && typeof drawShape3d === 'function') {
+                    drawShape3d(
+                        currentSelectedElement.shape3dType,
+                        currentSelectedElement.x,
+                        currentSelectedElement.y,
+                        currentSelectedElement.width,
+                        currentSelectedElement.height,
+                        currentCtx,
+                        currentSelectedElement.rotationX,
+                        currentSelectedElement.rotationY
+                    );
+                } else if (currentSelectedElement.type === 'text' && typeof drawTextOnCanvas === 'function') {
+                    drawTextOnCanvas(currentSelectedElement.text, currentSelectedElement.x, currentSelectedElement.y, currentSelectedElement.id);
+                }
+            } catch (err) {
+                console.error('Erreur dessin fallback élément sélectionné:', err);
+            }
+        }
+
         if (currentSelectedElement && (currentSelectedElement.type === 'shape' || currentSelectedElement.type === 'shape3d' || currentSelectedElement.type === 'text' || currentSelectedElement.type === 'line') && typeof drawResizeHandles === 'function') {
             try { drawResizeHandles(currentSelectedElement); } catch (err) { console.error('Erreur poignées:', err); }
         }
@@ -3240,7 +3297,7 @@ window.testDrawShape = function() {
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = '#FFD700';
-    ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+    ctx.fillStyle = 'rgba(255, 215, 0, 0.55)';
     ctx.lineWidth = 3;
     ctx.fillRect(centerX - size/2, centerY - size/2, size, size);
     ctx.strokeRect(centerX - size/2, centerY - size/2, size, size);
