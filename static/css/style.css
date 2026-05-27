@@ -24,103 +24,41 @@ body {
     min-height: 100vh;
 }
 
-/* Header avec logo G */
+/* Header styles */
 header {
     background: #1a1a1a;
-    padding: 15px 30px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
 }
 
 .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1400px;
-    margin: 0 auto;
+    padding: 10px 0 !important;
 }
 
-.logo-container {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    border: none;
+.navbar-brand {
+    padding: 0 !important;
 }
 
-.logo-square {
-    width: 50px;
-    height: 50px;
-    background: #1a1a1a;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    font-weight: bold;
-    color: #FFD700;
-    /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); */
-}
-
-/* Logo "GOLD FX" sur toutes les pages */
 .logo-square {
     width: auto;
-    height: 56px;
+    height: 50px;
     padding: 0 16px;
-    gap: 6px;
+    border-radius: 8px;
     font-size: 20px;
+    font-weight: bold;
     letter-spacing: 0.5px;
     white-space: nowrap;
 }
 
-.logo-square .logo-gold {
+.logo-gold {
     color: #FFD700;
 }
 
-.logo-square .logo-fx {
+.logo-fx {
     color: #ffffff;
 }
 
 .nav-links {
-    list-style: none;
-    display: flex;
-    gap: 30px;
-    align-items: center;
-}
-
-.nav-links a {
-    color: #FFD700;
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: 700;
-    font-family: Arial, sans-serif;
-    font-style: normal;
-    transition: all 0.3s;
-    padding: 8px 12px;
-    border-radius: 5px;
-    display: inline-block;
-}
-
-/* Accueil : liens du header en gras */
-body.home-page .nav-links a {
-    font-weight: 700;
-}
-
-/* Même taille de liens du header sur toutes les pages */
-body.home-page .nav-links a,
-body.video-page .nav-links a,
-body.image-page .nav-links a,
-body.information-page .nav-links a,
-body.contact-page .nav-links a {
-    font-size: 16px;
-}
-
-.nav-links a:hover {
-    color: #FFD700;
-    background: transparent;
-    transform: translateY(-2px);
-    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+    transition: right 0.3s ease, opacity 0.3s ease;
 }
 
 /* Page d'accueil : toutes les écritures en Arial */
@@ -492,29 +430,6 @@ footer {
 
 /* Responsive */
 @media (max-width: 768px) {
-    .navbar {
-        flex-direction: column;
-        gap: 10px;
-        align-items: center;
-    }
-    
-    .nav-links {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 8px;
-    }
-
-    .nav-links a {
-        font-size: 14px;
-        padding: 6px 8px;
-    }
-
-    .logo-square {
-        height: 46px;
-        padding: 0 12px;
-        font-size: 16px;
-    }
-
     .page-content {
         padding: 8px 12px;
     }

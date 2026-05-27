@@ -1365,7 +1365,12 @@ function showDrawSubmenu() {
 
 function selectColor(color) {
     currentDrawColor = color;
-    document.getElementById('selectedColorDisplay').style.background = color;
+    
+    // Vérifier si l'élément existe avant d'y accéder
+    const colorDisplay = document.getElementById('selectedColorDisplay');
+    if (colorDisplay) {
+        colorDisplay.style.background = color;
+    }
     
     // Mettre à jour la sélection visuelle
     document.querySelectorAll('.color-item').forEach(item => {
