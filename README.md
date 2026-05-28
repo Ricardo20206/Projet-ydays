@@ -1,6 +1,6 @@
 # GOLD FX — Gestion et édition de médias avec IA
 
-Application web **Flask** pour uploader, annoter, enregistrer et traiter des **vidéos** et **images**. Interface **GOLD FX** avec éditeur canvas (formes, lignes, texte, dessin, objets 3D), export vidéo annoté, API externe de traitement, **Assistant IA** (prompt engineering) et intégration **Kling AI**.
+Application web **Flask** qui permet le traitement des **vidéos** et **images**, avec ajout d'**effets spéciaux**. Interface **GOLD FX** avec éditeur canvas, export vidéo annoté, API externe de traitement, **Assistant IA** (prompt engineering) et intégration **Kling AI**.
 
 ## Accès en ligne
 
@@ -10,9 +10,9 @@ Application web **Flask** pour uploader, annoter, enregistrer et traiter des **v
 
 1. Ouvrir `https://projet-ydays-hy9x.onrender.com`
 2. Utiliser les identifiants suivants :
-   - **Connexion** : Château Gold
+  - **Connexion** : Château Gold
 
-## Description
+## Fonctionnalités
 
 L’application permet de :
 
