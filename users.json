@@ -1,0 +1,10 @@
+{
+  "BenD": {
+    "email": "benoit.david@ynov.com",
+    "password": "scrypt:32768:8:1$C2DXoeqc5CkdfEil$3488effd2dafc98c4737b11f2eb73936d30ea43978e069dc6403a84a754b3063b6fb55aa9e99c47da11e64cafb85b1f9da0b770f4631d73865294a9c2d6b67a2"
+  },
+  "Ben33": {
+    "email": "goldmenben33@gmail.com",
+    "password": "scrypt:32768:8:1$MVa2nRr3COqEY5z4$9523df072fa5f8a1871d751cb4ef234e9f5f0ee9c9774d01c0e8d3c9035d2ec7a0449e85a46567a6554c65b29ec65fb5c5d343ae462e14c0509115e378d352ff"
+  }
+}
